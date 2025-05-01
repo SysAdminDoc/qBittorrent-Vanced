@@ -41,3 +41,5 @@ src/icons/skin/build-icons/icons/*.png
 
 # CMake build directory
 build/
+
+.idea/*

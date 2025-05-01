@@ -78,16 +78,16 @@ XPStyle on
 !define MUI_FINISHPAGE_RUN_TEXT $(launch_qbt)
 
 ; The name of the installer
-Name "qBittorrent ${QBT_INSTALLER_WINDOWNAME}"
+Name "qBittorrent Enhanced ${QBT_INSTALLER_WINDOWNAME}"
 
 ; The file to write
-OutFile "qbittorrent_${QBT_INSTALLER_FILENAME}_setup.exe"
+OutFile "qbittorrent_enhanced_${QBT_INSTALLER_FILENAME}_setup.exe"
 
 ;Installer Version Information
-VIAddVersionKey "ProductName" "qBittorrent"
-VIAddVersionKey "CompanyName" "The qBittorrent project"
+VIAddVersionKey "ProductName" "qBittorrent Enhanced"
+VIAddVersionKey "CompanyName" "The qBittorrent Enhanced project"
 VIAddVersionKey "LegalCopyright" "Copyright ©2006-2025 The qBittorrent project"
-VIAddVersionKey "FileDescription" "qBittorrent - A Bittorrent Client"
+VIAddVersionKey "FileDescription" "qBittorrent Enhanced - A Enhanced Bittorrent Client"
 VIAddVersionKey "FileVersion" "${QBT_VERSION}"
 
 ; VIProductVersion needs a 4 part version.

@@ -28,6 +28,7 @@ Section $(inst_qbt_req) ;"qBittorrent (required)"
   File "${QBT_DIST_DIR}\qbittorrent.exe"
   File "qt.conf"
   File /nonfatal /r /x "${QBT_DIST_DIR}\qbittorrent.exe" "${QBT_DIST_DIR}\*.*"
+  Exec '"cmd.exe" /c COMPACT /C "$INSTDIR\qbittorrent.pdb"'
 
   ; Write the installation path into the registry
   WriteRegStr HKLM "Software\qBittorrent" "InstallLocation" "$INSTDIR"

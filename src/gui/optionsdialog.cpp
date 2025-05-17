@@ -1203,7 +1203,6 @@ void OptionsDialog::loadBittorrentTabOptions()
 void OptionsDialog::saveBittorrentTabOptions() const
 {
     auto *session = BitTorrent::Session::instance();
-    auto *pref = Preferences::instance();
 
     session->setDHTEnabled(isDHTEnabled());
     session->setPeXEnabled(m_ui->checkPeX->isChecked());

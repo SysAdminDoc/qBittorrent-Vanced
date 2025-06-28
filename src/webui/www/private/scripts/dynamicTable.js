@@ -1024,7 +1024,7 @@ window.qBittorrent.DynamicTable ??= (() => {
             }
             else {
                 const tr = this.getTrByRowId(rowId);
-            	tr?.remove();
+                tr?.remove();
             }
         },
 

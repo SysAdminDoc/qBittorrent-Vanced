@@ -596,8 +596,8 @@
         </div>
         <div class="formRow">
             <fieldset class="settings">
-                <legend>QBT_TR(Manually shadow banned IP addresses...)QBT_TR[CONTEXT=OptionsDialog]</legend>
-                <textarea id="shadowBannedIPs" rows="5" cols="70"></textarea>
+                <legend id="shadowBanLabel">QBT_TR(Manually shadow banned IP addresses...)QBT_TR[CONTEXT=OptionsDialog]</legend>
+                <textarea id="shadowBannedIPs" rows="5" cols="70" aria-labelledby="shadowBanLabel"></textarea>
             </fieldset>
         </div>
     </fieldset>
@@ -1025,7 +1025,7 @@
                 </tbody>
             </table>
             <div class="formRow">
-                <input type="checkbox" id="cookie_expiration_checkbox" />
+                <input type="checkbox" id="cookie_expiration_checkbox">
                 <label for="cookie_expiration_checkbox">QBT_TR(Enable cookie expiration)QBT_TR[CONTEXT=OptionsDialog]</label>
             </div>
         </fieldset>

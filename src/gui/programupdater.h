@@ -30,9 +30,8 @@
 #pragma once
 
 #include <QObject>
+#include <QString>
 #include <QUrl>
-
-#include "base/utils/version.h"
 
 namespace Net
 {
@@ -46,10 +45,9 @@ class ProgramUpdater final : public QObject
 
 public:
     using QObject::QObject;
-    using Version = Utils::Version<4, 3>;
 
     void checkForUpdates() const;
-    Version getNewVersion() const;
+    QString getNewVersion() const;
     QString getNewContent() const;
     QString getNextUpdate() const;
     bool updateProgram() const;
@@ -59,16 +57,10 @@ signals:
 
 private slots:
     void rssDownloadFinished(const Net::DownloadResult &result);
-    void fallbackDownloadFinished(const Net::DownloadResult &result);
 
 private:
-    void handleFinishedRequest();
-    bool shouldUseFallback() const;
-
+    QString m_newVersion;
     QString m_nextUpdate;
     QString m_content;
-    mutable bool m_hasCompletedOneReq = false;
-    Version m_remoteVersion;
-    Version m_fallbackRemoteVersion;
     QUrl m_updateURL;
 };

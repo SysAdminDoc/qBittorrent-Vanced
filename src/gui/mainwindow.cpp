@@ -1660,12 +1660,12 @@ void MainWindow::handleUpdateCheckFinished(ProgramUpdater *updater, const bool i
         updater->deleteLater();
     };
 
-    const auto newVersion = updater->getNewVersion();
-    if (newVersion.isValid())
+    const QString newVersion = updater->getNewVersion();
+    if (!newVersion.isEmpty())
     {
         const QString content = updater->getNewContent();
         const QString msg {tr("A new version is available.") + u"<br/>"
-            + tr("Do you want to download %1?%2").arg(newVersion.toString(), content) + u"<br/><br/>"
+            + tr("Do you want to download %1?%2").arg(newVersion, content) + u"<br/><br/>"
             + u"<a href=\"https://www.qbittorrent.org/news\">%1</a>"_s.arg(tr("Open changelog..."))};
         auto *msgBox = new QMessageBox {QMessageBox::Question, tr("qBittorrent Update Available"), msg
             , (QMessageBox::Yes | QMessageBox::No), this};

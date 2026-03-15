@@ -47,7 +47,6 @@
 #include <QUrl>
 
 #include "base/algorithm.h"
-#include "base/bittorrent/torrentcreationmanager.h"
 #include "base/http/httperror.h"
 #include "base/logger.h"
 #include "base/preferences.h"
@@ -61,10 +60,7 @@
 #include "api/appcontroller.h"
 #include "api/authcontroller.h"
 #include "api/logcontroller.h"
-#include "api/rsscontroller.h"
-#include "api/searchcontroller.h"
 #include "api/synccontroller.h"
-#include "api/torrentcreatorcontroller.h"
 #include "api/torrentscontroller.h"
 #include "api/transfercontroller.h"
 #include "freediskspacechecker.h"
@@ -164,7 +160,6 @@ WebApplication::WebApplication(IApplication *app, QObject *parent)
     , m_workerThread {new QThread}
     , m_freeDiskSpaceChecker {new FreeDiskSpaceChecker}
     , m_freeDiskSpaceCheckingTimer {new QTimer(this)}
-    , m_torrentCreationManager {new BitTorrent::TorrentCreationManager(app, this)}
 {
     declarePublicAPI(u"auth/login"_s);
 
@@ -731,9 +726,6 @@ void WebApplication::sessionStart()
 
     m_currentSession->registerAPIController(u"app"_s, new AppController(app(), m_currentSession));
     m_currentSession->registerAPIController(u"log"_s, new LogController(app(), m_currentSession));
-    m_currentSession->registerAPIController(u"torrentcreator"_s, new TorrentCreatorController(m_torrentCreationManager, app(), m_currentSession));
-    m_currentSession->registerAPIController(u"rss"_s, new RSSController(app(), m_currentSession));
-    m_currentSession->registerAPIController(u"search"_s, new SearchController(app(), m_currentSession));
     m_currentSession->registerAPIController(u"torrents"_s, new TorrentsController(app(), m_currentSession));
     m_currentSession->registerAPIController(u"transfer"_s, new TransferController(app(), m_currentSession));
 

@@ -29,7 +29,13 @@
 
 #pragma once
 
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDialog>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QSpinBox>
 
 #include "base/pathfwd.h"
 #include "base/settingvalue.h"
@@ -74,8 +80,6 @@ class OptionsDialog final : public GUIApplicationComponent<QDialog>
         TAB_CONNECTION,
         TAB_SPEED,
         TAB_BITTORRENT,
-        TAB_SEARCH,
-        TAB_RSS,
         TAB_WEBUI,
         TAB_ADVANCED
     };
@@ -111,7 +115,6 @@ private slots:
 #ifndef DISABLE_WEBUI
     void webUIHttpsCertChanged(const Path &path);
     void webUIHttpsKeyChanged(const Path &path);
-    void on_registerDNSBtn_clicked();
 #endif
 
 private:
@@ -135,12 +138,6 @@ private:
 
     void loadBittorrentTabOptions();
     void saveBittorrentTabOptions() const;
-
-    void loadRSSTabOptions();
-    void saveRSSTabOptions() const;
-
-    void loadSearchTabOptions();
-    void saveSearchTabOptions() const;
 
 #ifndef DISABLE_WEBUI
     void loadWebUITabOptions();
@@ -213,4 +210,16 @@ private:
     AdvancedSettings *m_advancedSettings = nullptr;
 
     bool m_refreshingIpFilter = false;
+
+    // Schedule preview
+    QLabel *m_schedulePreviewLabel = nullptr;
+
+    // Auto-category settings
+    QGroupBox *m_groupAutoCategory = nullptr;
+
+    // Stalled torrent management
+    QGroupBox *m_groupStalled = nullptr;
+    QSpinBox *m_spinStalledTimeout = nullptr;
+    QComboBox *m_comboStalledAction = nullptr;
+    QLineEdit *m_lineStalledCategory = nullptr;
 };

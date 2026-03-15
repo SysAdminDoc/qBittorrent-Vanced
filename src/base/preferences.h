@@ -287,6 +287,8 @@ public:
     void setShutdownqBTWhenDownloadsComplete(bool shutdown);
     bool dontConfirmAutoExit() const;
     void setDontConfirmAutoExit(bool dontConfirmAutoExit);
+    bool isStopTorrentsOnCompletionEnabled() const;
+    void setStopTorrentsOnCompletionEnabled(bool enabled);
     bool recheckTorrentsOnCompletion() const;
     void recheckTorrentsOnCompletion(bool recheck);
     bool resolvePeerCountries() const;
@@ -345,6 +347,40 @@ public:
     void setBdecodeDepthLimit(int value);
     int getBdecodeTokenLimit() const;
     void setBdecodeTokenLimit(int value);
+
+    // Webhook notifications
+    bool isWebhookEnabled() const;
+    void setWebhookEnabled(bool enabled);
+    QString webhookUrl() const;
+    void setWebhookUrl(const QString &url);
+    QString webhookAuthToken() const;
+    void setWebhookAuthToken(const QString &token);
+    bool isWebhookOnTorrentAddedEnabled() const;
+    void setWebhookOnTorrentAddedEnabled(bool enabled);
+    bool isWebhookOnTorrentFinishedEnabled() const;
+    void setWebhookOnTorrentFinishedEnabled(bool enabled);
+    bool isWebhookOnTorrentErrorEnabled() const;
+    void setWebhookOnTorrentErrorEnabled(bool enabled);
+    bool isWebhookOnTorrentRemovedEnabled() const;
+    void setWebhookOnTorrentRemovedEnabled(bool enabled);
+    bool isWebhookOnTorrentStalledEnabled() const;
+    void setWebhookOnTorrentStalledEnabled(bool enabled);
+
+    // Auto-category by tracker
+    bool isAutoCategoryEnabled() const;
+    void setAutoCategoryEnabled(bool enabled);
+    QString autoCategoryRulesJson() const;
+    void setAutoCategoryRulesJson(const QString &json);
+
+    // Stalled torrent management
+    bool isStalledManagementEnabled() const;
+    void setStalledManagementEnabled(bool enabled);
+    int stalledTimeoutMinutes() const;
+    void setStalledTimeoutMinutes(int minutes);
+    int stalledAction() const;
+    void setStalledAction(int action);
+    QString stalledCategory() const;
+    void setStalledCategory(const QString &category);
 
     // Stuff that don't appear in the Options GUI but are saved
     // in the same file.

@@ -63,11 +63,6 @@ class AuthController;
 class FreeDiskSpaceChecker;
 class WebApplication;
 
-namespace BitTorrent
-{
-    class TorrentCreationManager;
-}
-
 class WebSession final : public ApplicationComponent<QObject>, public ISession
 {
 public:
@@ -157,25 +152,6 @@ private:
         {{u"app"_s, u"shutdown"_s}, Http::METHOD_POST},
         {{u"auth"_s, u"login"_s}, Http::METHOD_POST},
         {{u"auth"_s, u"logout"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"addFeed"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"addFolder"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"markAsRead"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"moveItem"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"refreshItem"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"removeItem"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"removeRule"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"renameRule"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"setFeedURL"_s}, Http::METHOD_POST},
-        {{u"rss"_s, u"setRule"_s}, Http::METHOD_POST},
-        {{u"search"_s, u"delete"_s}, Http::METHOD_POST},
-        {{u"search"_s, u"enablePlugin"_s}, Http::METHOD_POST},
-        {{u"search"_s, u"installPlugin"_s}, Http::METHOD_POST},
-        {{u"search"_s, u"start"_s}, Http::METHOD_POST},
-        {{u"search"_s, u"stop"_s}, Http::METHOD_POST},
-        {{u"search"_s, u"uninstallPlugin"_s}, Http::METHOD_POST},
-        {{u"search"_s, u"updatePlugins"_s}, Http::METHOD_POST},
-        {{u"torrentcreator"_s, u"addTask"_s}, Http::METHOD_POST},
-        {{u"torrentcreator"_s, u"deleteTask"_s}, Http::METHOD_POST},
         {{u"torrents"_s, u"add"_s}, Http::METHOD_POST},
         {{u"torrents"_s, u"addPeers"_s}, Http::METHOD_POST},
         {{u"torrents"_s, u"addTags"_s}, Http::METHOD_POST},
@@ -263,5 +239,4 @@ private:
     Utils::Thread::UniquePtr m_workerThread;
     FreeDiskSpaceChecker *m_freeDiskSpaceChecker = nullptr;
     QTimer *m_freeDiskSpaceCheckingTimer = nullptr;
-    BitTorrent::TorrentCreationManager *m_torrentCreationManager = nullptr;
 };

@@ -118,11 +118,11 @@ namespace
         }
         else
         {
-            const QString errMsg = QCoreApplication::translate("Main", "qBittorrent has encountered an unrecoverable error.") + u'\n' + message + u'\n';
+            const QString errMsg = QCoreApplication::translate("Main", "qBittorrent Vanced has encountered an unrecoverable error.") + u'\n' + message + u'\n';
             fprintf(stderr, "%s", qUtf8Printable(errMsg));
         }
 #else
-        const QString errMsg = QCoreApplication::translate("Main", "qBittorrent has encountered an unrecoverable error.") + u'\n' + message + u'\n';
+        const QString errMsg = QCoreApplication::translate("Main", "qBittorrent Vanced has encountered an unrecoverable error.") + u'\n' + message + u'\n';
         fprintf(stderr, "%s", qUtf8Printable(errMsg));
 #endif
     }
@@ -239,14 +239,14 @@ int main(int argc, char *argv[])
 #if defined(DISABLE_GUI) && !defined(Q_OS_WIN)
             if (params.shouldDaemonize)
             {
-                throw CommandLineParameterError(QCoreApplication::translate("Main", "You cannot use %1: qBittorrent is already running.")
+                throw CommandLineParameterError(QCoreApplication::translate("Main", "You cannot use %1: qBittorrent Vanced is already running.")
                     .arg(u"-d (or --daemon)"_s));
             }
 
             // print friendly message if there are no other command line args
             if (argc == 1)
             {
-                const QString message = QCoreApplication::translate("Main", "Another qBittorrent instance is already running.");
+                const QString message = QCoreApplication::translate("Main", "Another qBittorrent Vanced instance is already running.");
                 printf("%s\n", qUtf8Printable(message));
             }
 #endif

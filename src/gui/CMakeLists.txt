@@ -17,18 +17,10 @@ qt_wrap_ui(UI_HEADERS
     previewselectdialog.ui
     properties/peersadditiondialog.ui
     properties/propertieswidget.ui
-    rss/automatedrssdownloader.ui
-    rss/rsswidget.ui
-    search/pluginselectdialog.ui
-    search/pluginsourcedialog.ui
-    search/searchjobwidget.ui
-    search/searchwidget.ui
     shadowbanlistoptionsdialog.ui
     shutdownconfirmdialog.ui
     speedlimitdialog.ui
-    statsdialog.ui
     torrentcategorydialog.ui
-    torrentcreatordialog.ui
     torrentoptionsdialog.ui
     torrentsharelimitswidget.ui
     torrenttagsdialog.ui
@@ -42,6 +34,7 @@ add_library(qbt_gui STATIC
     # headers
     aboutdialog.h
     addnewtorrentdialog.h
+    batchoperationsdialog.h
     addtorrentparamswidget.h
     advancedsettings.h
     autoexpandabledialog.h
@@ -70,6 +63,7 @@ add_library(qbt_gui STATIC
     log/logmodel.h
     mainwindow.h
     optionsdialog.h
+    portablebackupdialog.h
     powermanagement/powermanagement.h
     previewlistdelegate.h
     previewselectdialog.h
@@ -85,20 +79,9 @@ add_library(qbt_gui STATIC
     properties/speedplotview.h
     properties/speedwidget.h
     raisedmessagebox.h
-    rss/articlelistwidget.h
-    rss/automatedrssdownloader.h
-    rss/feedlistwidget.h
-    rss/htmlbrowser.h
-    rss/rsswidget.h
-    search/pluginselectdialog.h
-    search/pluginsourcedialog.h
-    search/searchjobwidget.h
-    search/searchsortmodel.h
-    search/searchwidget.h
     shadowbanlistoptionsdialog.h
     shutdownconfirmdialog.h
     speedlimitdialog.h
-    statsdialog.h
     statusbar.h
     torrentcategorydialog.h
     torrentcontentfiltermodel.h
@@ -107,8 +90,8 @@ add_library(qbt_gui STATIC
     torrentcontentmodelfile.h
     torrentcontentmodelfolder.h
     torrentcontentmodelitem.h
+    torrentcardswidget.h
     torrentcontentwidget.h
-    torrentcreatordialog.h
     torrentoptionsdialog.h
     torrentsharelimitswidget.h
     torrenttagsdialog.h
@@ -118,6 +101,7 @@ add_library(qbt_gui STATIC
     trackerlist/trackerlistsortmodel.h
     trackerlist/trackerlistwidget.h
     trackersadditiondialog.h
+    traypopupwidget.h
     transferlistdelegate.h
     transferlistfilters/basefilterwidget.h
     transferlistfilters/categoryfiltermodel.h
@@ -146,6 +130,7 @@ add_library(qbt_gui STATIC
     # sources
     aboutdialog.cpp
     addnewtorrentdialog.cpp
+    batchoperationsdialog.cpp
     addtorrentparamswidget.cpp
     advancedsettings.cpp
     autoexpandabledialog.cpp
@@ -169,6 +154,7 @@ add_library(qbt_gui STATIC
     log/logmodel.cpp
     mainwindow.cpp
     optionsdialog.cpp
+    portablebackupdialog.cpp
     powermanagement/powermanagement.cpp
     previewlistdelegate.cpp
     previewselectdialog.cpp
@@ -184,20 +170,9 @@ add_library(qbt_gui STATIC
     properties/speedplotview.cpp
     properties/speedwidget.cpp
     raisedmessagebox.cpp
-    rss/articlelistwidget.cpp
-    rss/automatedrssdownloader.cpp
-    rss/feedlistwidget.cpp
-    rss/htmlbrowser.cpp
-    rss/rsswidget.cpp
-    search/pluginselectdialog.cpp
-    search/pluginsourcedialog.cpp
-    search/searchjobwidget.cpp
-    search/searchsortmodel.cpp
-    search/searchwidget.cpp
     shadowbanlistoptionsdialog.cpp
     shutdownconfirmdialog.cpp
     speedlimitdialog.cpp
-    statsdialog.cpp
     statusbar.cpp
     torrentcategorydialog.cpp
     torrentcontentfiltermodel.cpp
@@ -206,8 +181,8 @@ add_library(qbt_gui STATIC
     torrentcontentmodelfile.cpp
     torrentcontentmodelfolder.cpp
     torrentcontentmodelitem.cpp
+    torrentcardswidget.cpp
     torrentcontentwidget.cpp
-    torrentcreatordialog.cpp
     torrentoptionsdialog.cpp
     torrentsharelimitswidget.cpp
     torrenttagsdialog.cpp
@@ -217,6 +192,7 @@ add_library(qbt_gui STATIC
     trackerlist/trackerlistsortmodel.cpp
     trackerlist/trackerlistwidget.cpp
     trackersadditiondialog.cpp
+    traypopupwidget.cpp
     transferlistdelegate.cpp
     transferlistfilters/basefilterwidget.cpp
     transferlistfilters/categoryfiltermodel.cpp
@@ -274,13 +250,6 @@ if (STACKTRACE)
         stacktracedialog.h
         stacktracedialog.cpp
         ${STACKTRACE_UI_HEADERS}
-    )
-endif()
-
-if ((CMAKE_SYSTEM_NAME STREQUAL "Windows") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-    target_sources(qbt_gui PRIVATE
-        programupdater.h
-        programupdater.cpp
     )
 endif()
 

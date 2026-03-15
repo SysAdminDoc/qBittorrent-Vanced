@@ -56,8 +56,6 @@
 #include "base/net/proxyconfigurationmanager.h"
 #include "base/path.h"
 #include "base/preferences.h"
-#include "base/rss/rss_autodownloader.h"
-#include "base/rss/rss_session.h"
 #include "base/torrentfileguard.h"
 #include "base/torrentfileswatcher.h"
 #include "base/utils/datetime.h"
@@ -356,15 +354,6 @@ void AppController::preferencesAction()
     data[u"dyndns_username"_s] = pref->getDynDNSUsername();
     data[u"dyndns_password"_s] = pref->getDynDNSPassword();
     data[u"dyndns_domain"_s] = pref->getDynDomainName();
-
-    // RSS settings
-    data[u"rss_refresh_interval"_s] = RSS::Session::instance()->refreshInterval();
-    data[u"rss_fetch_delay"_s] = static_cast<qlonglong>(RSS::Session::instance()->fetchDelay().count());
-    data[u"rss_max_articles_per_feed"_s] = RSS::Session::instance()->maxArticlesPerFeed();
-    data[u"rss_processing_enabled"_s] = RSS::Session::instance()->isProcessingEnabled();
-    data[u"rss_auto_downloading_enabled"_s] = RSS::AutoDownloader::instance()->isProcessingEnabled();
-    data[u"rss_download_repack_proper_episodes"_s] = RSS::AutoDownloader::instance()->downloadRepacks();
-    data[u"rss_smart_episode_filters"_s] = RSS::AutoDownloader::instance()->smartEpisodeFilters().join(u'\n');
 
     // Advanced settings
     // qBitorrent preferences
@@ -958,21 +947,6 @@ void AppController::setPreferencesAction()
         pref->setDynDNSPassword(it.value().toString());
     if (hasKey(u"dyndns_domain"_s))
         pref->setDynDomainName(it.value().toString());
-
-    if (hasKey(u"rss_refresh_interval"_s))
-        RSS::Session::instance()->setRefreshInterval(it.value().toInt());
-    if (hasKey(u"rss_fetch_delay"_s))
-        RSS::Session::instance()->setFetchDelay(std::chrono::seconds(it.value().toLongLong()));
-    if (hasKey(u"rss_max_articles_per_feed"_s))
-        RSS::Session::instance()->setMaxArticlesPerFeed(it.value().toInt());
-    if (hasKey(u"rss_processing_enabled"_s))
-        RSS::Session::instance()->setProcessingEnabled(it.value().toBool());
-    if (hasKey(u"rss_auto_downloading_enabled"_s))
-        RSS::AutoDownloader::instance()->setProcessingEnabled(it.value().toBool());
-    if (hasKey(u"rss_download_repack_proper_episodes"_s))
-        RSS::AutoDownloader::instance()->setDownloadRepacks(it.value().toBool());
-    if (hasKey(u"rss_smart_episode_filters"_s))
-        RSS::AutoDownloader::instance()->setSmartEpisodeFilters(it.value().toString().split(u'\n'));
 
     // Advanced settings
     // qBittorrent preferences

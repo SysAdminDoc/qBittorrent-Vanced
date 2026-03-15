@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR) # Policies <= CMP0097 default to NEW
 
 project(qBittorrent
-    DESCRIPTION "The qBittorrent BitTorrent client"
-    HOMEPAGE_URL "https://www.qbittorrent.org/"
+    DESCRIPTION "qBittorrent Vanced - A customized BitTorrent client"
+    HOMEPAGE_URL "https://github.com/SysAdminDoc/qBittorrent-Vanced"
     LANGUAGES CXX
 )
 

@@ -59,7 +59,6 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionDocumentation"/>
-    <addaction name="actionCheckForUpdates"/>
     <addaction name="separator"/>
     <addaction name="actionDonateMoney"/>
     <addaction name="actionAbout"/>
@@ -78,8 +77,6 @@
      <addaction name="actionAutoHibernate"/>
      <addaction name="actionAutoShutdown"/>
     </widget>
-    <addaction name="actionCreateTorrent"/>
-    <addaction name="separator"/>
     <addaction name="actionManageCookies"/>
     <addaction name="actionOptions"/>
     <addaction name="separator"/>
@@ -116,11 +113,7 @@
     <addaction name="actionShowFiltersSidebar"/>
     <addaction name="actionSpeedInTitleBar"/>
     <addaction name="separator"/>
-    <addaction name="actionSearchWidget"/>
-    <addaction name="actionRSSReader"/>
     <addaction name="menuLog"/>
-    <addaction name="separator"/>
-    <addaction name="actionStatistics"/>
     <addaction name="separator"/>
     <addaction name="actionLock"/>
    </widget>
@@ -218,11 +211,6 @@
    </property>
    <property name="iconText">
     <string>Open URL</string>
-   </property>
-  </action>
-  <action name="actionCreateTorrent">
-   <property name="text">
-    <string>Torrent &amp;Creator</string>
    </property>
   </action>
   <action name="actionDocumentation">
@@ -328,22 +316,6 @@
     <string>Show Transfer Speed in Title Bar</string>
    </property>
   </action>
-  <action name="actionRSSReader">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;RSS Reader</string>
-   </property>
-  </action>
-  <action name="actionSearchWidget">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Search &amp;Engine</string>
-   </property>
-  </action>
   <action name="actionLock">
    <property name="text">
     <string>L&amp;ock qBittorrent</string>
@@ -411,19 +383,6 @@
   <action name="actionMinimize">
    <property name="text">
     <string notr="true">Minimize</string>
-   </property>
-  </action>
-  <action name="actionStatistics">
-   <property name="text">
-    <string>&amp;Statistics</string>
-   </property>
-  </action>
-  <action name="actionCheckForUpdates">
-   <property name="text">
-    <string>Check for Updates</string>
-   </property>
-   <property name="toolTip">
-    <string>Check for Program Updates</string>
    </property>
   </action>
   <action name="actionManageCookies">

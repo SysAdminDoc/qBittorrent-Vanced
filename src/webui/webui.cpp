@@ -31,7 +31,6 @@
 #include "base/global.h"
 #include "base/http/server.h"
 #include "base/logger.h"
-#include "base/net/dnsupdater.h"
 #include "base/net/portforwarder.h"
 #include "base/path.h"
 #include "base/preferences.h"
@@ -140,18 +139,6 @@ void WebUI::configure()
             }
         }
 
-        // DynDNS
-        if (pref->isDynDNSEnabled())
-        {
-            if (!m_dnsUpdater)
-                m_dnsUpdater = new Net::DNSUpdater(this);
-            else
-                m_dnsUpdater->updateCredentials();
-        }
-        else
-        {
-            delete m_dnsUpdater;
-        }
     }
     else
     {
@@ -159,7 +146,6 @@ void WebUI::configure()
 
         delete m_httpServer;
         delete m_webapp;
-        delete m_dnsUpdater;
     }
 }
 

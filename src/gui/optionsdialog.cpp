@@ -41,6 +41,10 @@
 #include <QDialogButtonBox>
 #include <QEvent>
 #include <QFileDialog>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QTranslator>
@@ -58,8 +62,6 @@
 #include "base/net/proxyconfigurationmanager.h"
 #include "base/path.h"
 #include "base/preferences.h"
-#include "base/rss/rss_autodownloader.h"
-#include "base/rss/rss_session.h"
 #include "base/torrentfileguard.h"
 #include "base/torrentfileswatcher.h"
 #include "base/utils/compare.h"
@@ -76,7 +78,6 @@
 #include "shadowbanlistoptionsdialog.h"
 #include "interfaces/iguiapplication.h"
 #include "ipsubnetwhitelistoptionsdialog.h"
-#include "rss/automatedrssdownloader.h"
 #include "ui_optionsdialog.h"
 #include "uithemedialog.h"
 #include "uithememanager.h"
@@ -85,9 +86,6 @@
 #include "watchedfoldersmodel.h"
 #include "webui/webui.h"
 
-#ifndef DISABLE_WEBUI
-#include "base/net/dnsupdater.h"
-#endif
 
 #if defined Q_OS_MACOS || defined Q_OS_WIN
 #include "base/utils/os.h"
@@ -164,8 +162,6 @@ OptionsDialog::OptionsDialog(IGUIApplication *app, QWidget *parent)
     m_ui->tabSelection->item(TAB_CONNECTION)->setIcon(UIThemeManager::instance()->getIcon(u"network-connect"_s, u"network-wired"_s));
     m_ui->tabSelection->item(TAB_DOWNLOADS)->setIcon(UIThemeManager::instance()->getIcon(u"download"_s, u"folder-download"_s));
     m_ui->tabSelection->item(TAB_SPEED)->setIcon(UIThemeManager::instance()->getIcon(u"speedometer"_s, u"chronometer"_s));
-    m_ui->tabSelection->item(TAB_RSS)->setIcon(UIThemeManager::instance()->getIcon(u"application-rss"_s, u"application-rss+xml"_s));
-    m_ui->tabSelection->item(TAB_SEARCH)->setIcon(UIThemeManager::instance()->getIcon(u"edit-find"_s));
 #ifdef DISABLE_WEBUI
     m_ui->tabSelection->item(TAB_WEBUI)->setHidden(true);
 #else
@@ -191,8 +187,6 @@ OptionsDialog::OptionsDialog(IGUIApplication *app, QWidget *parent)
     loadConnectionTabOptions();
     loadSpeedTabOptions();
     loadBittorrentTabOptions();
-    loadRSSTabOptions();
-    loadSearchTabOptions();
 #ifndef DISABLE_WEBUI
     loadWebUITabOptions();
 #endif
@@ -304,8 +298,8 @@ void OptionsDialog::loadBehaviorTabOptions()
 
 #if !(defined(Q_OS_WIN) || defined(Q_OS_MACOS))
     m_ui->groupFileAssociation->setVisible(false);
-    m_ui->checkProgramUpdates->setVisible(false);
 #endif
+    m_ui->checkProgramUpdates->setVisible(false);
 
 #ifndef Q_OS_MACOS
     // Disable systray integration if it is not supported by the system
@@ -331,10 +325,6 @@ void OptionsDialog::loadBehaviorTabOptions()
     m_ui->checkAssociateTorrents->setEnabled(!m_ui->checkAssociateTorrents->isChecked());
     m_ui->checkAssociateMagnetLinks->setChecked(Utils::OS::isMagnetLinkAssocSet());
     m_ui->checkAssociateMagnetLinks->setEnabled(!m_ui->checkAssociateMagnetLinks->isChecked());
-#endif
-
-#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    m_ui->checkProgramUpdates->setChecked(pref->isUpdateCheckEnabled());
 #endif
 
     m_ui->checkPreventFromSuspendWhenDownloading->setChecked(pref->preventFromSuspendWhenDownloading());
@@ -414,10 +404,6 @@ void OptionsDialog::loadBehaviorTabOptions()
 #if defined(Q_OS_MACOS)
     connect(m_ui->checkAssociateTorrents, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkAssociateMagnetLinks, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
-#endif
-
-#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    connect(m_ui->checkProgramUpdates, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
 #endif
 
 #ifdef Q_OS_WIN
@@ -518,10 +504,6 @@ void OptionsDialog::saveBehaviorTabOptions() const
         m_ui->checkAssociateMagnetLinks->setChecked(Utils::OS::isMagnetLinkAssocSet());
         m_ui->checkAssociateMagnetLinks->setEnabled(!m_ui->checkAssociateMagnetLinks->isChecked());
     }
-#endif
-
-#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    pref->setUpdateCheckEnabled(m_ui->checkProgramUpdates->isChecked());
 #endif
 
     pref->setPreventFromSuspendWhenDownloading(m_ui->checkPreventFromSuspendWhenDownloading->isChecked());
@@ -643,14 +625,9 @@ void OptionsDialog::loadDownloadsTabOptions()
     m_ui->groupExcludedFileNames->setChecked(session->isExcludedFileNamesEnabled());
     m_ui->textExcludedFileNames->setPlainText(session->excludedFileNames().join(u'\n'));
 
-    m_ui->groupMailNotification->setChecked(pref->isMailNotificationEnabled());
-    m_ui->senderEmailTxt->setText(pref->getMailNotificationSender());
-    m_ui->lineEditDestEmail->setText(pref->getMailNotificationEmail());
-    m_ui->lineEditSmtpServer->setText(pref->getMailNotificationSMTP());
-    m_ui->checkSmtpSSL->setChecked(pref->getMailNotificationSMTPSSL());
-    m_ui->groupMailNotifAuth->setChecked(pref->getMailNotificationSMTPAuth());
-    m_ui->mailNotifUsername->setText(pref->getMailNotificationSMTPUsername());
-    m_ui->mailNotifPassword->setText(pref->getMailNotificationSMTPPassword());
+    m_ui->checkStopOnCompletion->setChecked(pref->isStopTorrentsOnCompletionEnabled());
+
+    m_ui->groupMailNotification->setVisible(false);
 
     m_ui->groupBoxRunOnAdded->setChecked(pref->isAutoRunOnTorrentAddedEnabled());
     m_ui->groupBoxRunOnFinished->setChecked(pref->isAutoRunOnTorrentFinishedEnabled());
@@ -729,25 +706,64 @@ void OptionsDialog::loadDownloadsTabOptions()
     connect(m_ui->textExcludedFileNames, &QPlainTextEdit::textChanged, this, &ThisType::enableApplyButton);
     connect(m_ui->removeWatchedFolderButton, &QAbstractButton::clicked, this, &ThisType::enableApplyButton);
 
-    connect(m_ui->groupMailNotification, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
-    connect(m_ui->senderEmailTxt, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->lineEditDestEmail, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->lineEditSmtpServer, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->checkSmtpSSL, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
-    connect(m_ui->groupMailNotifAuth, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
-    connect(m_ui->mailNotifUsername, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->mailNotifPassword, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->sendTestEmail, &QPushButton::clicked, this, [this]
-    {
-        app()->sendTestEmail();
-        QMessageBox::information(this, tr("Test email"), tr("Attempted to send email. Check your inbox to confirm success"));
-    });
+    connect(m_ui->checkStopOnCompletion, &QCheckBox::toggled, this, &ThisType::enableApplyButton);
+
 
     connect(m_ui->groupBoxRunOnAdded, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->lineEditRunOnAdded, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
     connect(m_ui->groupBoxRunOnFinished, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->lineEditRunOnFinished, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
     connect(m_ui->autoRunConsole, &QCheckBox::toggled, this, &ThisType::enableApplyButton);
+
+    auto *downloadsScrollLayout = qobject_cast<QVBoxLayout *>(m_ui->scrollAreaWidgetContents_2->layout());
+
+    // --- Auto-Category by Tracker ---
+    auto *autoCatGroup = new QGroupBox(tr("Auto-Category by Tracker"));
+    autoCatGroup->setCheckable(true);
+    autoCatGroup->setChecked(pref->isAutoCategoryEnabled());
+    auto *autoCatLayout = new QVBoxLayout(autoCatGroup);
+    autoCatLayout->addWidget(new QLabel(tr("Automatically assign categories to new torrents based on their tracker URL. Configure rules in the Auto-Category Manager.")));
+    m_groupAutoCategory = autoCatGroup;
+
+    if (downloadsScrollLayout)
+        downloadsScrollLayout->addWidget(autoCatGroup);
+
+    connect(autoCatGroup, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
+
+    // --- Stalled Torrent Management ---
+    auto *stalledGroup = new QGroupBox(tr("Stalled Torrent Management"));
+    stalledGroup->setCheckable(true);
+    stalledGroup->setChecked(pref->isStalledManagementEnabled());
+    auto *stalledLayout = new QFormLayout(stalledGroup);
+
+    m_spinStalledTimeout = new QSpinBox;
+    m_spinStalledTimeout->setMinimum(1);
+    m_spinStalledTimeout->setMaximum(1440);
+    m_spinStalledTimeout->setSuffix(tr(" min"));
+    m_spinStalledTimeout->setValue(pref->stalledTimeoutMinutes());
+    stalledLayout->addRow(tr("Stalled timeout:"), m_spinStalledTimeout);
+
+    m_comboStalledAction = new QComboBox;
+    m_comboStalledAction->addItem(tr("Reannounce"), 0);
+    m_comboStalledAction->addItem(tr("Stop"), 1);
+    m_comboStalledAction->addItem(tr("Remove"), 2);
+    m_comboStalledAction->addItem(tr("Move to category"), 3);
+    m_comboStalledAction->setCurrentIndex(pref->stalledAction());
+    stalledLayout->addRow(tr("Action:"), m_comboStalledAction);
+
+    m_lineStalledCategory = new QLineEdit(pref->stalledCategory());
+    m_lineStalledCategory->setPlaceholderText(tr("Category for stalled torrents"));
+    stalledLayout->addRow(tr("Category:"), m_lineStalledCategory);
+
+    m_groupStalled = stalledGroup;
+
+    if (downloadsScrollLayout)
+        downloadsScrollLayout->addWidget(stalledGroup);
+
+    connect(stalledGroup, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
+    connect(m_spinStalledTimeout, qOverload<int>(&QSpinBox::valueChanged), this, &ThisType::enableApplyButton);
+    connect(m_comboStalledAction, qComboBoxCurrentIndexChanged, this, &ThisType::enableApplyButton);
+    connect(m_lineStalledCategory, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
 }
 
 void OptionsDialog::saveDownloadsTabOptions() const
@@ -795,14 +811,7 @@ void OptionsDialog::saveDownloadsTabOptions() const
     session->setExcludedFileNamesEnabled(m_ui->groupExcludedFileNames->isChecked());
     session->setExcludedFileNames(m_ui->textExcludedFileNames->toPlainText().split(u'\n', Qt::SkipEmptyParts));
 
-    pref->setMailNotificationEnabled(m_ui->groupMailNotification->isChecked());
-    pref->setMailNotificationSender(m_ui->senderEmailTxt->text());
-    pref->setMailNotificationEmail(m_ui->lineEditDestEmail->text());
-    pref->setMailNotificationSMTP(m_ui->lineEditSmtpServer->text());
-    pref->setMailNotificationSMTPSSL(m_ui->checkSmtpSSL->isChecked());
-    pref->setMailNotificationSMTPAuth(m_ui->groupMailNotifAuth->isChecked());
-    pref->setMailNotificationSMTPUsername(m_ui->mailNotifUsername->text());
-    pref->setMailNotificationSMTPPassword(m_ui->mailNotifPassword->text());
+    pref->setStopTorrentsOnCompletionEnabled(m_ui->checkStopOnCompletion->isChecked());
 
     pref->setAutoRunOnTorrentAddedEnabled(m_ui->groupBoxRunOnAdded->isChecked());
     pref->setAutoRunOnTorrentAddedProgram(m_ui->lineEditRunOnAdded->text().trimmed());
@@ -811,6 +820,19 @@ void OptionsDialog::saveDownloadsTabOptions() const
 #if defined(Q_OS_WIN)
     pref->setAutoRunConsoleEnabled(m_ui->autoRunConsole->isChecked());
 #endif
+
+    // Auto-category settings
+    if (m_groupAutoCategory)
+        pref->setAutoCategoryEnabled(m_groupAutoCategory->isChecked());
+
+    // Stalled management settings
+    if (m_groupStalled)
+    {
+        pref->setStalledManagementEnabled(m_groupStalled->isChecked());
+        pref->setStalledTimeoutMinutes(m_spinStalledTimeout->value());
+        pref->setStalledAction(m_comboStalledAction->currentIndex());
+        pref->setStalledCategory(m_lineStalledCategory->text().trimmed());
+    }
 }
 
 void OptionsDialog::loadConnectionTabOptions()
@@ -906,7 +928,7 @@ void OptionsDialog::loadConnectionTabOptions()
 
     m_ui->checkProxyPeerConnections->setChecked(session->isProxyPeerConnectionsEnabled());
     m_ui->checkProxyBitTorrent->setChecked(Preferences::instance()->useProxyForBT());
-    m_ui->checkProxyRSS->setChecked(Preferences::instance()->useProxyForRSS());
+    m_ui->checkProxyRSS->setVisible(false);
     m_ui->checkProxyMisc->setChecked(Preferences::instance()->useProxyForGeneralPurposes());
 
     m_ui->checkIPFilter->setChecked(session->isIPFilteringEnabled());
@@ -954,7 +976,6 @@ void OptionsDialog::loadConnectionTabOptions()
     connect(m_ui->checkProxyBitTorrent, &QGroupBox::toggled, this, &ThisType::adjustProxyOptions);
     connect(m_ui->checkProxyPeerConnections, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkProxyHostnameLookup, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
-    connect(m_ui->checkProxyRSS, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkProxyMisc, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
 
     connect(m_ui->checkProxyAuth, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
@@ -1001,7 +1022,6 @@ void OptionsDialog::saveConnectionTabOptions() const
     proxyConfigManager->setProxyConfiguration(proxyConf);
 
     Preferences::instance()->setUseProxyForBT(m_ui->checkProxyBitTorrent->isChecked());
-    Preferences::instance()->setUseProxyForRSS(m_ui->checkProxyRSS->isChecked());
     Preferences::instance()->setUseProxyForGeneralPurposes(m_ui->checkProxyMisc->isChecked());
 
     session->setProxyPeerConnectionsEnabled(m_ui->checkProxyPeerConnections->isChecked());
@@ -1053,6 +1073,40 @@ void OptionsDialog::loadSpeedTabOptions()
     connect(m_ui->checkLimituTPConnections, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkLimitTransportOverhead, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkLimitLocalPeerRate, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
+
+    // Visual schedule preview
+    m_schedulePreviewLabel = new QLabel;
+    m_schedulePreviewLabel->setMinimumHeight(32);
+    m_schedulePreviewLabel->setWordWrap(true);
+    auto updateSchedulePreview = [this]()
+    {
+        if (!m_ui->groupBoxSchedule->isChecked())
+        {
+            m_schedulePreviewLabel->setText(tr("Schedule disabled - normal speed limits always active"));
+            m_schedulePreviewLabel->setStyleSheet(u"color: #6c7086; font-style: italic; padding: 4px;"_s);
+            return;
+        }
+
+        const QTime from = m_ui->timeEditScheduleFrom->time();
+        const QTime to = m_ui->timeEditScheduleTo->time();
+        const int dayIndex = m_ui->comboBoxScheduleDays->currentIndex();
+        const QString days = m_ui->comboBoxScheduleDays->currentText();
+        const QString schedule = tr("Alternative speeds active: %1 to %2 on %3")
+            .arg(from.toString(u"HH:mm"_s), to.toString(u"HH:mm"_s), days);
+        m_schedulePreviewLabel->setText(schedule);
+        m_schedulePreviewLabel->setStyleSheet(u"color: #cba6f7; font-weight: bold; padding: 4px; background: rgba(203, 166, 247, 30); border-radius: 4px;"_s);
+    };
+
+    // Find the schedule group box's layout and add the preview
+    auto *schedLayout = m_ui->groupBoxSchedule->layout();
+    if (schedLayout)
+        schedLayout->addWidget(m_schedulePreviewLabel);
+
+    updateSchedulePreview();
+    connect(m_ui->groupBoxSchedule, &QGroupBox::toggled, this, updateSchedulePreview);
+    connect(m_ui->timeEditScheduleFrom, &QDateTimeEdit::timeChanged, this, updateSchedulePreview);
+    connect(m_ui->timeEditScheduleTo, &QDateTimeEdit::timeChanged, this, updateSchedulePreview);
+    connect(m_ui->comboBoxScheduleDays, qComboBoxCurrentIndexChanged, this, updateSchedulePreview);
 }
 
 void OptionsDialog::saveSpeedTabOptions() const
@@ -1240,70 +1294,6 @@ void OptionsDialog::saveBittorrentTabOptions() const
     session->setAdditionalTrackersURL(m_ui->textTrackersURL->text());
 }
 
-void OptionsDialog::loadRSSTabOptions()
-{
-    const auto *rssSession = RSS::Session::instance();
-    const auto *autoDownloader = RSS::AutoDownloader::instance();
-
-    m_ui->checkRSSEnable->setChecked(rssSession->isProcessingEnabled());
-    m_ui->spinRSSRefreshInterval->setValue(rssSession->refreshInterval());
-    m_ui->spinRSSFetchDelay->setValue(rssSession->fetchDelay().count());
-    m_ui->spinRSSMaxArticlesPerFeed->setValue(rssSession->maxArticlesPerFeed());
-    m_ui->checkRSSAutoDownloaderEnable->setChecked(autoDownloader->isProcessingEnabled());
-    m_ui->textSmartEpisodeFilters->setPlainText(autoDownloader->smartEpisodeFilters().join(u'\n'));
-    m_ui->checkSmartFilterDownloadRepacks->setChecked(autoDownloader->downloadRepacks());
-
-    connect(m_ui->checkRSSEnable, &QCheckBox::toggled, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->checkRSSAutoDownloaderEnable, &QCheckBox::toggled, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->btnEditRules, &QPushButton::clicked, this, [this]()
-    {
-        auto *downloader = new AutomatedRssDownloader(this);
-        downloader->setAttribute(Qt::WA_DeleteOnClose);
-        downloader->open();
-    });
-    connect(m_ui->textSmartEpisodeFilters, &QPlainTextEdit::textChanged, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->checkSmartFilterDownloadRepacks, &QCheckBox::toggled, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->spinRSSRefreshInterval, qSpinBoxValueChanged, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->spinRSSFetchDelay, qSpinBoxValueChanged, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->spinRSSMaxArticlesPerFeed, qSpinBoxValueChanged, this, &OptionsDialog::enableApplyButton);
-}
-
-void OptionsDialog::saveRSSTabOptions() const
-{
-    auto *rssSession = RSS::Session::instance();
-    auto *autoDownloader = RSS::AutoDownloader::instance();
-
-    rssSession->setProcessingEnabled(m_ui->checkRSSEnable->isChecked());
-    rssSession->setRefreshInterval(m_ui->spinRSSRefreshInterval->value());
-    rssSession->setFetchDelay(std::chrono::seconds(m_ui->spinRSSFetchDelay->value()));
-    rssSession->setMaxArticlesPerFeed(m_ui->spinRSSMaxArticlesPerFeed->value());
-    autoDownloader->setProcessingEnabled(m_ui->checkRSSAutoDownloaderEnable->isChecked());
-    autoDownloader->setSmartEpisodeFilters(m_ui->textSmartEpisodeFilters->toPlainText().split(u'\n', Qt::SkipEmptyParts));
-    autoDownloader->setDownloadRepacks(m_ui->checkSmartFilterDownloadRepacks->isChecked());
-}
-
-void OptionsDialog::loadSearchTabOptions()
-{
-    const auto *pref = Preferences::instance();
-
-    m_ui->groupStoreOpenedTabs->setChecked(pref->storeOpenedSearchTabs());
-    m_ui->checkStoreTabsSearchResults->setChecked(pref->storeOpenedSearchTabResults());
-    m_ui->searchHistoryLengthSpinBox->setValue(pref->searchHistoryLength());
-
-    connect(m_ui->groupStoreOpenedTabs, &QGroupBox::toggled, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->checkStoreTabsSearchResults, &QCheckBox::toggled, this, &OptionsDialog::enableApplyButton);
-    connect(m_ui->searchHistoryLengthSpinBox, qSpinBoxValueChanged, this, &OptionsDialog::enableApplyButton);
-}
-
-void OptionsDialog::saveSearchTabOptions() const
-{
-    auto *pref = Preferences::instance();
-
-    pref->setStoreOpenedSearchTabs(m_ui->groupStoreOpenedTabs->isChecked());
-    pref->setStoreOpenedSearchTabResults(m_ui->checkStoreTabsSearchResults->isChecked());
-    pref->setSearchHistoryLength(m_ui->searchHistoryLengthSpinBox->value());
-}
-
 #ifndef DISABLE_WEBUI
 void OptionsDialog::loadWebUITabOptions()
 {
@@ -1353,12 +1343,8 @@ void OptionsDialog::loadWebUITabOptions()
     // Reverse proxy
     m_ui->groupEnableReverseProxySupport->setChecked(pref->isWebUIReverseProxySupportEnabled());
     m_ui->textTrustedReverseProxiesList->setText(pref->getWebUITrustedReverseProxiesList());
-    // DynDNS
-    m_ui->checkDynDNS->setChecked(pref->isDynDNSEnabled());
-    m_ui->comboDNSService->setCurrentIndex(static_cast<int>(pref->getDynDNSService()));
-    m_ui->domainNameTxt->setText(pref->getDynDomainName());
-    m_ui->DNSUsernameTxt->setText(pref->getDynDNSUsername());
-    m_ui->DNSPasswordTxt->setText(pref->getDynDNSPassword());
+    // DynDNS (removed - DNS updater deleted)
+    m_ui->checkDynDNS->setVisible(false);
 
     connect(m_ui->checkWebUI, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->textWebUIAddress, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
@@ -1396,11 +1382,6 @@ void OptionsDialog::loadWebUITabOptions()
     connect(m_ui->groupEnableReverseProxySupport, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->textTrustedReverseProxiesList, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
 
-    connect(m_ui->checkDynDNS, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
-    connect(m_ui->comboDNSService, qComboBoxCurrentIndexChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->domainNameTxt, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->DNSUsernameTxt, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
-    connect(m_ui->DNSPasswordTxt, &QLineEdit::textChanged, this, &ThisType::enableApplyButton);
 }
 
 void OptionsDialog::saveWebUITabOptions() const
@@ -1442,12 +1423,6 @@ void OptionsDialog::saveWebUITabOptions() const
     // Reverse proxy
     pref->setWebUIReverseProxySupportEnabled(m_ui->groupEnableReverseProxySupport->isChecked());
     pref->setWebUITrustedReverseProxiesList(m_ui->textTrustedReverseProxiesList->text());
-    // DynDNS
-    pref->setDynDNSEnabled(m_ui->checkDynDNS->isChecked());
-    pref->setDynDNSService(static_cast<DNS::Service>(m_ui->comboDNSService->currentIndex()));
-    pref->setDynDomainName(m_ui->domainNameTxt->text());
-    pref->setDynDNSUsername(m_ui->DNSUsernameTxt->text());
-    pref->setDynDNSPassword(m_ui->DNSPasswordTxt->text());
 }
 #endif // DISABLE_WEBUI
 
@@ -1498,8 +1473,6 @@ void OptionsDialog::saveOptions() const
     saveConnectionTabOptions();
     saveSpeedTabOptions();
     saveBittorrentTabOptions();
-    saveRSSTabOptions();
-    saveSearchTabOptions();
 #ifndef DISABLE_WEBUI
     saveWebUITabOptions();
 #endif
@@ -1709,7 +1682,6 @@ void OptionsDialog::adjustProxyOptions()
         m_ui->spinProxyPort->setEnabled(false);
 
         m_ui->checkProxyHostnameLookup->setEnabled(false);
-        m_ui->checkProxyRSS->setEnabled(false);
         m_ui->checkProxyMisc->setEnabled(false);
         m_ui->checkProxyBitTorrent->setEnabled(false);
         m_ui->checkProxyPeerConnections->setEnabled(false);
@@ -1729,7 +1701,6 @@ void OptionsDialog::adjustProxyOptions()
             m_ui->labelProxyTypeIncompatible->setVisible(true);
 
             m_ui->checkProxyHostnameLookup->setEnabled(false);
-            m_ui->checkProxyRSS->setEnabled(false);
             m_ui->checkProxyMisc->setEnabled(false);
         }
         else
@@ -1738,7 +1709,6 @@ void OptionsDialog::adjustProxyOptions()
             m_ui->labelProxyTypeIncompatible->setVisible(false);
 
             m_ui->checkProxyHostnameLookup->setEnabled(true);
-            m_ui->checkProxyRSS->setEnabled(true);
             m_ui->checkProxyMisc->setEnabled(true);
         }
     }
@@ -2055,13 +2025,6 @@ void OptionsDialog::showConnectionTab()
     m_ui->tabSelection->setCurrentRow(TAB_CONNECTION);
 }
 
-#ifndef DISABLE_WEBUI
-void OptionsDialog::on_registerDNSBtn_clicked()
-{
-    const auto service = static_cast<DNS::Service>(m_ui->comboDNSService->currentIndex());
-    QDesktopServices::openUrl(Net::DNSUpdater::getRegistrationUrl(service));
-}
-#endif
 
 void OptionsDialog::on_IpFilterRefreshBtn_clicked()
 {

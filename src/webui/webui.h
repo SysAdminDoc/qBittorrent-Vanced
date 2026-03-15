@@ -39,11 +39,6 @@ namespace Http
     class Server;
 }
 
-namespace Net
-{
-    class DNSUpdater;
-}
-
 class WebApplication;
 
 class WebUI final : public ApplicationComponent<QObject>
@@ -74,7 +69,6 @@ private:
     bool m_isErrored = false;
     QString m_errorMsg;
     QPointer<Http::Server> m_httpServer;
-    QPointer<Net::DNSUpdater> m_dnsUpdater;
     QPointer<WebApplication> m_webapp;
 
     QByteArray m_tempPasswordHash;

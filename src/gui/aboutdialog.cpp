@@ -50,7 +50,7 @@ AboutDialog::AboutDialog(QWidget *parent)
     m_ui->setupUi(this);
 
     // Title
-    m_ui->labelName->setText(QStringLiteral("<b><h2>qBittorrent Enhanced Edition " QBT_VERSION " (%1-bit)</h2></b>").arg(QT_POINTER_SIZE * 8));
+    m_ui->labelName->setText(QStringLiteral("<b><h2>qBittorrent Vanced " QBT_VERSION " (%1-bit)</h2></b>").arg(QT_POINTER_SIZE * 8));
 
     m_ui->logo->setPixmap(UIThemeManager::instance()->getScaledPixmap(u"qbittorrent-tray"_s, 32));
 
@@ -63,7 +63,7 @@ AboutDialog::AboutDialog(QWidget *parent)
         u"<tr><td>%3</td><td><a href=\"https://www.qbittorrent.org\">https://www.qbittorrent.org</a></td></tr>"
         u"<tr><td>%4</td><td><a href=\"https://forum.qbittorrent.org\">https://forum.qbittorrent.org</a></td></tr>"
         u"<tr><td>%5</td><td><a href=\"https://bugs.qbittorrent.org\">https://bugs.qbittorrent.org</a></td></tr>"
-        u"<tr><td>%6</td><td><a href=\"https://github.com/c0re100/qBittorrent-Enhanced-Edition\">GitHub Repo</a></td></tr>"
+        u"<tr><td>%6</td><td><a href=\"https://github.com/SysAdminDoc/qBittorrent-Vanced\">GitHub Repo</a></td></tr>"
         u"<tr><td>%7</td><td><a href=\"https://t.me/loli_make_the_world_great_again\">Husky</a></td></tr>"
         u"</table>"
         u"</p>"_s

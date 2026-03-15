@@ -31,13 +31,13 @@ BEGIN
     BEGIN
         BLOCK "040904B0"
         BEGIN
-            VALUE "CompanyName",      "The qBittorrent Project"
-            VALUE "FileDescription",  "qBittorrent - A Bittorrent Client"
+            VALUE "CompanyName",      "qBittorrent Vanced"
+            VALUE "FileDescription",  "qBittorrent Vanced - A Customized Bittorrent Client"
             VALUE "FileVersion",      VER_FILEVERSION_STR
             VALUE "InternalName",     "qbittorrent"
             VALUE "LegalCopyright",   "Copyright ©2006-2025 The qBittorrent Project"
             VALUE "OriginalFilename", "qbittorrent.exe"
-            VALUE "ProductName",      "qBittorrent"
+            VALUE "ProductName",      "qBittorrent Vanced"
             VALUE "ProductVersion",   VER_PRODUCTVERSION_STR
         END
     END

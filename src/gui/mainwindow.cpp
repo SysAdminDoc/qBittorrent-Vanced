@@ -212,7 +212,8 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     columnFilterLayout->addWidget(m_columnFilterEdit);
     m_columnFilterWidget = new QWidget(this);
     m_columnFilterWidget->setLayout(columnFilterLayout);
-    m_columnFilterAction = m_ui->toolBar->insertWidget(m_ui->actionLock, m_columnFilterWidget);
+    m_ui->toolBar->removeAction(m_ui->actionLock);
+    m_columnFilterAction = m_ui->toolBar->addWidget(m_columnFilterWidget);
 
     auto *spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);

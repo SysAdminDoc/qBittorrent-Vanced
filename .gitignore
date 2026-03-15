@@ -42,4 +42,10 @@ src/icons/skin/build-icons/icons/*.png
 # CMake build directory
 build/
 
+# Packaging artifacts
+dist_package/
+*.zip
+*.setup.exe
+test_output.txt
+
 .idea/*

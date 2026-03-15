@@ -61,6 +61,7 @@ public:
     TransferListWidget(IGUIApplication *app, QWidget *parent);
     ~TransferListWidget() override;
     TransferListModel *getSourceModel() const;
+    QList<BitTorrent::Torrent *> getSelectedTorrents() const;
 
 public slots:
     void setSelectionCategory(const QString &category);
@@ -128,7 +129,6 @@ private:
     QModelIndexList mapToSource(const QModelIndexList &indexes) const;
     QModelIndex mapFromSource(const QModelIndex &index) const;
     bool loadSettings();
-    QList<BitTorrent::Torrent *> getSelectedTorrents() const;
     void askAddTagsForSelection();
     void editTorrentTrackers();
     void exportTorrent();

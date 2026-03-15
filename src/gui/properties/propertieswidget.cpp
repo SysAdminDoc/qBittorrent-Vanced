@@ -127,7 +127,7 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     m_ui->vBoxLayoutPeerPage->addWidget(m_peerList);
     // Tab bar
     m_tabBar = new PropTabBar(nullptr);
-    m_tabBar->setContentsMargins(0, 5, 0, 5);
+    m_tabBar->setContentsMargins(0, 2, 0, 2);
     m_ui->verticalLayout->addLayout(m_tabBar);
     connect(m_tabBar, &PropTabBar::tabChanged, m_ui->stackedProperties, &QStackedWidget::setCurrentIndex);
     connect(m_tabBar, &PropTabBar::tabChanged, this, &PropertiesWidget::saveSettings);

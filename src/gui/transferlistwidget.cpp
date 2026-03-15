@@ -57,6 +57,7 @@
 #include "base/utils/misc.h"
 #include "base/utils/string.h"
 #include "autoexpandabledialog.h"
+#include "batchoperationsdialog.h"
 #include "deletionconfirmationdialog.h"
 #include "interfaces/iguiapplication.h"
 #include "mainwindow.h"
@@ -64,7 +65,6 @@
 #include "previewselectdialog.h"
 #include "speedlimitdialog.h"
 #include "torrentcategorydialog.h"
-#include "torrentcreatordialog.h"
 #include "torrentoptionsdialog.h"
 #include "trackerentriesdialog.h"
 #include "transferlistdelegate.h"
@@ -164,6 +164,8 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     header()->setFirstSectionMovable(true);
     header()->setStretchLastSection(false);
     header()->setTextElideMode(Qt::ElideRight);
+    header()->setMinimumSectionSize(60);
+    header()->setDefaultSectionSize(120);
 
     // Default hidden columns
     if (!columnLoaded)
@@ -1004,6 +1006,15 @@ void TransferListWidget::displayListMenu()
     connect(actionSequentialDownload, &QAction::triggered, this, &TransferListWidget::setSelectedTorrentsSequentialDownload);
     auto *actionFirstLastPiecePrio = new TriStateAction(tr("Download first and last pieces first"), listMenu);
     connect(actionFirstLastPiecePrio, &QAction::triggered, this, &TransferListWidget::setSelectedFirstLastPiecePrio);
+    auto *actionStreamingMode = new QAction(UIThemeManager::instance()->getIcon(u"media-playback-start"_s), tr("Streaming mode (sequential + first/last piece)"), listMenu);
+    connect(actionStreamingMode, &QAction::triggered, this, [this]()
+    {
+        for (BitTorrent::Torrent *const torrent : asConst(getSelectedTorrents()))
+        {
+            torrent->setSequentialDownload(true);
+            torrent->setFirstLastPiecePriority(true);
+        }
+    });
     auto *actionAutoTMM = new TriStateAction(tr("Automatic Torrent Management"), listMenu);
     actionAutoTMM->setToolTip(tr("Automatic mode means that various torrent properties (e.g. save path) will be decided by the associated category"));
     connect(actionAutoTMM, &QAction::triggered, this, &TransferListWidget::setSelectedAutoTMMEnabled);
@@ -1242,6 +1253,7 @@ void TransferListWidget::displayListMenu()
             ? (prioritizeFirstLast ? Qt::Checked : Qt::Unchecked)
             : Qt::PartiallyChecked);
         listMenu->addAction(actionFirstLastPiecePrio);
+        listMenu->addAction(actionStreamingMode);
 
         addedPreviewAction = true;
     }
@@ -1281,6 +1293,19 @@ void TransferListWidget::displayListMenu()
 
     actionExportTorrent->setToolTip(tr("Exported torrent is not necessarily the same as the imported"));
     listMenu->addAction(actionExportTorrent);
+
+    if (selectedIndexes.size() > 1)
+    {
+        listMenu->addSeparator();
+        auto *actionBatchOps = new QAction(UIThemeManager::instance()->getIcon(u"edit-select-all"_s, u"select-all"_s), tr("&Batch Operations..."), listMenu);
+        connect(actionBatchOps, &QAction::triggered, this, [this]()
+        {
+            auto *dlg = new BatchOperationsDialog(getSelectedTorrents(), this);
+            dlg->setAttribute(Qt::WA_DeleteOnClose);
+            dlg->open();
+        });
+        listMenu->addAction(actionBatchOps);
+    }
 
     listMenu->popup(QCursor::pos());
 }
@@ -1421,17 +1446,6 @@ void TransferListWidget::dropEvent(QDropEvent *event)
         return;
     }
 
-    // Create torrent
-    for (const QString &file : asConst(otherFiles))
-    {
-        auto torrentCreator = new TorrentCreatorDialog(this, Path(file));
-        torrentCreator->setAttribute(Qt::WA_DeleteOnClose);
-        torrentCreator->show();
-
-        // currently only handle the first entry
-        // this is a stub that can be expanded later to create many torrents at once
-        break;
-    }
 }
 
 void TransferListWidget::wheelEvent(QWheelEvent *event)

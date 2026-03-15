@@ -75,7 +75,7 @@ StatusBar::StatusBar(QWidget *parent)
     m_dlSpeedLbl->setFlat(true);
     m_dlSpeedLbl->setFocusPolicy(Qt::NoFocus);
     m_dlSpeedLbl->setCursor(Qt::PointingHandCursor);
-    m_dlSpeedLbl->setStyleSheet(u"text-align:left;"_s);
+    m_dlSpeedLbl->setStyleSheet(u"text-align:left; color: #89b4fa;"_s);
     m_dlSpeedLbl->setMinimumWidth(200);
 
     m_upSpeedLbl = new QPushButton(this);
@@ -84,7 +84,7 @@ StatusBar::StatusBar(QWidget *parent)
     m_upSpeedLbl->setFlat(true);
     m_upSpeedLbl->setFocusPolicy(Qt::NoFocus);
     m_upSpeedLbl->setCursor(Qt::PointingHandCursor);
-    m_upSpeedLbl->setStyleSheet(u"text-align:left;"_s);
+    m_upSpeedLbl->setStyleSheet(u"text-align:left; color: #a6e3a1;"_s);
     m_upSpeedLbl->setMinimumWidth(200);
 
     m_lastExternalIPsLbl = new QLabel(tr("External IP: N/A"));

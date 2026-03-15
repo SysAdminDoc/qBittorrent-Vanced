@@ -1,0 +1,19 @@
+{
+  "name": "qbittorrent",
+  "version-string": "5.1.0",
+  "builtin-baseline": "4b77da7fed37817f124936239197833469f1b9a8",
+  "dependencies": [
+    "boost-circular-buffer",
+    "boost-stacktrace",
+    "libtorrent",
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": ["concurrent", "network", "sql", "widgets"]
+    },
+    "qtsvg",
+    "qttools",
+    "openssl",
+    "zlib"
+  ]
+}

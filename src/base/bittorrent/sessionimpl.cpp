@@ -122,7 +122,7 @@ const int MAX_PROCESSING_RESUMEDATA_COUNT = 50;
 namespace
 {
     const char PEER_ID[] = "qB";
-    const auto USER_AGENT = QStringLiteral("qBittorrent Enhanced/" QBT_VERSION_2);
+    const auto USER_AGENT = QStringLiteral("qBittorrent Vanced/" QBT_VERSION_2);
     const QString DEFAULT_DHT_BOOTSTRAP_NODES = u"dht.libtorrent.org:25401, dht.transmissionbt.com:6881, router.bittorrent.com:6881"_s;
 
     void torrentQueuePositionUp(const lt::torrent_handle &handle)
@@ -486,7 +486,7 @@ SessionImpl::SessionImpl(QObject *parent)
     , m_torrentExportDirectory(BITTORRENT_SESSION_KEY(u"TorrentExportDirectory"_s))
     , m_finishedTorrentExportDirectory(BITTORRENT_SESSION_KEY(u"FinishedTorrentExportDirectory"_s))
     , m_globalDownloadSpeedLimit(BITTORRENT_SESSION_KEY(u"GlobalDLSpeedLimit"_s), 0, lowerLimited(0))
-    , m_globalUploadSpeedLimit(BITTORRENT_SESSION_KEY(u"GlobalUPSpeedLimit"_s), 0, lowerLimited(0))
+    , m_globalUploadSpeedLimit(BITTORRENT_SESSION_KEY(u"GlobalUPSpeedLimit"_s), 20, lowerLimited(0))
     , m_altGlobalDownloadSpeedLimit(BITTORRENT_SESSION_KEY(u"AlternativeGlobalDLSpeedLimit"_s), 10, lowerLimited(0))
     , m_altGlobalUploadSpeedLimit(BITTORRENT_SESSION_KEY(u"AlternativeGlobalUPSpeedLimit"_s), 10, lowerLimited(0))
     , m_isAltGlobalSpeedLimitEnabled(BITTORRENT_SESSION_KEY(u"UseAlternativeGlobalSpeedLimit"_s), false)
@@ -5545,6 +5545,8 @@ void SessionImpl::processPendingFinishedTorrents()
     if (m_pendingFinishedTorrents.isEmpty())
         return;
 
+    const bool stopOnCompletion = Preferences::instance()->isStopTorrentsOnCompletionEnabled();
+
     for (TorrentImpl *torrent : asConst(m_pendingFinishedTorrents))
     {
         LogMsg(tr("Torrent download finished. Torrent: \"%1\"").arg(torrent->name()));
@@ -5553,7 +5555,15 @@ void SessionImpl::processPendingFinishedTorrents()
         if (const Path exportPath = finishedTorrentExportDirectory(); !exportPath.isEmpty())
             exportTorrentFile(torrent, exportPath);
 
-        processTorrentShareLimits(torrent);
+        if (stopOnCompletion)
+        {
+            LogMsg(tr("Torrent stopped after download completion (no seeding). Torrent: \"%1\"").arg(torrent->name()));
+            torrent->stop();
+        }
+        else
+        {
+            processTorrentShareLimits(torrent);
+        }
     }
 
     m_pendingFinishedTorrents.clear();

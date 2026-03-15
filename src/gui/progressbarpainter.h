@@ -28,9 +28,11 @@
 
 #pragma once
 
-#include <QProgressBar>
+#include <QElapsedTimer>
 
+class QPainter;
 class QStyleOptionViewItem;
+class QString;
 
 class ProgressBarPainter
 {
@@ -40,6 +42,5 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress) const;
 
 private:
-    // for painting progressbar with stylesheet option, a dummy progress bar is required
-    QProgressBar m_dummyProgressBar;
+    QElapsedTimer m_shimmerTimer;
 };

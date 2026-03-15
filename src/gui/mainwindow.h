@@ -39,28 +39,28 @@
 #include "windowstate.h"
 
 class QCloseEvent;
-class QComboBox;
 class QFileSystemWatcher;
+class QLabel;
+class QPushButton;
 class QSplitter;
 class QString;
 class QTabWidget;
 class QTimer;
 
 class AboutDialog;
+class BatchOperationsDialog;
 class DownloadFromURLDialog;
 class ExecutionLogWidget;
 class LineEdit;
 class OptionsDialog;
+class PortableBackupDialog;
 class PowerManagement;
-class ProgramUpdater;
 class PropertiesWidget;
-class RSSWidget;
-class SearchWidget;
-class StatsDialog;
 class StatusBar;
-class TorrentCreatorDialog;
+class TorrentCardsWidget;
 class TransferListFiltersWidget;
 class TransferListWidget;
+class TrayPopupWidget;
 
 #ifdef Q_OS_MACOS
 namespace MacUtils
@@ -123,8 +123,6 @@ private slots:
     // Keyboard shortcuts
     void createKeyboardShortcuts();
     void displayTransferTab() const;
-    void displaySearchTab();
-    void displayRSSTab();
     void displayExecutionLogTab();
     void toggleFocusBetweenLineEdits();
     void loadSessionStats();
@@ -139,10 +137,6 @@ private slots:
     void downloadFromURLList(const QStringList &urlList);
     void updateAltSpeedsBtn(bool alternative);
     void updateNbTorrents();
-    void handleRSSUnreadCountUpdated(int count);
-
-    void on_actionSearchWidget_triggered();
-    void on_actionRSSReader_triggered();
     void on_actionSpeedInTitleBar_triggered();
     void on_actionTopToolBar_triggered();
     void on_actionShowStatusbar_triggered();
@@ -158,8 +152,6 @@ private slots:
     void on_actionAutoHibernate_toggled(bool);
     void on_actionAutoShutdown_toggled(bool);
     void on_actionAbout_triggered();
-    void on_actionStatistics_triggered();
-    void on_actionCreateTorrent_triggered();
     void on_actionOptions_triggered();
     void on_actionSetGlobalSpeedLimits_triggered();
     void on_actionDocumentation_triggered() const;
@@ -167,6 +159,9 @@ private slots:
     void on_actionDownloadFromURL_triggered();
     void on_actionExit_triggered();
     void on_actionLock_triggered();
+    void toggleCardsView();
+    void showBatchOperationsDialog();
+    void showPortableBackupDialog();
     // Check for non-stopped downloading or seeding torrents and prevent system suspend/sleep according to preferences
     void updatePowerManagementState() const;
 
@@ -181,9 +176,6 @@ private slots:
 #else
     void toggleVisibility();
 #endif
-#ifdef Q_OS_WIN
-    void pythonDownloadFinished(const Net::DownloadResult &result);
-#endif
 
 private:
     void populateDesktopIntegrationMenu();
@@ -192,19 +184,11 @@ private:
     void showEvent(QShowEvent *) override;
     void keyPressEvent(QKeyEvent *event) override;
     bool event(QEvent *e) override;
-    void displayRSSTab(bool enable);
-    void displaySearchTab(bool enable);
-    void createTorrentTriggered(const Path &path);
     void showStatusBar(bool show);
     void showFiltersSidebar(bool show);
     void applyTransferListFilter();
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
-
-#ifdef Q_OS_WIN
-    void installPython();
-    bool verifyPythonInstaller(const Path &installerPath) const;
-#endif
 
     Ui::MainWindow *m_ui = nullptr;
 
@@ -220,8 +204,6 @@ private:
     QPointer<StatusBar> m_statusBar;
     QPointer<OptionsDialog> m_options;
     QPointer<AboutDialog> m_aboutDlg;
-    QPointer<StatsDialog> m_statsDlg;
-    QPointer<TorrentCreatorDialog> m_createTorrentDlg;
     QPointer<DownloadFromURLDialog> m_downloadFromURLDialog;
 
     QPointer<QMenu> m_trayIconMenu;
@@ -236,14 +218,17 @@ private:
     QWidget *m_columnFilterWidget = nullptr;
     LineEdit *m_columnFilterEdit = nullptr;
     QAction *m_columnFilterAction = nullptr;
-    QComboBox *m_columnFilterComboBox = nullptr;
     // Widgets
     QAction *m_queueSeparator = nullptr;
     QAction *m_queueSeparatorMenu = nullptr;
     QSplitter *m_splitter = nullptr;
-    QPointer<SearchWidget> m_searchWidget;
-    QPointer<RSSWidget> m_rssWidget;
     QPointer<ExecutionLogWidget> m_executionLog;
+    QPointer<TorrentCardsWidget> m_cardsWidget;
+    TrayPopupWidget *m_trayPopup = nullptr;
+    QAction *m_actionCardsView = nullptr;
+    // Inline speed buttons in prop tab bar
+    QPushButton *m_inlineDlSpeedBtn = nullptr;
+    QPushButton *m_inlineUlSpeedBtn = nullptr;
     // Power Management
     PowerManagement *m_pwr = nullptr;
     QTimer *m_preventTimer = nullptr;
@@ -253,12 +238,6 @@ private:
     SettingValue<bool> m_storeDownloadTrackerFavicon;
     CachedSettingValue<Log::MsgTypes> m_storeExecutionLogTypes;
 
-#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
-    void checkProgramUpdate(bool invokedByUser);
-    void handleUpdateCheckFinished(ProgramUpdater *updater, bool invokedByUser);
-
-    QTimer *m_programUpdateTimer = nullptr;
-#endif
 #ifdef Q_OS_MACOS
     std::unique_ptr<MacUtils::Badger> m_badger;
 #endif

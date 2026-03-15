@@ -348,7 +348,7 @@ void Preferences::setToolbarDisplayed(const bool displayed)
 
 bool Preferences::isStatusbarDisplayed() const
 {
-    return value(u"Preferences/General/StatusbarDisplayed"_s, true);
+    return value(u"Preferences/General/StatusbarDisplayed"_s, false);
 }
 
 void Preferences::setStatusbarDisplayed(const bool displayed)
@@ -1211,6 +1211,19 @@ void Preferences::setAutoRunOnTorrentFinishedProgram(const QString &program)
     setValue(u"AutoRun/program"_s, program);
 }
 
+bool Preferences::isStopTorrentsOnCompletionEnabled() const
+{
+    return value(u"Preferences/StopTorrentsOnCompletion"_s, true);
+}
+
+void Preferences::setStopTorrentsOnCompletionEnabled(const bool enabled)
+{
+    if (enabled == isStopTorrentsOnCompletionEnabled())
+        return;
+
+    setValue(u"Preferences/StopTorrentsOnCompletion"_s, enabled);
+}
+
 #if defined(Q_OS_WIN)
 bool Preferences::isAutoRunConsoleEnabled() const
 {
@@ -1521,6 +1534,165 @@ void Preferences::setTrayIconStyle(const TrayIcon::Style style)
 // Stuff that don't appear in the Options GUI but are saved
 // in the same file.
 
+// --- Webhook notifications ---
+
+bool Preferences::isWebhookEnabled() const
+{
+    return value(u"Webhook/Enabled"_s, false);
+}
+
+void Preferences::setWebhookEnabled(const bool enabled)
+{
+    if (enabled == isWebhookEnabled()) return;
+    setValue(u"Webhook/Enabled"_s, enabled);
+}
+
+QString Preferences::webhookUrl() const
+{
+    return value<QString>(u"Webhook/Url"_s);
+}
+
+void Preferences::setWebhookUrl(const QString &url)
+{
+    if (url == webhookUrl()) return;
+    setValue(u"Webhook/Url"_s, url);
+}
+
+QString Preferences::webhookAuthToken() const
+{
+    return value<QString>(u"Webhook/AuthToken"_s);
+}
+
+void Preferences::setWebhookAuthToken(const QString &token)
+{
+    if (token == webhookAuthToken()) return;
+    setValue(u"Webhook/AuthToken"_s, token);
+}
+
+bool Preferences::isWebhookOnTorrentAddedEnabled() const
+{
+    return value(u"Webhook/OnTorrentAdded"_s, true);
+}
+
+void Preferences::setWebhookOnTorrentAddedEnabled(const bool enabled)
+{
+    if (enabled == isWebhookOnTorrentAddedEnabled()) return;
+    setValue(u"Webhook/OnTorrentAdded"_s, enabled);
+}
+
+bool Preferences::isWebhookOnTorrentFinishedEnabled() const
+{
+    return value(u"Webhook/OnTorrentFinished"_s, true);
+}
+
+void Preferences::setWebhookOnTorrentFinishedEnabled(const bool enabled)
+{
+    if (enabled == isWebhookOnTorrentFinishedEnabled()) return;
+    setValue(u"Webhook/OnTorrentFinished"_s, enabled);
+}
+
+bool Preferences::isWebhookOnTorrentErrorEnabled() const
+{
+    return value(u"Webhook/OnTorrentError"_s, true);
+}
+
+void Preferences::setWebhookOnTorrentErrorEnabled(const bool enabled)
+{
+    if (enabled == isWebhookOnTorrentErrorEnabled()) return;
+    setValue(u"Webhook/OnTorrentError"_s, enabled);
+}
+
+bool Preferences::isWebhookOnTorrentRemovedEnabled() const
+{
+    return value(u"Webhook/OnTorrentRemoved"_s, false);
+}
+
+void Preferences::setWebhookOnTorrentRemovedEnabled(const bool enabled)
+{
+    if (enabled == isWebhookOnTorrentRemovedEnabled()) return;
+    setValue(u"Webhook/OnTorrentRemoved"_s, enabled);
+}
+
+bool Preferences::isWebhookOnTorrentStalledEnabled() const
+{
+    return value(u"Webhook/OnTorrentStalled"_s, false);
+}
+
+void Preferences::setWebhookOnTorrentStalledEnabled(const bool enabled)
+{
+    if (enabled == isWebhookOnTorrentStalledEnabled()) return;
+    setValue(u"Webhook/OnTorrentStalled"_s, enabled);
+}
+
+// --- Auto-category by tracker ---
+
+bool Preferences::isAutoCategoryEnabled() const
+{
+    return value(u"AutoCategory/Enabled"_s, false);
+}
+
+void Preferences::setAutoCategoryEnabled(const bool enabled)
+{
+    if (enabled == isAutoCategoryEnabled()) return;
+    setValue(u"AutoCategory/Enabled"_s, enabled);
+}
+
+QString Preferences::autoCategoryRulesJson() const
+{
+    return value<QString>(u"AutoCategory/Rules"_s);
+}
+
+void Preferences::setAutoCategoryRulesJson(const QString &json)
+{
+    setValue(u"AutoCategory/Rules"_s, json);
+}
+
+// --- Stalled torrent management ---
+
+bool Preferences::isStalledManagementEnabled() const
+{
+    return value(u"StalledManagement/Enabled"_s, false);
+}
+
+void Preferences::setStalledManagementEnabled(const bool enabled)
+{
+    if (enabled == isStalledManagementEnabled()) return;
+    setValue(u"StalledManagement/Enabled"_s, enabled);
+}
+
+int Preferences::stalledTimeoutMinutes() const
+{
+    return value(u"StalledManagement/TimeoutMinutes"_s, 30);
+}
+
+void Preferences::setStalledTimeoutMinutes(const int minutes)
+{
+    if (minutes == stalledTimeoutMinutes()) return;
+    setValue(u"StalledManagement/TimeoutMinutes"_s, minutes);
+}
+
+int Preferences::stalledAction() const
+{
+    return value(u"StalledManagement/Action"_s, 0);
+}
+
+void Preferences::setStalledAction(const int action)
+{
+    if (action == stalledAction()) return;
+    setValue(u"StalledManagement/Action"_s, action);
+}
+
+QString Preferences::stalledCategory() const
+{
+    return value<QString>(u"StalledManagement/Category"_s, u"Stalled"_s);
+}
+
+void Preferences::setStalledCategory(const QString &category)
+{
+    if (category == stalledCategory()) return;
+    setValue(u"StalledManagement/Category"_s, category);
+}
+
 QDateTime Preferences::getDNSLastUpd() const
 {
     return value<QDateTime>(u"DNSUpdater/lastUpdateTime"_s);
@@ -1562,7 +1734,7 @@ void Preferences::setMainGeometry(const QByteArray &geometry)
 
 bool Preferences::isFiltersSidebarVisible() const
 {
-    return value(u"GUI/MainWindow/FiltersSidebarVisible"_s, true);
+    return value(u"GUI/MainWindow/FiltersSidebarVisible"_s, false);
 }
 
 void Preferences::setFiltersSidebarVisible(const bool value)

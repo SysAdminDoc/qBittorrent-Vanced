@@ -73,12 +73,10 @@
 #include "base/net/downloadmanager.h"
 #include "base/net/geoipmanager.h"
 #include "base/net/proxyconfigurationmanager.h"
-#include "base/net/smtp.h"
+#include "base/autocategorymanager.h"
 #include "base/preferences.h"
+#include "base/stalledtorrentmanager.h"
 #include "base/profile.h"
-#include "base/rss/rss_autodownloader.h"
-#include "base/rss/rss_session.h"
-#include "base/search/searchpluginmanager.h"
 #include "base/settingsstorage.h"
 #include "base/torrentfileswatcher.h"
 #include "base/utils/fs.h"
@@ -309,10 +307,12 @@ Application::Application(int &argc, char **argv)
     connect(this, &QCoreApplication::aboutToQuit, this, &Application::cleanup);
     connect(m_instanceManager, &ApplicationInstanceManager::messageReceived, this, &Application::processMessage);
 #if defined(Q_OS_WIN) && !defined(DISABLE_GUI)
+#if (QT_VERSION < QT_VERSION_CHECK(6, 10, 0))
     connect(this, &QGuiApplication::commitDataRequest, this, &Application::shutdownCleanup, Qt::DirectConnection);
 #endif
+#endif
 
-    LogMsg(tr("qBittorrent %1 started. Process ID: %2", "qBittorrent v3.2.0alpha started")
+    LogMsg(tr("qBittorrent Vanced %1 started. Process ID: %2", "qBittorrent Vanced v3.2.0alpha started")
         .arg(QStringLiteral(QBT_VERSION), QString::number(QCoreApplication::applicationPid())));
     if (portableModeEnabled)
     {
@@ -682,41 +682,8 @@ void Application::runExternalProgram(const QString &programTemplate, const BitTo
 #endif
 }
 
-void Application::sendNotificationEmail(const BitTorrent::Torrent *torrent)
-{
-    // Prepare mail content
-    const QString content = tr("Torrent name: %1").arg(torrent->name()) + u'\n'
-        + tr("Torrent size: %1").arg(Utils::Misc::friendlyUnit(torrent->wantedSize())) + u'\n'
-        + tr("Save path: %1").arg(torrent->savePath().toString()) + u"\n\n"
-        + tr("The torrent was downloaded in %1.", "The torrent was downloaded in 1 hour and 20 seconds")
-            .arg(Utils::Misc::userFriendlyDuration(torrent->activeTime())) + u"\n\n\n"
-        + tr("Thank you for using qBittorrent.") + u'\n';
-
-    // Send the notification email
-    const Preferences *pref = Preferences::instance();
-    auto *smtp = new Net::Smtp(this);
-    smtp->sendMail(pref->getMailNotificationSender(),
-                     pref->getMailNotificationEmail(),
-                     tr("Torrent \"%1\" has finished downloading").arg(torrent->name()),
-                     content);
-}
-
 void Application::sendTestEmail() const
 {
-    const Preferences *pref = Preferences::instance();
-    if (pref->isMailNotificationEnabled())
-    {
-        // Prepare mail content
-        const QString content = tr("This is a test email.") + u'\n'
-            + tr("Thank you for using qBittorrent.") + u'\n';
-
-        // Send the notification email
-        auto *smtp = new Net::Smtp();
-        smtp->sendMail(pref->getMailNotificationSender(),
-                        pref->getMailNotificationEmail(),
-                        tr("Test email"),
-                        content);
-    }
 }
 
 void Application::torrentAdded(const BitTorrent::Torrent *torrent) const
@@ -735,13 +702,6 @@ void Application::torrentFinished(const BitTorrent::Torrent *torrent)
     // AutoRun program
     if (pref->isAutoRunOnTorrentFinishedEnabled())
         runExternalProgram(pref->getAutoRunOnTorrentFinishedProgram().trimmed(), torrent);
-
-    // Mail notification
-    if (pref->isMailNotificationEnabled())
-    {
-        LogMsg(tr("Torrent: %1, sending mail notification").arg(torrent->name()));
-        sendNotificationEmail(torrent);
-    }
 
 #ifndef DISABLE_GUI
     if (Preferences::instance()->isRecursiveDownloadEnabled())
@@ -893,11 +853,19 @@ int Application::exec()
 
         m_addTorrentManager = new AddTorrentManagerImpl(this, BitTorrent::Session::instance(), this);
 
+        // Initialize auto-category manager
+        m_autoCategoryManager = new AutoCategoryManager(this);
+        connect(BitTorrent::Session::instance(), &BitTorrent::Session::torrentAdded, this, [this](BitTorrent::Torrent *torrent)
+        {
+            if (m_autoCategoryManager)
+                m_autoCategoryManager->processTorrent(torrent);
+        });
+
+        // Initialize stalled torrent manager
+        m_stalledTorrentManager = new StalledTorrentManager(BitTorrent::Session::instance(), this);
+
         Net::GeoIPManager::initInstance();
         TorrentFilesWatcher::initInstance();
-
-        new RSS::Session; // create RSS::Session singleton
-        new RSS::AutoDownloader(this); // create RSS::AutoDownloader singleton
 
 #ifndef DISABLE_GUI
         const auto *btSession = BitTorrent::Session::instance();
@@ -1337,13 +1305,13 @@ void Application::cleanup()
     if (m_isCleanupRun.exchange(true, std::memory_order_acquire))
         return;
 
-    LogMsg(tr("qBittorrent termination initiated"));
+    LogMsg(tr("qBittorrent Vanced termination initiated"));
 
 #ifndef DISABLE_GUI
     if (m_desktopIntegration)
     {
         m_desktopIntegration->disconnect();
-        m_desktopIntegration->setToolTip(tr("qBittorrent is shutting down..."));
+        m_desktopIntegration->setToolTip(tr("qBittorrent Vanced is shutting down..."));
         if (m_desktopIntegration->menu())
             m_desktopIntegration->menu()->setEnabled(false);
     }
@@ -1377,9 +1345,6 @@ void Application::cleanup()
     delete m_webui;
 #endif
 
-    delete RSS::AutoDownloader::instance();
-    delete RSS::Session::instance();
-
     TorrentFilesWatcher::freeInstance();
     delete m_addTorrentManager;
     BitTorrent::Session::freeInstance();
@@ -1388,10 +1353,9 @@ void Application::cleanup()
     Net::ProxyConfigurationManager::freeInstance();
     Preferences::freeInstance();
     SettingsStorage::freeInstance();
-    SearchPluginManager::freeInstance();
     Utils::Fs::removeDirRecursively(Utils::Fs::tempPath());
 
-    LogMsg(tr("qBittorrent is now ready to exit"));
+    LogMsg(tr("qBittorrent Vanced is now ready to exit"));
     Logger::freeInstance();
     delete m_fileLogger;
 

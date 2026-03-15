@@ -5,6 +5,7 @@ add_library(qbt_base STATIC
     algorithm.h
     applicationcomponent.h
     asyncfilestorage.h
+    autocategorymanager.h
     bittorrent/abstractfilestorage.h
     bittorrent/addtorrenterror.h
     bittorrent/addtorrentparams.h
@@ -42,9 +43,6 @@ add_library(qbt_base STATIC
     bittorrent/torrentcontentlayout.h
     bittorrent/torrentcontentremoveoption.h
     bittorrent/torrentcontentremover.h
-    bittorrent/torrentcreationmanager.h
-    bittorrent/torrentcreationtask.h
-    bittorrent/torrentcreator.h
     bittorrent/torrentdescriptor.h
     bittorrent/torrentimpl.h
     bittorrent/torrentinfo.h
@@ -67,7 +65,6 @@ add_library(qbt_base STATIC
     indexrange.h
     interfaces/iapplication.h
     logger.h
-    net/dnsupdater.h
     net/downloadhandlerimpl.h
     net/downloadmanager.h
     net/geoipdatabase.h
@@ -75,26 +72,14 @@ add_library(qbt_base STATIC
     net/portforwarder.h
     net/proxyconfigurationmanager.h
     net/reverseresolution.h
-    net/smtp.h
     orderedset.h
     path.h
     pathfwd.h
     preferences.h
     profile.h
     profile_p.h
-    rss/feed_serializer.h
-    rss/rss_article.h
-    rss/rss_autodownloader.h
-    rss/rss_autodownloadrule.h
-    rss/rss_feed.h
-    rss/rss_folder.h
-    rss/rss_item.h
-    rss/rss_parser.h
-    rss/rss_session.h
-    search/searchdownloadhandler.h
-    search/searchhandler.h
-    search/searchpluginmanager.h
     settingsstorage.h
+    stalledtorrentmanager.h
     tag.h
     tagset.h
     torrentfileguard.h
@@ -125,6 +110,7 @@ add_library(qbt_base STATIC
     addtorrentmanager.cpp
     applicationcomponent.cpp
     asyncfilestorage.cpp
+    autocategorymanager.cpp
     bittorrent/abstractfilestorage.cpp
     bittorrent/addtorrentparams.cpp
     bittorrent/bandwidthscheduler.cpp
@@ -150,9 +136,6 @@ add_library(qbt_base STATIC
     bittorrent/torrent.cpp
     bittorrent/torrentcontenthandler.cpp
     bittorrent/torrentcontentremover.cpp
-    bittorrent/torrentcreationmanager.cpp
-    bittorrent/torrentcreationtask.cpp
-    bittorrent/torrentcreator.cpp
     bittorrent/torrentdescriptor.cpp
     bittorrent/torrentimpl.cpp
     bittorrent/torrentinfo.cpp
@@ -167,7 +150,6 @@ add_library(qbt_base STATIC
     http/responsegenerator.cpp
     http/server.cpp
     logger.cpp
-    net/dnsupdater.cpp
     net/downloadhandlerimpl.cpp
     net/downloadmanager.cpp
     net/geoipdatabase.cpp
@@ -175,24 +157,12 @@ add_library(qbt_base STATIC
     net/portforwarder.cpp
     net/proxyconfigurationmanager.cpp
     net/reverseresolution.cpp
-    net/smtp.cpp
     path.cpp
     preferences.cpp
     profile.cpp
     profile_p.cpp
-    rss/feed_serializer.cpp
-    rss/rss_article.cpp
-    rss/rss_autodownloader.cpp
-    rss/rss_autodownloadrule.cpp
-    rss/rss_feed.cpp
-    rss/rss_folder.cpp
-    rss/rss_item.cpp
-    rss/rss_parser.cpp
-    rss/rss_session.cpp
-    search/searchdownloadhandler.cpp
-    search/searchhandler.cpp
-    search/searchpluginmanager.cpp
     settingsstorage.cpp
+    stalledtorrentmanager.cpp
     tag.cpp
     tagset.cpp
     torrentfileguard.cpp

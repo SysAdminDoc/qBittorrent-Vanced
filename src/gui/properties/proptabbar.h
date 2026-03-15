@@ -51,6 +51,7 @@ public:
     explicit PropTabBar(QWidget *parent = nullptr);
 
     int currentIndex() const;
+    void addStatusWidget(QWidget *widget) { addWidget(widget); }
 
 signals:
     void tabChanged(int index);

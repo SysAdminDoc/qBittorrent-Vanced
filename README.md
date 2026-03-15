@@ -1,96 +1,71 @@
-qBittorrent Enhanced Edition
-------------------------------------------
-[Important Note for user and tracker operators](NOTE.md)
-********************************
-# Features:
-1. Auto Ban Xunlei, QQ, Baidu, Xfplay, DLBT and Offline downloader
+# qBittorrent Vanced
 
-2. _Auto Ban Unknown Peer from China_ Option (Default: OFF)
+A customized build of [qBittorrent Enhanced Edition](https://github.com/c0re100/qBittorrent-Enhanced-Edition) with a modern dark theme, streamlined interface, and quality-of-life improvements.
 
-3. Auto Ban BitTorrent Media Player Peer Option (Default: OFF)
+Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBittorrent](https://github.com/qbittorrent/qBittorrent) v5.1.3).
 
-4. Peer whitelist/blacklist
-********************************
-### Description:
-qBittorrent is a bittorrent client programmed in C++ / Qt that uses
-libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.
+## What's Different
 
-It aims to be a good alternative to all other bittorrent clients
-out there. qBittorrent is fast, stable and provides unicode
-support as well as many features.
+### Dark Theme (Catppuccin Mocha)
 
-The free [IP to Country Lite database](https://db-ip.com/db/download/ip-to-country-lite) by [DB-IP](https://db-ip.com/) is used for resolving the countries of peers. The database is licensed under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+- Complete Catppuccin Mocha dark theme applied across all widgets, menus, toolbars, dialogs, and the WebUI
+- Glassmorphism-inspired styling with subtle transparency and accent colors
+- Branded scrollbars, condensed spacing, and polished UI elements throughout
 
-### Installation:
+### Green Progress Bars with Shimmer Effect
 
-Refer to the [INSTALL](INSTALL) file.
+- Custom-painted progress bars replace the default Qt style
+- Green gradient with 3D vertical banding (similar to classic Windows Explorer file transfers)
+- Animated shimmer highlight sweeps across active downloads
+- Distinct colors for downloading (green), completed (bright green), and stopped/error (muted gray)
 
-## Repository
+### Streamlined Interface
 
-If you are using a desktop Linux distribution without any special demands, you can use AppImage from release page.
+- Removed the Dashboard tab
+- Removed the "Filter by" dropdown from the toolbar (search bar filters by name)
+- Removed the filters sidebar and status bar by default for a cleaner layout
+- Condensed vertical spacing throughout (tab bars, toolbars, table rows, headers, buttons)
+- Wider default column sizes so column titles aren't clipped
 
-Latest AppImage download: [qBittorrent-Enhanced-Edition-x86_64.AppImage](https://github.com/c0re100/qBittorrent-Enhanced-Edition/releases/latest/download/qBittorrent-Enhanced-Edition-x86_64.AppImage)
+### Inline Speed Controls
 
-#### Arch Linux (Maintainer: [c0re100](https://github.com/c0re100))
+- Download and upload speed displayed directly in the properties tab bar
+- Click either button for a dropdown with quick speed limit presets (Unlimited, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000 KiB/s)
+- Real-time display of current speed and active limit
 
-[AUR](https://aur.archlinux.org/packages/qbittorrent-enhanced-git/)
+### Sensible Defaults
 
-[nox AUR](https://aur.archlinux.org/packages/qbittorrent-enhanced-nox-git/)
+- Upload speed limited to 20 KiB/s by default (instead of unlimited)
+- Torrents stop on completion by default
 
-#### Debian (Maintainer: [Kolcha](https://github.com/Kolcha))
+### Inherited from Enhanced Edition
 
-[GUI](https://software.opensuse.org//download.html?project=home%3Anikoneko%3Atest&package=qbittorrent-enhanced)
+- Auto ban BitTorrent leechers and unwanted peers (Xunlei, QQDownload, etc.)
+- Auto ban unknown peers from private trackers
+- Enhanced peer ID/client name detection
+- All features from upstream qBittorrent
 
-[nox](https://software.opensuse.org//download.html?project=home%3Anikoneko%3Atest&package=qbittorrent-enhanced-nox)
+## Building
 
-The one [repository](https://build.opensuse.org/project/show/home:nikoneko:test) contains all variants, links to specific packages are provided for convenience.
+### Requirements
 
-#### openSUSE (Maintainer: [openSUSE Chinese Community](https://github.com/openSUSE-zh))
+- Visual Studio 2022+ with C++ workload
+- CMake 3.16+
+- vcpkg (included with Visual Studio)
 
-[openSUSE repo](https://build.opensuse.org/package/show/home:opensuse_zh/qBittorrent-Enhanced-Edition)
+### Windows
 
-#### Ubuntu (Maintainer: [poplite](https://github.com/poplite))
-
-[PPA](https://launchpad.net/~poplite/+archive/ubuntu/qbittorrent-enhanced)
-
-#### macOS (Homebrew) (Maintainer: [AlexaraWu](https://github.com/AlexaraWu))
-```
-brew install c0re100-qbittorrent
-```
-
-#### Windows
-
-Windows 10 & 11 (Maintainer: [c0re100](https://github.com/c0re100))
-
-```
-winget install c0re100.qBittorrent-Enhanced-Edition
+```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-Chocolatey (Maintainer: [iYato](https://github.com/iYato))
+The build script automatically configures MSVC, vcpkg dependencies, and builds with Ninja.
 
-```
-choco install qbittorrent-enhanced
-```
+## License
 
-Scoop
+Licensed under the [GNU General Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) (or later), same as upstream qBittorrent.
 
-```
-scoop bucket add extras
-scoop install qbittorrent-enhanced
-```
+## Credits
 
-### Misc:
-For more information please visit:
-https://www.qbittorrent.org
-
-or our wiki here:
-https://wiki.qbittorrent.org
-
-Use the forum for troubleshooting before reporting bugs:
-https://forum.qbittorrent.org
-
-Please report any bug (or feature request) to:
-https://bugs.qbittorrent.org
-
-For enhanced features bug(such as Auto Ban, API, Auto Update Tracker lists...), please report to:
-https://github.com/c0re100/qBittorrent-Enhanced-Edition/issues
+- [qBittorrent](https://github.com/qbittorrent/qBittorrent) - The original open-source BitTorrent client
+- [qBittorrent Enhanced Edition](https://github.com/c0re100/qBittorrent-Enhanced-Edition) - Enhanced fork with anti-leecher features

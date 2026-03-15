@@ -54,17 +54,12 @@
 #endif
 
 class ApplicationInstanceManager;
+class AutoCategoryManager;
 class FileLogger;
-
+class StalledTorrentManager;
 namespace BitTorrent
 {
     class Torrent;
-}
-
-namespace RSS
-{
-    class Session;
-    class AutoDownloader;
 }
 
 #ifndef DISABLE_GUI
@@ -129,6 +124,7 @@ public:
 
     void sendTestEmail() const override;
 
+
 #ifdef Q_OS_WIN
     MemoryPriority processMemoryPriority() const override;
     void setProcessMemoryPriority(MemoryPriority priority) override;
@@ -165,7 +161,6 @@ private:
     void initializeTranslation();
     void processParams(const QBtCommandLineParameters &params);
     void runExternalProgram(const QString &programTemplate, const BitTorrent::Torrent *torrent) const;
-    void sendNotificationEmail(const BitTorrent::Torrent *torrent);
 
 #if defined(QBT_USES_LIBTORRENT2) && !defined(Q_OS_MACOS)
     void applyMemoryWorkingSetLimit() const;
@@ -214,6 +209,8 @@ private:
 #endif
 
     AddTorrentManagerImpl *m_addTorrentManager = nullptr;
+    AutoCategoryManager *m_autoCategoryManager = nullptr;
+    StalledTorrentManager *m_stalledTorrentManager = nullptr;
 
 #ifndef DISABLE_GUI
     SettingValue<WindowState> m_startUpWindowState;

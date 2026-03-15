@@ -79,6 +79,7 @@ private:
 
     void applyPalette() const;
     void applyStyleSheet() const;
+    void applyBuiltInDarkTheme() const;
     void onColorSchemeChanged();
 
 #ifdef QBT_HAS_COLORSCHEME_OPTION

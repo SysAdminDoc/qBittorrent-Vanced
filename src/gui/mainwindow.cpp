@@ -1541,7 +1541,6 @@ void MainWindow::toggleAlternativeSpeeds()
 
 void MainWindow::on_actionDonateMoney_triggered()
 {
-    QDesktopServices::openUrl(QUrl(u"https://www.qbittorrent.org/donate"_s));
 }
 
 void MainWindow::showConnectionSettings()

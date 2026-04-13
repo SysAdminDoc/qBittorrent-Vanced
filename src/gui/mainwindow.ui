@@ -60,7 +60,6 @@
     </property>
     <addaction name="actionDocumentation"/>
     <addaction name="separator"/>
-    <addaction name="actionDonateMoney"/>
     <addaction name="actionAbout"/>
    </widget>
    <widget class="QMenu" name="menuOptions">
@@ -325,14 +324,6 @@
    </property>
    <property name="shortcut">
     <string notr="true">Ctrl+L</string>
-   </property>
-  </action>
-  <action name="actionDonateMoney">
-   <property name="text">
-    <string>Do&amp;nate!</string>
-   </property>
-   <property name="toolTip">
-    <string>If you like qBittorrent, please donate!</string>
    </property>
   </action>
   <action name="actionAutoExit">

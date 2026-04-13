@@ -3734,7 +3734,6 @@ Admet els formats S01E01, 1x1, 2017.12.31 i 31.12.2017 (Els formats de data tamb
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="360"/>
-        <source>Do&amp;nate!</source>
         <translation>Feu una do&amp;nació!</translation>
     </message>
     <message>
@@ -3936,7 +3935,6 @@ Admet els formats S01E01, 1x1, 2017.12.31 i 31.12.2017 (Els formats de data tamb
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="363"/>
-        <source>If you like qBittorrent, please donate!</source>
         <translation>Si us agrada el qBittorrent, feu una donació!</translation>
     </message>
     <message>

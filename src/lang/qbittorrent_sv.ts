@@ -3734,7 +3734,6 @@ Stöder formaten: S01E01, 1x1, 2017.12.31 och 31.12.2017 (datumformatet stöder 
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="360"/>
-        <source>Do&amp;nate!</source>
         <translation>Do&amp;nera!</translation>
     </message>
     <message>
@@ -3936,7 +3935,6 @@ Stöder formaten: S01E01, 1x1, 2017.12.31 och 31.12.2017 (datumformatet stöder 
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="363"/>
-        <source>If you like qBittorrent, please donate!</source>
         <translation>Donera om du tycker om qBittorrent!</translation>
     </message>
     <message>

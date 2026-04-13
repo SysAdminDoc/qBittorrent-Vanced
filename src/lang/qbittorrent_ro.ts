@@ -3734,7 +3734,6 @@ Recunoaște formatele: S01E01, 1x1, 2017.12.31 si 31.12.2017 (Formatele pentru d
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="360"/>
-        <source>Do&amp;nate!</source>
         <translation>Do&amp;nați!</translation>
     </message>
     <message>
@@ -3936,7 +3935,6 @@ Recunoaște formatele: S01E01, 1x1, 2017.12.31 si 31.12.2017 (Formatele pentru d
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="363"/>
-        <source>If you like qBittorrent, please donate!</source>
         <translation>Dacă vă place qBittorrent, vă rugăm să donați!</translation>
     </message>
     <message>

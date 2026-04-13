@@ -3732,7 +3732,6 @@ Formats: S01E01, 1x1, 2017.12.31 i 31.12.2017 (Datam škiramsimbola &quot;.&quot
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="360"/>
-        <source>Do&amp;nate!</source>
         <translation>Dūt pazīdu!</translation>
     </message>
     <message>
@@ -3934,7 +3933,6 @@ Formats: S01E01, 1x1, 2017.12.31 i 31.12.2017 (Datam škiramsimbola &quot;.&quot
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="363"/>
-        <source>If you like qBittorrent, please donate!</source>
         <translation type="unfinished"/>
     </message>
     <message>

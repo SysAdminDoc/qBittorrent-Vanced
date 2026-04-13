@@ -3734,7 +3734,6 @@ Ondersteunt de formaten:  S01E01, 1x1, 2017.12.31 en 31.12.2017 (datumformaten o
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="360"/>
-        <source>Do&amp;nate!</source>
         <translation>Doneren!</translation>
     </message>
     <message>
@@ -3936,7 +3935,6 @@ Ondersteunt de formaten:  S01E01, 1x1, 2017.12.31 en 31.12.2017 (datumformaten o
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="363"/>
-        <source>If you like qBittorrent, please donate!</source>
         <translation>Als u qBittorrent leuk vindt, doneer dan!</translation>
     </message>
     <message>

@@ -3879,7 +3879,6 @@ Codice errore: %2.</translation>
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="360"/>
-        <source>Do&amp;nate!</source>
         <translation>Fai una do&amp;nazione!</translation>
     </message>
     <message>
@@ -4081,7 +4080,6 @@ Codice errore: %2.</translation>
     </message>
     <message>
         <location filename="../gui/mainwindow.ui" line="363"/>
-        <source>If you like qBittorrent, please donate!</source>
         <translation>Se ti piace qBittorrent, per favore fai una donazione!</translation>
     </message>
     <message>

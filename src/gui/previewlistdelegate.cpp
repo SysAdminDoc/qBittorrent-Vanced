@@ -32,12 +32,18 @@
 #include <QModelIndex>
 #include <QPainter>
 
+#include "base/preferences.h"
 #include "base/utils/string.h"
 #include "previewselectdialog.h"
 
 PreviewListDelegate::PreviewListDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
 {
+    m_progressBarPainter.setSimpleMode(Preferences::instance()->useSimpleProgressBar());
+    connect(Preferences::instance(), &Preferences::changed, this, [this]()
+    {
+        m_progressBarPainter.setSimpleMode(Preferences::instance()->useSimpleProgressBar());
+    });
 }
 
 void PreviewListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const

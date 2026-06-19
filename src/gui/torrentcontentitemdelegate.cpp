@@ -36,11 +36,17 @@
 
 #include "base/bittorrent/downloadpriority.h"
 #include "base/bittorrent/torrent.h"
+#include "base/preferences.h"
 #include "gui/torrentcontentmodel.h"
 
 TorrentContentItemDelegate::TorrentContentItemDelegate(QWidget *parent)
     : QStyledItemDelegate(parent)
 {
+    m_progressBarPainter.setSimpleMode(Preferences::instance()->useSimpleProgressBar());
+    connect(Preferences::instance(), &Preferences::changed, this, [this]()
+    {
+        m_progressBarPainter.setSimpleMode(Preferences::instance()->useSimpleProgressBar());
+    });
 }
 
 void TorrentContentItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const

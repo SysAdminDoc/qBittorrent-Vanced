@@ -42,7 +42,80 @@ ProgressBarPainter::ProgressBarPainter()
     m_shimmerTimer.start();
 }
 
+void ProgressBarPainter::setSimpleMode(const bool simple)
+{
+    m_simpleMode = simple;
+}
+
 void ProgressBarPainter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, const int progress) const
+{
+    if (m_simpleMode)
+        paintSimple(painter, option, text, progress);
+    else
+        paintFancy(painter, option, text, progress);
+}
+
+void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, const int progress) const
+{
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    const QRect r = option.rect;
+    const bool isEnabled = option.state.testFlag(QStyle::State_Enabled);
+    const bool isSelected = option.state.testFlag(QStyle::State_Selected);
+    const qreal radius = 3.0;
+
+    if (isSelected)
+        painter->fillRect(r, QColor(0x89, 0xb4, 0xfa, 30));
+    else if (option.state.testFlag(QStyle::State_MouseOver))
+        painter->fillRect(r, QColor(0x31, 0x32, 0x44, 100));
+
+    const int vPad = 4;
+    const int hPad = 4;
+    const QRectF grooveRect(r.x() + hPad, r.y() + vPad, r.width() - (hPad * 2), r.height() - (vPad * 2));
+
+    QPainterPath groovePath;
+    groovePath.addRoundedRect(grooveRect, radius, radius);
+    painter->fillPath(groovePath, QColor(0x11, 0x11, 0x1b));
+
+    const int clampedProgress = qBound(0, progress, 100);
+    if (clampedProgress > 0)
+    {
+        const qreal chunkWidth = grooveRect.width() * clampedProgress / 100.0;
+        const QRectF chunkRect(grooveRect.x(), grooveRect.y(), chunkWidth, grooveRect.height());
+
+        QColor fillColor;
+        if (!isEnabled)
+            fillColor = QColor(0x58, 0x5b, 0x70);
+        else if (clampedProgress >= 100)
+            fillColor = QColor(0xa6, 0xe3, 0xa1);
+        else
+            fillColor = QColor(0x60, 0xc4, 0x5a);
+
+        painter->setClipPath(groovePath);
+        QPainterPath chunkPath;
+        chunkPath.addRoundedRect(chunkRect, radius, radius);
+        painter->fillPath(chunkPath, fillColor);
+        painter->setClipping(false);
+    }
+
+    // Always show percent text in simple mode
+    const QString displayText = text.isEmpty()
+        ? QStringLiteral("%1%").arg(clampedProgress)
+        : text;
+
+    QFont font = painter->font();
+    font.setPixelSize(static_cast<int>(grooveRect.height() - 2));
+    painter->setFont(font);
+
+    const QColor textColor = isEnabled ? QColor(0xcd, 0xd6, 0xf4) : QColor(0x6c, 0x70, 0x86);
+    painter->setPen(textColor);
+    painter->drawText(grooveRect, Qt::AlignCenter, displayText);
+
+    painter->restore();
+}
+
+void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, const int progress) const
 {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);

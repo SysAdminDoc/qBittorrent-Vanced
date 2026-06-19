@@ -30,11 +30,17 @@
 
 #include <QModelIndex>
 
+#include "base/preferences.h"
 #include "transferlistmodel.h"
 
 TransferListDelegate::TransferListDelegate(QObject *parent)
     : QStyledItemDelegate {parent}
 {
+    m_progressBarPainter.setSimpleMode(Preferences::instance()->useSimpleProgressBar());
+    connect(Preferences::instance(), &Preferences::changed, this, [this]()
+    {
+        m_progressBarPainter.setSimpleMode(Preferences::instance()->useSimpleProgressBar());
+    });
 }
 
 QWidget *TransferListDelegate::createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const

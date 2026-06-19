@@ -41,6 +41,12 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress) const;
 
+    void setSimpleMode(bool simple);
+
 private:
+    void paintFancy(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress) const;
+    void paintSimple(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress) const;
+
     QElapsedTimer m_shimmerTimer;
+    bool m_simpleMode = false;
 };

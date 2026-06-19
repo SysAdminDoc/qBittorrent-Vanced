@@ -186,6 +186,19 @@ void Preferences::setAlternatingRowColors(const bool b)
     setValue(u"Preferences/General/AlternatingRowColors"_s, b);
 }
 
+bool Preferences::useSimpleProgressBar() const
+{
+    return value(u"Preferences/General/SimpleProgressBar"_s, false);
+}
+
+void Preferences::setSimpleProgressBar(const bool b)
+{
+    if (b == useSimpleProgressBar())
+        return;
+
+    setValue(u"Preferences/General/SimpleProgressBar"_s, b);
+}
+
 bool Preferences::getHideZeroValues() const
 {
     return value(u"Preferences/General/HideZeroValues"_s, false);

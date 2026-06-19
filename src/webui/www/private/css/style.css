@@ -956,3 +956,34 @@ td.statusBarSeparator {
 .confirmWarning {
     background-image: url("../images/help-about.svg");
 }
+
+@media (max-width: 600px) {
+    #mochaToolbar {
+        flex-wrap: wrap;
+        gap: 2px;
+    }
+
+    #mochaToolbar select,
+    #mochaToolbar input[type="text"] {
+        max-width: calc(100vw - 20px);
+        width: 100%;
+    }
+
+    .formRow label {
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .formRow input[type="text"],
+    .formRow select,
+    .formRow textarea {
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .confirmDeletionGrid,
+    .confirmGrid {
+        grid-template-columns: max-content 1fr;
+    }
+}

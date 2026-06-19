@@ -184,3 +184,18 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
         color: var(--color-tracker-not-working);
     }
 }
+
+@media (max-width: 600px) {
+    .dynamicTableDiv {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dynamicTable {
+        font-size: 12px;
+    }
+
+    .dynamicTable th,
+    .dynamicTable td {
+        padding: 6px 4px;
+    }
+}

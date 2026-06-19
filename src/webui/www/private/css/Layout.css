@@ -392,3 +392,65 @@ td.speedLabel {
 #DHTNodes {
     white-space: nowrap;
 }
+
+/* Mobile responsive layout */
+@media (max-width: 600px) {
+    #desktop {
+        min-width: auto;
+    }
+
+    #desktopTitlebarWrapper {
+        height: auto;
+    }
+
+    #desktopNavbar > ul > li {
+        float: none;
+    }
+
+    #desktopNavbar li ul li a {
+        min-width: auto;
+        padding: 8px 10px 8px 23px;
+    }
+
+    #desktopNavbar ul li a {
+        padding: 8px 10px;
+    }
+
+    .column {
+        float: none;
+        width: 100% !important;
+    }
+
+    .columnHandle {
+        display: none;
+    }
+
+    #desktopFooterWrapper {
+        position: relative;
+        height: auto;
+    }
+
+    #desktopFooter {
+        height: auto;
+        padding: 4px;
+    }
+
+    td.speedLabel {
+        min-width: auto;
+    }
+
+    .toolbox {
+        float: none;
+        text-align: left;
+        padding: 4px;
+    }
+
+    .iconWrapper {
+        min-width: 44px;
+        height: 44px;
+    }
+
+    .iconWrapper img {
+        padding: 10px;
+    }
+}

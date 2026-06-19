@@ -384,3 +384,17 @@ div.mochaToolbarWrapper.bottom {
     /* fix double scroll bar by reducing frame height. !important required. */
     height: calc(100% - 5px) !important;
 }
+
+@media (max-width: 600px) {
+    .windowFrame {
+        left: 0 !important;
+        top: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw;
+    }
+
+    .windowFrame .mochaContentWrapper {
+        max-height: calc(100vh - 60px);
+    }
+}

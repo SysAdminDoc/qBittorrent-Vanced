@@ -1,0 +1,108 @@
+name: CI Windows Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  build:
+    name: Windows Release
+    runs-on: windows-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Export GitHub Actions cache variables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: "4b77da7fed37817f124936239197833469f1b9a8"
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
+          -DWEBUI=ON
+          -DGUI=ON
+          -DSTACKTRACE=OFF
+          -DTESTING=ON
+
+      - name: Build
+        run: cmake --build build --config Release -j ${{ steps.cpu.outputs.count || '2' }}
+
+      - name: Run tests
+        working-directory: build
+        run: ctest --output-on-failure --timeout 120
+
+      - name: Verify executable
+        run: |
+          $exe = Get-ChildItem -Path build -Recurse -Filter "qbittorrent.exe" | Select-Object -First 1
+          if ($exe) {
+            Write-Output "Built: $($exe.FullName)"
+            Write-Output "Size: $([math]::Round($exe.Length / 1MB, 2)) MB"
+          } else {
+            Write-Error "qbittorrent.exe not found"
+            exit 1
+          }
+
+      - name: Upload build artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build/CMakeFiles/CMakeOutput.log
+            build/CMakeFiles/CMakeError.log
+            build/Testing/Temporary/LastTest.log
+          retention-days: 7
+
+  webui-lint:
+    name: WebUI Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/webui/www/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/webui/www
+        run: npm ci
+
+      - name: Lint
+        working-directory: src/webui/www
+        run: npm run lint

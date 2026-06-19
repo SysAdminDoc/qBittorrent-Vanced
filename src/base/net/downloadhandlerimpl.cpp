@@ -229,6 +229,14 @@ void Net::DownloadHandlerImpl::handleRedirection(const QUrl &newUrl)
         return;
     }
 
+    const QString scheme = resolvedUrl.scheme().toLower();
+    if ((scheme != u"http") && (scheme != u"https"))
+    {
+        setError(tr("Redirect to unsupported scheme: %1").arg(scheme));
+        finish();
+        return;
+    }
+
     m_redirectionHandler = static_cast<DownloadHandlerImpl *>(
             m_manager->download(DownloadRequest(m_downloadRequest).url(newUrlString), useProxy()));
     m_redirectionHandler->m_redirectionCount = m_redirectionCount + 1;

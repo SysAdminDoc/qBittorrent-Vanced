@@ -44,16 +44,13 @@ build/
 
 # Packaging artifacts
 dist_package/
+release/
 *.zip
 *.setup.exe
 test_output.txt
 
 .idea/*
 CLAUDE.md
-
-# Markdown files local-only (except README)
-*.md
-!README.md
 
 # Markdown files local-only (except README)
 *.md

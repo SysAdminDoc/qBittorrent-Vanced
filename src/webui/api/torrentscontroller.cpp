@@ -1281,9 +1281,11 @@ void TorrentsController::setLocationAction()
     if (newLocation.isEmpty())
         throw APIError(APIErrorType::BadParams, tr("Save path cannot be empty"));
 
-    // try to create the location if it does not exist
     if (!Utils::Fs::mkpath(newLocation))
-        throw APIError(APIErrorType::Conflict, tr("Cannot make save path"));
+        throw APIError(APIErrorType::Conflict, tr("Cannot create target directory: %1").arg(newLocation.toString()));
+
+    if (!Utils::Fs::isWritable(newLocation))
+        throw APIError(APIErrorType::AccessDenied, tr("Cannot write to directory: %1").arg(newLocation.toString()));
 
     applyToTorrents(hashes, [newLocation](BitTorrent::Torrent *const torrent)
     {
@@ -1304,13 +1306,11 @@ void TorrentsController::setSavePathAction()
     if (newPath.isEmpty())
         throw APIError(APIErrorType::BadParams, tr("Save path cannot be empty"));
 
-    // try to create the directory if it does not exist
     if (!Utils::Fs::mkpath(newPath))
-        throw APIError(APIErrorType::Conflict, tr("Cannot create target directory"));
+        throw APIError(APIErrorType::Conflict, tr("Cannot create target directory: %1").arg(newPath.toString()));
 
-    // check permissions
     if (!Utils::Fs::isWritable(newPath))
-        throw APIError(APIErrorType::AccessDenied, tr("Cannot write to directory"));
+        throw APIError(APIErrorType::AccessDenied, tr("Cannot write to directory: %1").arg(newPath.toString()));
 
     applyToTorrents(ids, [&newPath](BitTorrent::Torrent *const torrent)
     {
@@ -1328,13 +1328,11 @@ void TorrentsController::setDownloadPathAction()
 
     if (!newPath.isEmpty())
     {
-        // try to create the directory if it does not exist
         if (!Utils::Fs::mkpath(newPath))
-            throw APIError(APIErrorType::Conflict, tr("Cannot create target directory"));
+            throw APIError(APIErrorType::Conflict, tr("Cannot create target directory: %1").arg(newPath.toString()));
 
-        // check permissions
         if (!Utils::Fs::isWritable(newPath))
-            throw APIError(APIErrorType::AccessDenied, tr("Cannot write to directory"));
+            throw APIError(APIErrorType::AccessDenied, tr("Cannot write to directory: %1").arg(newPath.toString()));
     }
 
     applyToTorrents(ids, [&newPath](BitTorrent::Torrent *const torrent)

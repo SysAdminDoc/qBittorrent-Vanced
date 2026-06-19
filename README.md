@@ -1,6 +1,6 @@
 # qBittorrent Vanced
 
-![Version](https://img.shields.io/badge/version-v5.1.3-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Platform](https://img.shields.io/badge/platform-C%2B%2B-lightgrey)
+![Vanced](https://img.shields.io/badge/Vanced-v1.0.0-blue) ![Base](https://img.shields.io/badge/Enhanced_Edition-v5.1.3.10-blue) ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green) ![Platform](https://img.shields.io/badge/platform-Windows_x64-lightgrey)
 
 A customized build of [qBittorrent Enhanced Edition](https://github.com/c0re100/qBittorrent-Enhanced-Edition) with a modern dark theme, streamlined interface, and quality-of-life improvements.
 

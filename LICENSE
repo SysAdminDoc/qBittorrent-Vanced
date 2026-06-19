@@ -1,21 +1,19 @@
-MIT License
+qBittorrent Vanced — License
+=============================
 
-Copyright (c) 2026 SysAdminDoc
+qBittorrent Vanced is a fork of qBittorrent Enhanced Edition, which is itself
+a fork of qBittorrent. All original qBittorrent code is licensed under the
+GNU General Public License, version 2 or (at your option) any later version
+(GPLv2+). The binary distribution is licensed under GPLv3+ because it contains
+GPLv3+ assets (e.g. images).
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Vanced-specific modifications (theme, progress bars, UI streamlining, speed
+controls) are released under the same GPLv2+ terms as the original codebase.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+See the COPYING file for the full license text and OpenSSL linking exception.
+See COPYING.GPLv2 for the GPLv2 license text.
+See COPYING.GPLv3 for the GPLv3 license text.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Upstream projects:
+  - qBittorrent: https://github.com/qbittorrent/qBittorrent
+  - qBittorrent Enhanced Edition: https://github.com/c0re100/qBittorrent-Enhanced-Edition

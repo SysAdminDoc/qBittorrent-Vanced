@@ -86,7 +86,7 @@ OutFile "qbittorrent_vanced_${QBT_INSTALLER_FILENAME}_setup.exe"
 ;Installer Version Information
 VIAddVersionKey "ProductName" "qBittorrent Vanced"
 VIAddVersionKey "CompanyName" "qBittorrent Vanced"
-VIAddVersionKey "LegalCopyright" "Copyright ©2006-2025 The qBittorrent project"
+VIAddVersionKey "LegalCopyright" "Copyright 2006-2025 The qBittorrent project, GPLv2+"
 VIAddVersionKey "FileDescription" "qBittorrent Vanced - A Customized Bittorrent Client"
 VIAddVersionKey "FileVersion" "${QBT_VERSION}"
 

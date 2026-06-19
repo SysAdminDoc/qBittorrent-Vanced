@@ -1,6 +1,6 @@
 {
   "name": "qbittorrent",
-  "version-string": "5.1.0",
+  "version-string": "5.1.3.10",
   "builtin-baseline": "4b77da7fed37817f124936239197833469f1b9a8",
   "dependencies": [
     "boost-circular-buffer",

@@ -1,5 +1,9 @@
 !include "MUI2.nsh"
 
+; --- Shell notification constants for file association refresh ---
+!define SHCNE_ASSOCCHANGED 0x8000000
+!define SHCNF_IDLIST 0
+
 ; --- General ---
 Name "qBittorrent Vanced"
 OutFile "qBittorrent-Vanced-v1.0.0-base5.1.3.10-x64-setup.exe"
@@ -81,6 +85,37 @@ Section "Install"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoRepair" 1
 
+    ; Register as handler for .torrent files and magnet: links
+    WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities" "ApplicationDescription" "qBittorrent Vanced - A Customized BitTorrent Client"
+    WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities" "ApplicationName" "qBittorrent Vanced"
+    WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities\FileAssociations" ".torrent" "qBittorrentVanced.File.Torrent"
+    WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities\UrlAssociations" "magnet" "qBittorrentVanced.Url.Magnet"
+    WriteRegStr HKLM "Software\RegisteredApplications" "qBittorrent Vanced" "Software\qBittorrent Vanced\Capabilities"
+
+    ; ProgID for .torrent files
+    WriteRegStr HKLM "Software\Classes\qBittorrentVanced.File.Torrent" "" "Torrent File"
+    WriteRegStr HKLM "Software\Classes\qBittorrentVanced.File.Torrent\DefaultIcon" "" '"$INSTDIR\qbittorrent.exe",1'
+    WriteRegStr HKLM "Software\Classes\qBittorrentVanced.File.Torrent\shell\open\command" "" '"$INSTDIR\qbittorrent.exe" "%1"'
+
+    ; ProgID for magnet: protocol
+    WriteRegStr HKLM "Software\Classes\qBittorrentVanced.Url.Magnet" "" "Magnet URI"
+    WriteRegStr HKLM "Software\Classes\qBittorrentVanced.Url.Magnet\DefaultIcon" "" '"$INSTDIR\qbittorrent.exe",1'
+    WriteRegStr HKLM "Software\Classes\qBittorrentVanced.Url.Magnet\shell\open\command" "" '"$INSTDIR\qbittorrent.exe" "%1"'
+
+    ; .torrent file type
+    WriteRegStr HKLM "Software\Classes\.torrent" "" "qBittorrentVanced.File.Torrent"
+    WriteRegStr HKLM "Software\Classes\.torrent" "Content Type" "application/x-bittorrent"
+
+    ; magnet: protocol
+    WriteRegStr HKLM "Software\Classes\magnet" "" "URL:Magnet URI"
+    WriteRegStr HKLM "Software\Classes\magnet" "Content Type" "application/x-magnet"
+    WriteRegStr HKLM "Software\Classes\magnet" "URL Protocol" ""
+    WriteRegStr HKLM "Software\Classes\magnet\DefaultIcon" "" '"$INSTDIR\qbittorrent.exe",1'
+    WriteRegStr HKLM "Software\Classes\magnet\shell\open\command" "" '"$INSTDIR\qbittorrent.exe" "%1"'
+
+    ; Notify Windows shell of association changes
+    System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, p 0, p 0)'
+
     ; Start Menu
     CreateDirectory "$SMPROGRAMS\qBittorrent Vanced"
     CreateShortcut "$SMPROGRAMS\qBittorrent Vanced\qBittorrent Vanced.lnk" "$INSTDIR\qbittorrent.exe"
@@ -121,4 +156,10 @@ Section "Uninstall"
     ; Registry
     DeleteRegKey HKLM "Software\qBittorrent Vanced"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced"
+
+    ; File associations
+    DeleteRegKey HKLM "Software\Classes\qBittorrentVanced.File.Torrent"
+    DeleteRegKey HKLM "Software\Classes\qBittorrentVanced.Url.Magnet"
+    DeleteRegValue HKLM "Software\RegisteredApplications" "qBittorrent Vanced"
+    System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, p 0, p 0)'
 SectionEnd

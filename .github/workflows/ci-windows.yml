@@ -110,6 +110,11 @@ jobs:
             Write-Error "WebUI style.css missing Catppuccin Mocha Base color"
             $failed = $true
           }
+          # WebUI login page must use CSS variable for button text color
+          if (-not (Select-String -Path "src/webui/www/public/css/login.css" -Pattern "--login-button-text" -Quiet)) {
+            Write-Error "login.css missing --login-button-text CSS variable"
+            $failed = $true
+          }
           # License must be GPL
           if (-not (Select-String -Path "LICENSE" -Pattern "GNU General Public License" -Quiet)) {
             Write-Error "LICENSE not GPL"
@@ -119,6 +124,14 @@ jobs:
           Write-Output "All Vanced smoke tests passed"
 
       - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qbittorrent-vanced-ci
+          path: build/qbittorrent.exe
+          retention-days: 7
+
+      - name: Upload build logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:

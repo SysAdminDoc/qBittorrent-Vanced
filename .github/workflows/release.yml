@@ -75,8 +75,8 @@ jobs:
         run: |
           powershell -ExecutionPolicy Bypass -File package.ps1 -Version "${{ steps.version.outputs.version }}"
 
-      - name: Install NSIS (pinned ≥ 3.11 for CVE-2025-43715)
-        run: choco install nsis --version=3.11 -y
+      - name: Install NSIS (pinned ≥ 3.12 for Low Integrity temp dir hardening)
+        run: choco install nsis --version=3.12 -y
 
       - name: Build NSIS installer
         shell: pwsh

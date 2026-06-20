@@ -42,7 +42,7 @@ BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> 
     resize(560, 500);
 
     auto *mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(16, 16, 16, 14);
+    mainLayout->setContentsMargins(16, 16, 16, 16);
     mainLayout->setSpacing(12);
 
     // Info label

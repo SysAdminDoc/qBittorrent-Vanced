@@ -49,5 +49,5 @@ Notes:
 /* Folder Tree */
 
 .tree li a {
-    color: #3f3f3f !important;
+    color: var(--color-text-default) !important;
 }

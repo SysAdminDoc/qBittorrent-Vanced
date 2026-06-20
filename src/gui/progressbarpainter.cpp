@@ -196,11 +196,11 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
             const qreal shimmerX = chunkRect.x() + (phase * sweepRange) - shimmerWidth;
 
             QLinearGradient shimmerGrad(QPointF(shimmerX, 0), QPointF(shimmerX + shimmerWidth, 0));
-            shimmerGrad.setColorAt(0.0, QColor(255, 255, 255, 0));
-            shimmerGrad.setColorAt(0.3, QColor(255, 255, 255, 60));
-            shimmerGrad.setColorAt(0.5, QColor(255, 255, 255, 90));
-            shimmerGrad.setColorAt(0.7, QColor(255, 255, 255, 60));
-            shimmerGrad.setColorAt(1.0, QColor(255, 255, 255, 0));
+            shimmerGrad.setColorAt(0.0, QColor(205, 214, 244, 0));
+            shimmerGrad.setColorAt(0.3, QColor(205, 214, 244, 50));
+            shimmerGrad.setColorAt(0.5, QColor(205, 214, 244, 75));
+            shimmerGrad.setColorAt(0.7, QColor(205, 214, 244, 50));
+            shimmerGrad.setColorAt(1.0, QColor(205, 214, 244, 0));
 
             painter->fillPath(chunkPath, shimmerGrad);
         }

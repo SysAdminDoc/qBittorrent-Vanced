@@ -120,18 +120,46 @@ ol {
 input[type="search"],
 input[type="text"],
 input[type="number"],
-input[type="password"],
-input[type="button"],
-button,
-select {
+input[type="password"] {
+    background-color: var(--color-background-default);
     border: 1px solid var(--color-border-default);
-    border-radius: 3px;
+    border-radius: 4px;
     color: var(--color-text-default);
-    padding: 3px;
+    padding: 5px 8px;
+    transition: border-color 0.15s ease;
+}
+
+input[type="search"]:hover,
+input[type="text"]:hover,
+input[type="number"]:hover,
+input[type="password"]:hover {
+    border-color: var(--color-accent-blue);
+}
+
+input[type="search"]:focus-visible,
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible,
+input[type="password"]:focus-visible {
+    border-color: var(--color-accent-blue);
+    outline: none;
 }
 
 select {
-    padding: 4px;
+    background-color: var(--color-background-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: 4px;
+    color: var(--color-text-default);
+    padding: 5px 8px;
+    transition: border-color 0.15s ease;
+}
+
+select:hover {
+    border-color: var(--color-accent-blue);
+}
+
+select:focus-visible {
+    border-color: var(--color-accent-blue);
+    outline: none;
 }
 
 input[type="checkbox"],
@@ -143,17 +171,41 @@ input[type="radio"] {
 input[type="button"],
 input[type="submit"],
 button {
+    background-color: var(--color-background-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: 4px;
+    color: var(--color-text-default);
     cursor: pointer;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 5px 12px;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-button:disabled {
+input[type="button"]:hover,
+input[type="submit"]:hover,
+button:hover {
+    background-color: var(--color-background-hover);
+    border-color: var(--color-accent-blue);
+}
+
+input[type="button"]:active,
+input[type="submit"]:active,
+button:active {
+    opacity: 0.85;
+}
+
+button:disabled,
+input[type="button"]:disabled {
     cursor: initial;
+    opacity: 0.5;
 }
 
 :focus {
     outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-accent-blue);
+    outline-offset: 2px;
 }
 
 /* Structure */
@@ -161,8 +213,8 @@ button:disabled {
 body {
     background-color: var(--color-background-primary);
     color: var(--color-text-default);
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
     line-height: 1.5;
     text-align: left;
 }
@@ -782,7 +834,7 @@ td.generalLabel {
 
 #watched_folders_tab td,
 #watched_folders_tab th {
-    border: 1px solid black;
+    border: 1px solid var(--color-border-default);
     padding: 2px 4px;
 }
 

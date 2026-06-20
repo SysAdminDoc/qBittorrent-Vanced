@@ -205,7 +205,7 @@ div.mochaToolbarWrapper.bottom {
 ---------------------------------------------------------------- */
 
 #modalOverlay {
-    background: hsl(0deg 0% 0% / 30%);
+    background: hsl(0deg 0% 0% / 50%);
     display: none;
     left: 0;
     opacity: 0;
@@ -229,7 +229,7 @@ div.mochaToolbarWrapper.bottom {
 /* Underlay */
 
 #windowUnderlay {
-    background: #ffffff;
+    background: var(--color-background-popup);
     left: 0;
     position: fixed;
     top: 0;
@@ -276,7 +276,9 @@ div.mochaToolbarWrapper.bottom {
 /* Modals */
 
 .modal2 {
-    border: 8px solid #ffffff;
+    border: 1px solid var(--color-border-default);
+    border-radius: 8px;
+    box-shadow: 0 16px 48px hsl(0deg 0% 0% / 40%);
 }
 
 .modal2 .mochaContentBorder {
@@ -286,12 +288,12 @@ div.mochaToolbarWrapper.bottom {
 /* Window Themes */
 
 .mocha.no-canvas {
-    background: #e5e5e5;
-    border: 1px solid #555555;
+    background: var(--color-background-popup);
+    border: 1px solid var(--color-border-default);
 }
 
 .mocha.no-canvas .mochaTitlebar {
-    background: #e5e5e5;
+    background: var(--color-background-default);
 }
 
 .mocha.transparent .mochaTitlebar h3 {

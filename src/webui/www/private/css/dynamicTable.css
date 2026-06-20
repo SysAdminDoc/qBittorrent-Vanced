@@ -9,7 +9,7 @@
 }
 
 #transferList .dynamicTable td {
-    padding: 2px;
+    padding: 3px 4px;
 }
 
 .dynamicTableDiv table.dynamicTable tbody tr.selected {
@@ -17,9 +17,15 @@
     color: var(--color-text-white);
 }
 
+.dynamicTableDiv table.dynamicTable tbody tr.selected:hover {
+    background-color: var(--color-background-blue);
+    color: var(--color-text-white);
+    filter: brightness(0.9);
+}
+
 .dynamicTableDiv table.dynamicTable tbody tr:hover {
     background-color: var(--color-background-hover);
-    color: var(--color-text-white);
+    color: var(--color-text-default);
 }
 
 #transferList .stateIcon {
@@ -92,8 +98,13 @@
 }
 
 .dynamicTable th {
+    background-color: var(--color-background-default);
+    border-bottom: 1px solid var(--color-border-default);
     border-right: 1px solid var(--color-border-default);
-    padding: 4px 2px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 6px;
+    text-transform: uppercase;
     white-space: nowrap;
 }
 
@@ -106,7 +117,7 @@
 }
 
 .dynamicTable td {
-    padding: 4px 2px;
+    padding: 4px 6px;
     white-space: nowrap;
 }
 

@@ -33,7 +33,7 @@ TrayPopupWidget::TrayPopupWidget(QWidget *parent)
 {
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_ShowWithoutActivating);
-    setFixedSize(280, 160);
+    setFixedSize(300, 180);
 
     connect(&m_refreshTimer, &QTimer::timeout, this, &TrayPopupWidget::refresh);
 
@@ -96,13 +96,13 @@ void TrayPopupWidget::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    const QRect r = rect().adjusted(4, 4, -4, -4);
+    const QRect r = rect().adjusted(6, 6, -6, -6);
 
-    // Background
+    // Background with subtle shadow
     QPainterPath bg;
-    bg.addRoundedRect(QRectF(r), 12, 12);
-    p.fillPath(bg, QColor(0x1e, 0x1e, 0x2e, 240));
-    p.setPen(QPen(QColor(0x31, 0x32, 0x44), 1));
+    bg.addRoundedRect(QRectF(r), 14, 14);
+    p.fillPath(bg, QColor(0x1e, 0x1e, 0x2e, 245));
+    p.setPen(QPen(QColor(0x45, 0x47, 0x5a, 80), 1));
     p.drawPath(bg);
 
     const QColor textColor(0xcd, 0xd6, 0xf4);
@@ -112,40 +112,43 @@ void TrayPopupWidget::paintEvent(QPaintEvent *)
 
     // Title
     QFont titleFont = p.font();
-    titleFont.setPixelSize(14);
-    titleFont.setBold(true);
+    titleFont.setPixelSize(15);
+    titleFont.setWeight(QFont::DemiBold);
     p.setFont(titleFont);
     p.setPen(textColor);
-    p.drawText(r.adjusted(16, 12, -16, 0), Qt::AlignLeft | Qt::AlignTop, u"qBittorrent Vanced"_s);
+    p.drawText(r.adjusted(20, 16, -20, 0), Qt::AlignLeft | Qt::AlignTop, u"qBittorrent Vanced"_s);
 
     // Separator
     p.setPen(QPen(QColor(0x31, 0x32, 0x44), 1));
-    p.drawLine(r.left() + 16, r.top() + 36, r.right() - 16, r.top() + 36);
+    p.drawLine(r.left() + 20, r.top() + 42, r.right() - 20, r.top() + 42);
 
-    // Download speed
+    // Data rows
     QFont dataFont = p.font();
-    dataFont.setPixelSize(12);
-    dataFont.setBold(false);
+    dataFont.setPixelSize(13);
+    dataFont.setWeight(QFont::Normal);
     p.setFont(dataFont);
 
-    const int row1Y = r.top() + 48;
-    const int row2Y = row1Y + 24;
-    const int row3Y = row2Y + 24;
+    const int row1Y = r.top() + 56;
+    const int row2Y = row1Y + 28;
+    const int row3Y = row2Y + 28;
 
     // Download
     p.setPen(dlColor);
-    p.drawText(r.adjusted(16, row1Y - r.top(), -16, 0), Qt::AlignLeft | Qt::AlignTop,
-        tr("Download: %1").arg(formatSpeed(m_downloadRate)));
+    p.drawText(r.adjusted(20, row1Y - r.top(), -20, 0), Qt::AlignLeft | Qt::AlignTop,
+        tr("\xe2\xac\x87  %1").arg(formatSpeed(m_downloadRate)));
 
     // Upload
     p.setPen(ulColor);
-    p.drawText(r.adjusted(16, row2Y - r.top(), -16, 0), Qt::AlignLeft | Qt::AlignTop,
-        tr("Upload: %1").arg(formatSpeed(m_uploadRate)));
+    p.drawText(r.adjusted(20, row2Y - r.top(), -20, 0), Qt::AlignLeft | Qt::AlignTop,
+        tr("\xe2\xac\x86  %1").arg(formatSpeed(m_uploadRate)));
 
     // Active torrents
     p.setPen(dimColor);
-    p.drawText(r.adjusted(16, row3Y - r.top(), -16, 0), Qt::AlignLeft | Qt::AlignTop,
-        tr("%1 active (%2 DL, %3 UL)").arg(m_activeTorrents).arg(m_downloadingCount).arg(m_seedingCount));
+    QFont smallFont = dataFont;
+    smallFont.setPixelSize(11);
+    p.setFont(smallFont);
+    p.drawText(r.adjusted(20, row3Y - r.top(), -20, 0), Qt::AlignLeft | Qt::AlignTop,
+        tr("%1 active  \xc2\xb7  %2 downloading  \xc2\xb7  %3 seeding").arg(m_activeTorrents).arg(m_downloadingCount).arg(m_seedingCount));
 }
 
 QString TrayPopupWidget::formatSpeed(qint64 bytesPerSec) const

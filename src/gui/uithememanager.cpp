@@ -495,7 +495,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QTabBar::tab {
             background-color: transparent;
             color: #6c7086;
-            padding: 7px 14px 6px 14px;
+            padding: 7px 14px;
             margin-right: 2px;
             border: none;
             border-bottom: 2px solid transparent;
@@ -587,7 +587,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         /* ---- Tree / Table / List Views ---- */
         QTreeView, QTableView, QListView {
             background-color: #181825;
-            alternate-background-color: #1b1b2c;
+            alternate-background-color: #1e1e2e;
             color: #cdd6f4;
             border: none;
             gridline-color: #313244;
@@ -596,7 +596,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             selection-color: #cdd6f4;
         }
         QTreeView::item, QTableView::item, QListView::item {
-            padding: 3px 8px;
+            padding: 4px 8px;
             border: none;
         }
         QTreeView::item:hover, QTableView::item:hover, QListView::item:hover {
@@ -608,7 +608,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         }
         QTreeView::item:selected:active, QTableView::item:selected:active,
         QListView::item:selected:active {
-            color: #ffffff;
+            color: #cdd6f4;
         }
         QTreeView::branch {
             background: transparent;
@@ -836,6 +836,15 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             background-color: #89b4fa;
             border-color: #89b4fa;
         }
+        QCheckBox:focus, QRadioButton:focus {
+            outline: none;
+        }
+        QCheckBox::indicator:focus, QRadioButton::indicator:focus {
+            border-color: #89b4fa;
+        }
+        QCheckBox::indicator:pressed, QRadioButton::indicator:pressed {
+            background-color: #313244;
+        }
         QCheckBox:disabled, QRadioButton:disabled {
             color: #6c7086;
         }
@@ -871,10 +880,19 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             width: 14px;
             height: 14px;
             margin: -5px 0;
-            border-radius: 4px;
+            border-radius: 7px;
         }
         QSlider::handle:horizontal:hover {
             background-color: #b4befe;
+        }
+        QSlider::handle:horizontal:pressed {
+            background-color: #74c7ec;
+        }
+        QSlider:disabled::groove:horizontal {
+            background-color: #1e1e2e;
+        }
+        QSlider:disabled::handle:horizontal {
+            background-color: #45475a;
         }
 
         /* ---- Splitter ---- */

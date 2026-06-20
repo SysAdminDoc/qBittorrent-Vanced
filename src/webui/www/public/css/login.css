@@ -1,41 +1,174 @@
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 12px;
-    line-height: 18px;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
-    text-align: left;
 }
 
-.col {
-    display: inline-block;
-    vertical-align: middle;
+:root {
+    --login-bg: #11111b;
+    --login-surface: #1e1e2e;
+    --login-surface-hover: #313244;
+    --login-border: #313244;
+    --login-text: #cdd6f4;
+    --login-subtext: #a6adc8;
+    --login-accent: #89b4fa;
+    --login-accent-hover: #74c7ec;
+    --login-error: #f38ba8;
+    --login-input-bg: #181825;
+    --login-radius: 12px;
 }
 
-.row {
-    margin-bottom: 5px;
+@media (prefers-color-scheme: light) {
+    :root {
+        --login-bg: #e6e9ef;
+        --login-surface: #eff1f5;
+        --login-surface-hover: #ccd0da;
+        --login-border: #ccd0da;
+        --login-text: #4c4f69;
+        --login-subtext: #6c6f85;
+        --login-accent: #1e66f5;
+        --login-accent-hover: #04a5e5;
+        --login-error: #d20f39;
+        --login-input-bg: #dce0e8;
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: var(--login-bg);
+    color: var(--login-text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #main {
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: 5em;
+    background-color: var(--login-surface);
+    border: 1px solid var(--login-border);
+    border-radius: var(--login-radius);
+    padding: 48px 40px 40px;
+    width: 100%;
+    max-width: 380px;
     text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
 }
 
-#formplace {
-    padding: 10px;
-    text-align: left;
+#main h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 32px;
+    color: var(--login-text);
 }
 
-#error_msg {
-    color: #ff0000;
-    white-space: pre;
+.col {
+    display: block;
+    width: 100%;
 }
 
-#loginButton {
-    float: right;
+#logo {
+    margin-bottom: 28px;
 }
 
 #logo img {
-    height: 11em;
+    height: 64px;
+    width: 64px;
+    opacity: 0.9;
+}
+
+#formplace {
+    padding: 0;
+    text-align: left;
+}
+
+.row {
+    margin-bottom: 16px;
+}
+
+.row:last-child {
+    margin-bottom: 0;
+    margin-top: 24px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--login-subtext);
+    margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--login-text);
+    background-color: var(--login-input-bg);
+    border: 1px solid var(--login-border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: var(--login-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--login-accent) 20%, transparent);
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder {
+    color: var(--login-subtext);
+    opacity: 0.5;
+}
+
+#loginButton {
+    float: none;
+    width: 100%;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #11111b;
+    background-color: var(--login-accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+#loginButton:hover {
+    background-color: var(--login-accent-hover);
+}
+
+#loginButton:active {
+    transform: scale(0.98);
+}
+
+#loginButton:focus-visible {
+    outline: 2px solid var(--login-accent);
+    outline-offset: 2px;
+}
+
+#error_msg {
+    color: var(--login-error);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 16px;
+    white-space: pre-wrap;
+    text-align: center;
+    min-height: 20px;
+}
+
+#error_msg:empty {
+    display: none;
+}
+
+br {
+    display: none;
 }

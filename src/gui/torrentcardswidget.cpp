@@ -36,7 +36,7 @@ TorrentCard::TorrentCard(BitTorrent::Torrent *torrent, QWidget *parent)
     : QWidget(parent)
     , m_torrent(torrent)
 {
-    setFixedSize(336, 150);
+    setFixedSize(340, 158);
     setCursor(Qt::PointingHandCursor);
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
@@ -76,7 +76,7 @@ void TorrentCard::paintEvent(QPaintEvent *)
     p.setRenderHint(QPainter::Antialiasing);
 
     const QRect r = rect().adjusted(2, 2, -2, -2);
-    const QColor bgColor = m_selected ? QColor(0x24, 0x27, 0x3a) : (m_hovered ? QColor(0x31, 0x32, 0x44) : QColor(0x1e, 0x1e, 0x2e));
+    const QColor bgColor = m_selected ? QColor(0x18, 0x18, 0x25) : (m_hovered ? QColor(0x31, 0x32, 0x44) : QColor(0x1e, 0x1e, 0x2e));
     const QColor borderColor = (m_selected || hasFocus()) ? QColor(0x89, 0xb4, 0xfa) : QColor(0x31, 0x32, 0x44);
     const QColor textColor(0xcd, 0xd6, 0xf4);
     const QColor dimColor(0xa6, 0xad, 0xc8);
@@ -84,7 +84,7 @@ void TorrentCard::paintEvent(QPaintEvent *)
 
     // Card body
     QPainterPath path;
-    path.addRoundedRect(QRectF(r), 10, 10);
+    path.addRoundedRect(QRectF(r), 8, 8);
     p.fillPath(path, bgColor);
     p.setPen(QPen(borderColor, (m_selected || hasFocus()) ? 2 : 1));
     p.drawPath(path);
@@ -92,36 +92,36 @@ void TorrentCard::paintEvent(QPaintEvent *)
     // State indicator dot
     p.setPen(Qt::NoPen);
     p.setBrush(state);
-    p.drawEllipse(QPointF(r.left() + 17, r.top() + 21), 5, 5);
+    p.drawEllipse(QPointF(r.left() + 18, r.top() + 22), 4, 4);
 
-    // Torrent name (truncated)
+    // Torrent name
     QFont nameFont = p.font();
     nameFont.setPixelSize(13);
-    nameFont.setBold(true);
+    nameFont.setWeight(QFont::DemiBold);
     p.setFont(nameFont);
     p.setPen(textColor);
-    const QRect nameRect(r.left() + 30, r.top() + 11, r.width() - 40, 22);
+    const QRect nameRect(r.left() + 32, r.top() + 12, r.width() - 44, 22);
     const QString elidedName = p.fontMetrics().elidedText(m_torrent->name(), Qt::ElideRight, nameRect.width());
     p.drawText(nameRect, Qt::AlignLeft | Qt::AlignVCenter, elidedName);
 
     // State text + category
     QFont smallFont = p.font();
-    smallFont.setPixelSize(10);
-    smallFont.setBold(false);
+    smallFont.setPixelSize(11);
+    smallFont.setWeight(QFont::Normal);
     p.setFont(smallFont);
     p.setPen(state);
     QString info = stateText();
     if (!m_torrent->category().isEmpty())
-        info += u" | "_s + m_torrent->category();
-    p.drawText(r.adjusted(30, 36, -10, 0), Qt::AlignLeft | Qt::AlignTop, info);
+        info += u"  \xc2\xb7  "_s + m_torrent->category();
+    p.drawText(r.adjusted(32, 38, -10, 0), Qt::AlignLeft | Qt::AlignTop, info);
 
     // Progress bar
-    const int barY = r.top() + 64;
-    const int barH = 9;
-    const QRect barBg(r.left() + 14, barY, r.width() - 28, barH);
+    const int barY = r.top() + 68;
+    const int barH = 8;
+    const QRect barBg(r.left() + 16, barY, r.width() - 32, barH);
     QPainterPath barBgPath;
     barBgPath.addRoundedRect(QRectF(barBg), 4, 4);
-    p.fillPath(barBgPath, QColor(0x31, 0x32, 0x44));
+    p.fillPath(barBgPath, QColor(0x11, 0x11, 0x1b));
 
     const double progress = m_torrent->progress();
     if (progress > 0)
@@ -132,12 +132,14 @@ void TorrentCard::paintEvent(QPaintEvent *)
         p.fillPath(barFgPath, state);
     }
 
-    // Progress percent
-    p.setPen(textColor);
-    p.drawText(r.adjusted(14, barY + barH + 6, -14, 0), Qt::AlignLeft | Qt::AlignTop,
+    // Progress percent + size
+    QFont metaFont = p.font();
+    metaFont.setPixelSize(11);
+    p.setFont(metaFont);
+    p.setPen(dimColor);
+    p.drawText(r.adjusted(16, barY + barH + 5, -16, 0), Qt::AlignLeft | Qt::AlignTop,
         QStringLiteral("%1%").arg(progress * 100.0, 0, 'f', 1));
 
-    // Size
     auto fmtSize = [](qint64 bytes) -> QString {
         const QStringList units = {u"B"_s, u"KiB"_s, u"MiB"_s, u"GiB"_s, u"TiB"_s};
         double val = bytes;
@@ -146,25 +148,23 @@ void TorrentCard::paintEvent(QPaintEvent *)
         return QStringLiteral("%1 %2").arg(val, 0, 'f', u > 0 ? 1 : 0).arg(units[u]);
     };
 
-    p.setPen(dimColor);
-    p.drawText(r.adjusted(14, barY + barH + 6, -14, 0), Qt::AlignRight | Qt::AlignTop,
+    p.drawText(r.adjusted(16, barY + barH + 5, -16, 0), Qt::AlignRight | Qt::AlignTop,
         fmtSize(m_torrent->totalSize()));
 
-    // Bottom row: speeds + seeds/peers
-    const int bottomY = r.bottom() - 18;
+    // Bottom row: speeds
     p.setPen(dimColor);
 
     if (m_torrent->isDownloading())
     {
         p.setPen(QColor(0x89, 0xb4, 0xfa));
-        p.drawText(r.adjusted(12, 0, 0, 0), Qt::AlignLeft | Qt::AlignBottom,
-            tr("Down %1/s").arg(fmtSize(m_torrent->downloadPayloadRate())));
+        p.drawText(r.adjusted(14, 0, 0, -6), Qt::AlignLeft | Qt::AlignBottom,
+            tr("\xe2\xac\x87 %1/s").arg(fmtSize(m_torrent->downloadPayloadRate())));
     }
     if (m_torrent->isUploading() || m_torrent->uploadPayloadRate() > 0)
     {
         p.setPen(QColor(0xa6, 0xe3, 0xa1));
-        p.drawText(r.adjusted(0, 0, -12, 0), Qt::AlignRight | Qt::AlignBottom,
-            tr("Up %1/s").arg(fmtSize(m_torrent->uploadPayloadRate())));
+        p.drawText(r.adjusted(0, 0, -14, -6), Qt::AlignRight | Qt::AlignBottom,
+            tr("\xe2\xac\x86 %1/s").arg(fmtSize(m_torrent->uploadPayloadRate())));
     }
 }
 

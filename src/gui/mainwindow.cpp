@@ -918,6 +918,19 @@ void MainWindow::createKeyboardShortcuts()
     m_ui->actionMinimize->setShortcut(Qt::CTRL | Qt::Key_M);
     addAction(m_ui->actionMinimize);
 #endif
+
+    const auto *dlSpeedShortcut = new QShortcut((Qt::ALT | Qt::Key_D), this);
+    connect(dlSpeedShortcut, &QShortcut::activated, this, [this]()
+    {
+        if (m_inlineDlSpeedBtn && m_inlineDlSpeedBtn->menu())
+            m_inlineDlSpeedBtn->showMenu();
+    });
+    const auto *ulSpeedShortcut = new QShortcut((Qt::ALT | Qt::Key_U), this);
+    connect(ulSpeedShortcut, &QShortcut::activated, this, [this]()
+    {
+        if (m_inlineUlSpeedBtn && m_inlineUlSpeedBtn->menu())
+            m_inlineUlSpeedBtn->showMenu();
+    });
 }
 
 // Keyboard shortcuts slots

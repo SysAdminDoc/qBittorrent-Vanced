@@ -1026,6 +1026,17 @@ td.statusBarSeparator {
     background-image: url("../images/help-about.svg");
 }
 
+/* Accessibility: respect user's motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
 @media (max-width: 600px) {
     #mochaToolbar {
         flex-wrap: wrap;

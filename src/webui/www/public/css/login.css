@@ -172,3 +172,14 @@ input[type="password"]::placeholder {
 br {
     display: none;
 }
+
+/* Accessibility: respect user's motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}

@@ -95,19 +95,22 @@ jobs:
           $provenance = Get-ChildItem -Path release -Filter "RELEASE-PROVENANCE.txt" | Select-Object -First 1
 
           $checksums = ""
+          $fileList = @()
           if ($zip) {
             $h = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash
             $checksums += "$h  $($zip.Name)`n"
+            $fileList += $zip.FullName
           }
           if ($installer) {
             $h = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash
             $checksums += "$h  $($installer.Name)`n"
+            $fileList += $installer.FullName
           }
           $checksums | Out-File -FilePath release/SHA256SUMS.txt -Encoding utf8 -NoNewline
+          $fileList += "release/SHA256SUMS.txt"
+          if ($provenance) { $fileList += $provenance.FullName }
 
-          "zip=$($zip.FullName)" >> $env:GITHUB_OUTPUT
-          if ($installer) { "installer=$($installer.FullName)" >> $env:GITHUB_OUTPUT }
-          "provenance=$($provenance.FullName)" >> $env:GITHUB_OUTPUT
+          "files=$($fileList -join "`n")" >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -129,10 +132,6 @@ jobs:
             Get-Content SHA256SUMS.txt
             Get-FileHash <downloaded-file> -Algorithm SHA256
             ```
-          files: |
-            ${{ steps.artifacts.outputs.zip }}
-            ${{ steps.artifacts.outputs.installer }}
-            release/SHA256SUMS.txt
-            ${{ steps.artifacts.outputs.provenance }}
+          files: ${{ steps.artifacts.outputs.files }}
           draft: false
           prerelease: false

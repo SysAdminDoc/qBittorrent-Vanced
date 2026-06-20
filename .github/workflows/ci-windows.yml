@@ -72,6 +72,52 @@ jobs:
             exit 1
           }
 
+      - name: Vanced branding smoke test
+        run: |
+          $failed = $false
+          # About dialog must say "qBittorrent Vanced"
+          if (-not (Select-String -Path "src/gui/aboutdialog.cpp" -Pattern "qBittorrent Vanced" -Quiet)) {
+            Write-Error "aboutdialog.cpp missing Vanced branding"
+            $failed = $true
+          }
+          # Window title must say Vanced
+          if (-not (Select-String -Path "src/gui/mainwindow.cpp" -Pattern "Vanced" -Quiet)) {
+            Write-Error "mainwindow.cpp missing Vanced branding"
+            $failed = $true
+          }
+          # CMakeLists.txt project description must reference Vanced
+          if (-not (Select-String -Path "CMakeLists.txt" -Pattern "Vanced" -Quiet)) {
+            Write-Error "CMakeLists.txt missing Vanced branding"
+            $failed = $true
+          }
+          # Custom progress bar painter must exist
+          if (-not (Test-Path "src/gui/progressbarpainter.cpp")) {
+            Write-Error "progressbarpainter.cpp not found"
+            $failed = $true
+          }
+          # Inline speed buttons must exist in mainwindow
+          if (-not (Select-String -Path "src/gui/mainwindow.h" -Pattern "m_inlineDlSpeedBtn" -Quiet)) {
+            Write-Error "Inline speed buttons missing from mainwindow.h"
+            $failed = $true
+          }
+          # Simple progress bar accessibility mode must exist
+          if (-not (Select-String -Path "src/base/preferences.cpp" -Pattern "SimpleProgressBar" -Quiet)) {
+            Write-Error "SimpleProgressBar preference missing"
+            $failed = $true
+          }
+          # WebUI dark theme must use Catppuccin Mocha colors
+          if (-not (Select-String -Path "src/webui/www/private/css/style.css" -Pattern "#1e1e2e" -Quiet)) {
+            Write-Error "WebUI style.css missing Catppuccin Mocha Base color"
+            $failed = $true
+          }
+          # License must be GPL
+          if (-not (Select-String -Path "LICENSE" -Pattern "GNU General Public License" -Quiet)) {
+            Write-Error "LICENSE not GPL"
+            $failed = $true
+          }
+          if ($failed) { exit 1 }
+          Write-Output "All Vanced smoke tests passed"
+
       - name: Upload build artifacts
         if: failure()
         uses: actions/upload-artifact@v4

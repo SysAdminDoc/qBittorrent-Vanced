@@ -172,12 +172,12 @@ Section "Uninstall"
     DeleteRegKey HKLM "Software\Classes\qBittorrentVanced.Url.Magnet"
     DeleteRegValue HKLM "Software\RegisteredApplications" "qBittorrent Vanced"
 
-    ; File associations — root class keys (only remove if still pointing to our ProgID)
+    ; File associations — root class keys (only remove if still pointing to our handler)
     ReadRegStr $0 HKLM "Software\Classes\.torrent" ""
     StrCmp $0 "qBittorrentVanced.File.Torrent" 0 +2
         DeleteRegKey HKLM "Software\Classes\.torrent"
-    ReadRegStr $0 HKLM "Software\Classes\magnet" ""
-    StrCmp $0 "URL:Magnet URI" 0 +2
+    ReadRegStr $0 HKLM "Software\Classes\magnet\shell\open\command" ""
+    StrCmp $0 '"$INSTDIR\qbittorrent.exe" "%1"' 0 +2
         DeleteRegKey HKLM "Software\Classes\magnet"
 
     System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, p 0, p 0)'

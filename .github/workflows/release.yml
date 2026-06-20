@@ -64,7 +64,7 @@ jobs:
           -DTESTING=ON
 
       - name: Build
-        run: cmake --build build --config Release -j ${{ steps.cpu.outputs.count || '2' }}
+        run: cmake --build build --config Release -j $env:NUMBER_OF_PROCESSORS
 
       - name: Run tests
         working-directory: build

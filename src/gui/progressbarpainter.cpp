@@ -104,8 +104,9 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
         ? QStringLiteral("%1%").arg(clampedProgress)
         : text;
 
+    const int fontSize = qMax(6, static_cast<int>(grooveRect.height() - 2));
     QFont font = painter->font();
-    font.setPixelSize(static_cast<int>(grooveRect.height() - 2));
+    font.setPixelSize(fontSize);
     painter->setFont(font);
 
     const QColor textColor = isEnabled ? QColor(0xcd, 0xd6, 0xf4) : QColor(0x6c, 0x70, 0x86);
@@ -211,8 +212,9 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
     // Text
     if (!text.isEmpty())
     {
+        const int fontSize = qMax(6, static_cast<int>(grooveRect.height() - 2));
         QFont font = painter->font();
-        font.setPixelSize(static_cast<int>(grooveRect.height() - 2));
+        font.setPixelSize(fontSize);
         painter->setFont(font);
 
         const QColor textColor = isEnabled ? QColor(0xcd, 0xd6, 0xf4) : QColor(0x6c, 0x70, 0x86);

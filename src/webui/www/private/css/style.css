@@ -149,7 +149,8 @@ input[type="text"]:focus-visible,
 input[type="number"]:focus-visible,
 input[type="password"]:focus-visible {
     border-color: var(--color-accent-blue);
-    outline: none;
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: -1px;
 }
 
 select {
@@ -167,7 +168,8 @@ select:hover {
 
 select:focus-visible {
     border-color: var(--color-accent-blue);
-    outline: none;
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: -1px;
 }
 
 input[type="checkbox"],

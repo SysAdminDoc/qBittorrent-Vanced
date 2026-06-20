@@ -1037,6 +1037,41 @@ td.statusBarSeparator {
     }
 }
 
+/* Tablet: condensed layout with larger touch targets */
+@media (max-width: 768px) {
+    a.propButton {
+        padding: 6px;
+    }
+
+    a.propButton img {
+        width: 20px;
+        height: 20px;
+    }
+
+    #Filters ul li a {
+        padding: 4px 8px;
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+    }
+
+    input[type="search"],
+    input[type="text"],
+    input[type="number"],
+    input[type="password"],
+    select {
+        padding: 7px 10px;
+        min-height: 36px;
+    }
+
+    input[type="button"],
+    input[type="submit"],
+    button {
+        padding: 7px 14px;
+        min-height: 36px;
+    }
+}
+
 @media (max-width: 600px) {
     #mochaToolbar {
         flex-wrap: wrap;

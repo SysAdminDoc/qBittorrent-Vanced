@@ -355,7 +355,7 @@ hr {
 }
 
 a.propButton {
-    border: 1px solid rgb(85 81 91);
+    border: 1px solid var(--color-border-default);
     margin-left: 3px;
     margin-right: 3px;
     padding: 2px;
@@ -472,7 +472,7 @@ a.propButton img {
 }
 
 #contextCategoryList img.highlightedCategoryIcon {
-    background-color: hsl(213deg 94% 86%);
+    background-color: var(--color-accent-blue);
 }
 
 /* Sliders */
@@ -495,10 +495,8 @@ a.propButton img {
 }
 
 .sliderarea {
-    background: #f2f2f2 url("../images/slider-area.gif") repeat-x;
-    border: 1px solid #a3a3a3;
-    border-bottom: 1px solid #cccccc;
-    border-left: 1px solid #cccccc;
+    background: var(--color-background-default);
+    border: 1px solid var(--color-border-default);
     font-size: 1px;
     height: 7px;
     left: 0;

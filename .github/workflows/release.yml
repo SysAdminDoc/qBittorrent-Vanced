@@ -75,15 +75,16 @@ jobs:
         run: |
           powershell -ExecutionPolicy Bypass -File package.ps1 -Version "${{ steps.version.outputs.version }}"
 
+      - name: Install NSIS (pinned ≥ 3.11 for CVE-2025-43715)
+        run: choco install nsis --version=3.11 -y
+
       - name: Build NSIS installer
         shell: pwsh
         run: |
           $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
-          if (-not (Test-Path $nsis)) {
-            choco install nsis -y
-            $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
-          }
-          & $nsis installer.nsi
+          $nsisVer = & $nsis /VERSION 2>&1
+          Write-Output "NSIS version: $nsisVer"
+          & $nsis /DVANCED_VERSION="${{ steps.version.outputs.version }}" /DBASE_VERSION="5.1.3.10" installer.nsi
 
       - name: Collect release artifacts
         id: artifacts

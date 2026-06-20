@@ -4,21 +4,29 @@
 !define SHCNE_ASSOCCHANGED 0x8000000
 !define SHCNF_IDLIST 0
 
+; --- Version defines (override via makensis /DVANCED_VERSION=x.y.z /DBASE_VERSION=a.b.c.d) ---
+!ifndef VANCED_VERSION
+  !define VANCED_VERSION "1.0.1"
+!endif
+!ifndef BASE_VERSION
+  !define BASE_VERSION "5.1.3.10"
+!endif
+
 ; --- General ---
 Name "qBittorrent Vanced"
-OutFile "qBittorrent-Vanced-v1.0.1-base5.1.3.10-x64-setup.exe"
+OutFile "qBittorrent-Vanced-v${VANCED_VERSION}-base${BASE_VERSION}-x64-setup.exe"
 InstallDir "$PROGRAMFILES64\qBittorrent Vanced"
 InstallDirRegKey HKLM "Software\qBittorrent Vanced" "InstallLocation"
 RequestExecutionLevel admin
 Unicode True
 
 ; --- Version Info ---
-VIProductVersion "5.1.3.10"
+VIProductVersion "${BASE_VERSION}"
 VIAddVersionKey "ProductName" "qBittorrent Vanced"
 VIAddVersionKey "FileDescription" "qBittorrent Vanced Installer"
-VIAddVersionKey "FileVersion" "1.0.1"
-VIAddVersionKey "ProductVersion" "1.0.1 (base: Enhanced Edition 5.1.3.10)"
-VIAddVersionKey "LegalCopyright" "Copyright 2006-2025 The qBittorrent project, GPLv2+"
+VIAddVersionKey "FileVersion" "${VANCED_VERSION}"
+VIAddVersionKey "ProductVersion" "${VANCED_VERSION} (base: Enhanced Edition ${BASE_VERSION})"
+VIAddVersionKey "LegalCopyright" "Copyright 2006-2026 The qBittorrent project, GPLv2+"
 
 ; --- Interface ---
 !define MUI_ABORTWARNING
@@ -27,6 +35,7 @@ VIAddVersionKey "LegalCopyright" "Copyright 2006-2025 The qBittorrent project, G
 
 ; --- Pages ---
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "COPYING"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_RUN "$INSTDIR\qbittorrent.exe"
@@ -81,9 +90,10 @@ Section "Install"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "InstallLocation" "$INSTDIR"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayIcon" "$INSTDIR\qbittorrent.exe"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "Publisher" "qBittorrent Vanced"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayVersion" "1.0.1 (5.1.3.10)"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayVersion" "${VANCED_VERSION} (${BASE_VERSION})"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoRepair" 1
+    WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "EstimatedSize" 150000
 
     ; Register as handler for .torrent files and magnet: links
     WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities" "ApplicationDescription" "qBittorrent Vanced - A Customized BitTorrent Client"
@@ -157,9 +167,18 @@ Section "Uninstall"
     DeleteRegKey HKLM "Software\qBittorrent Vanced"
     DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced"
 
-    ; File associations
+    ; File associations — ProgIDs
     DeleteRegKey HKLM "Software\Classes\qBittorrentVanced.File.Torrent"
     DeleteRegKey HKLM "Software\Classes\qBittorrentVanced.Url.Magnet"
     DeleteRegValue HKLM "Software\RegisteredApplications" "qBittorrent Vanced"
+
+    ; File associations — root class keys (only remove if still pointing to our ProgID)
+    ReadRegStr $0 HKLM "Software\Classes\.torrent" ""
+    StrCmp $0 "qBittorrentVanced.File.Torrent" 0 +2
+        DeleteRegKey HKLM "Software\Classes\.torrent"
+    ReadRegStr $0 HKLM "Software\Classes\magnet" ""
+    StrCmp $0 "URL:Magnet URI" 0 +2
+        DeleteRegKey HKLM "Software\Classes\magnet"
+
     System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, p 0, p 0)'
 SectionEnd

@@ -18,6 +18,7 @@
 #include <QCheckBox>
 #include <QDateTime>
 #include <QDir>
+#include <QFileInfo>
 #include <QFile>
 #include <QFileDialog>
 #include <QGroupBox>
@@ -109,6 +110,14 @@ void PortableBackupDialog::exportBackup()
     const QString exportRoot = QFileDialog::getExistingDirectory(this, tr("Choose Backup Location"),
         QDir::homePath());
     if (exportRoot.isEmpty()) return;
+
+    const QFileInfo exportRootInfo(exportRoot);
+    if (!exportRootInfo.isWritable())
+    {
+        QMessageBox::warning(this, tr("Location Not Writable"),
+            tr("Cannot write to the selected location:\n%1").arg(exportRoot));
+        return;
+    }
 
     const QString backupDir = QDir(exportRoot).filePath(u"qBittorrent-Vanced-backup-"_s
         + QDateTime::currentDateTime().toString(u"yyyyMMdd-hhmmss"_s));

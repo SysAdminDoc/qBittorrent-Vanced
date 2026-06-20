@@ -31,6 +31,7 @@
 #include "base/bittorrent/torrent.h"
 #include "base/global.h"
 #include "base/path.h"
+#include "base/utils/fs.h"
 
 BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> &torrents, QWidget *parent)
     : QDialog(parent)
@@ -178,11 +179,29 @@ BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> 
 
 void BatchOperationsDialog::applyChanges()
 {
-    if (m_chkSavePath->isChecked() && m_editSavePath->text().trimmed().isEmpty())
+    if (m_chkSavePath->isChecked())
     {
-        QMessageBox::warning(this, tr("Save Path Required"), tr("Choose a save path before applying changes."));
-        m_editSavePath->setFocus();
-        return;
+        const Path savePath {m_editSavePath->text().trimmed()};
+        if (savePath.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Save Path Required"), tr("Choose a save path before applying changes."));
+            m_editSavePath->setFocus();
+            return;
+        }
+        if (!Utils::Fs::mkpath(savePath))
+        {
+            QMessageBox::warning(this, tr("Invalid Save Path"),
+                tr("Cannot create directory: %1").arg(savePath.toString()));
+            m_editSavePath->setFocus();
+            return;
+        }
+        if (!Utils::Fs::isWritable(savePath))
+        {
+            QMessageBox::warning(this, tr("Save Path Not Writable"),
+                tr("Cannot write to directory: %1").arg(savePath.toString()));
+            m_editSavePath->setFocus();
+            return;
+        }
     }
 
     for (BitTorrent::Torrent *torrent : m_torrents)

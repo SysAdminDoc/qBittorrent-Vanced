@@ -16,6 +16,7 @@
     --login-accent-hover: #74c7ec;
     --login-error: #f38ba8;
     --login-input-bg: #181825;
+    --login-button-text: #11111b;
     --login-radius: 12px;
 }
 
@@ -31,6 +32,7 @@
         --login-accent-hover: #04a5e5;
         --login-error: #d20f39;
         --login-input-bg: #dce0e8;
+        --login-button-text: #eff1f5;
     }
 }
 
@@ -134,7 +136,7 @@ input[type="password"]::placeholder {
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
-    color: #11111b;
+    color: var(--login-button-text);
     background-color: var(--login-accent);
     border: none;
     border-radius: 8px;

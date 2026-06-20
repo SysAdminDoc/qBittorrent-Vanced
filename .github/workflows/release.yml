@@ -13,6 +13,7 @@ concurrency:
 
 env:
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+  BASE_VERSION: "5.1.3.10"
 
 jobs:
   build-and-release:
@@ -73,7 +74,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          powershell -ExecutionPolicy Bypass -File package.ps1 -Version "${{ steps.version.outputs.version }}" -BaseVersion "5.1.3.10"
+          powershell -ExecutionPolicy Bypass -File package.ps1 -Version "${{ steps.version.outputs.version }}" -BaseVersion "${{ env.BASE_VERSION }}"
 
       - name: Install NSIS (pinned ≥ 3.12 for Low Integrity temp dir hardening)
         run: choco install nsis --version=3.12 -y
@@ -84,7 +85,7 @@ jobs:
           $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
           $nsisVer = & $nsis /VERSION 2>&1
           Write-Output "NSIS version: $nsisVer"
-          & $nsis /DVANCED_VERSION="${{ steps.version.outputs.version }}" /DBASE_VERSION="5.1.3.10" installer.nsi
+          & $nsis /DVANCED_VERSION="${{ steps.version.outputs.version }}" /DBASE_VERSION="${{ env.BASE_VERSION }}" installer.nsi
 
       - name: Collect release artifacts
         id: artifacts
@@ -119,7 +120,7 @@ jobs:
           body: |
             ## qBittorrent Vanced v${{ steps.version.outputs.version }}
 
-            Based on qBittorrent Enhanced Edition v5.1.3.10.
+            Based on qBittorrent Enhanced Edition v${{ env.BASE_VERSION }}.
 
             ### Assets
             - **Portable ZIP** — extract and run, no install required

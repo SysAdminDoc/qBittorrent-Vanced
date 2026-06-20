@@ -1,5 +1,6 @@
 param(
     [string]$Version = "1.0.0",
+    [string]$BaseVersion = "5.1.3.10",
     [string]$BuildDir = "build",
     [string]$DistDir = "dist_package",
     [string]$OutputDir = "release"
@@ -39,8 +40,7 @@ if (Test-Path $vcpkgBin) {
     Copy-Item "$vcpkgBin\*.dll" -Destination $distPath -Force
 }
 
-$baseVersion = "5.1.3.10"
-$portableZip = Join-Path $outputPath "qBittorrent-Vanced-v$Version-base$baseVersion-x64-portable.zip"
+$portableZip = Join-Path $outputPath "qBittorrent-Vanced-v$Version-base$BaseVersion-x64-portable.zip"
 Write-Output "=== Creating portable ZIP ==="
 if (Test-Path $portableZip) { Remove-Item $portableZip -Force }
 Compress-Archive -Path "$distPath\*" -DestinationPath $portableZip -Force
@@ -51,9 +51,30 @@ Write-Output "SHA256: $zipHash  $([System.IO.Path]::GetFileName($portableZip))"
 $vcpkgJson = Get-Content (Join-Path $projectRoot "vcpkg.json") | ConvertFrom-Json
 $vcpkgBaseline = $vcpkgJson.'builtin-baseline'
 
+# Extract resolved dependency versions from vcpkg SPDX manifests
+$resolvedVersions = @()
+$vcpkgShareDir = Join-Path $buildPath "vcpkg_installed\x64-windows\share"
+if (Test-Path $vcpkgShareDir) {
+    Get-ChildItem -Path $vcpkgShareDir -Filter "vcpkg.spdx.json" -Recurse | ForEach-Object {
+        try {
+            $spdx = Get-Content $_.FullName | ConvertFrom-Json
+            $pkgName = $spdx.name -replace '^.*:', ''
+            $pkgVersion = $spdx.packages | Where-Object { $_.name -like "*:*" } | Select-Object -First 1 -ExpandProperty versionInfo -ErrorAction SilentlyContinue
+            if (-not $pkgVersion) {
+                $pkgVersion = $spdx.packages | Select-Object -First 1 -ExpandProperty versionInfo -ErrorAction SilentlyContinue
+            }
+            if ($pkgName -and $pkgVersion) {
+                $resolvedVersions += "- ${pkgName}: ${pkgVersion}"
+            }
+        } catch {
+            # Skip malformed SPDX files
+        }
+    }
+}
+
 $provenance = @"
 # qBittorrent Vanced v$Version Release Provenance
-# Base: qBittorrent Enhanced Edition v$baseVersion
+# Base: qBittorrent Enhanced Edition v$BaseVersion
 
 ## Build Info
 - Build date: $(Get-Date -Format 'yyyy-MM-dd')
@@ -70,7 +91,14 @@ if ($installerExe) {
     $provenance += "`n$installerHash  $($installerExe.Name)"
 }
 
-$provenance += @"
+if ($resolvedVersions.Count -gt 0) {
+    $provenance += @"
+
+## Resolved Dependency Versions
+$($resolvedVersions | Sort-Object | Out-String -NoNewline)
+"@
+} else {
+    $provenance += @"
 
 ## Dependency Versions
 Check the About dialog (Help > About) for runtime library versions:
@@ -79,6 +107,10 @@ Check the About dialog (Help > About) for runtime library versions:
 - Boost
 - OpenSSL
 - zlib
+"@
+}
+
+$provenance += @"
 
 ## Verify
 ``````powershell

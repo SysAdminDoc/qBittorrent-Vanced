@@ -73,7 +73,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          powershell -ExecutionPolicy Bypass -File package.ps1 -Version "${{ steps.version.outputs.version }}"
+          powershell -ExecutionPolicy Bypass -File package.ps1 -Version "${{ steps.version.outputs.version }}" -BaseVersion "5.1.3.10"
 
       - name: Install NSIS (pinned ≥ 3.12 for Low Integrity temp dir hardening)
         run: choco install nsis --version=3.12 -y

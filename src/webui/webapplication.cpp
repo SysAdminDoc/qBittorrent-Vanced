@@ -647,8 +647,6 @@ void WebApplication::sessionInitialize()
 
     const QString sessionId {parseCookie(m_request.headers.value(u"cookie"_s)).value(m_sessionCookieName)};
 
-    // TODO: Additional session check
-
     if (!sessionId.isEmpty())
     {
         m_currentSession = m_sessions.value(sessionId);
@@ -657,6 +655,14 @@ void WebApplication::sessionInitialize()
             if (m_currentSession->hasExpired(m_sessionTimeout))
             {
                 // session is outdated - removing it
+                delete m_sessions.take(sessionId);
+                m_currentSession = nullptr;
+            }
+            else if (!m_currentSession->clientAddress().isNull()
+                     && (m_currentSession->clientAddress() != m_clientAddress))
+            {
+                LogMsg(tr("WebUI session rejected: IP changed from %1 to %2")
+                    .arg(m_currentSession->clientAddress().toString(), m_clientAddress.toString()), Log::WARNING);
                 delete m_sessions.take(sessionId);
                 m_currentSession = nullptr;
             }
@@ -721,7 +727,7 @@ void WebApplication::sessionStart()
         return false;
     });
 
-    m_currentSession = new WebSession(generateSid(), app());
+    m_currentSession = new WebSession(generateSid(), app(), m_clientAddress);
     m_sessions[m_currentSession->id()] = m_currentSession;
 
     m_currentSession->registerAPIController(u"app"_s, new AppController(app(), m_currentSession));
@@ -742,8 +748,8 @@ void WebApplication::sessionStart()
         cookie.setExpirationDate(QDateTime::currentDateTime().addSecs(m_sessionTimeout));
     if (m_isCSRFProtectionEnabled)
         cookie.setSameSitePolicy(QNetworkCookie::SameSite::Strict);
-    else if (cookie.isSecure())
-        cookie.setSameSitePolicy(QNetworkCookie::SameSite::None);
+    else
+        cookie.setSameSitePolicy(QNetworkCookie::SameSite::Lax);
     setHeader({Http::HEADER_SET_COOKIE, QString::fromLatin1(cookie.toRawForm())});
 }
 
@@ -901,9 +907,10 @@ QHostAddress WebApplication::resolveClientAddress() const
 
 // WebSession
 
-WebSession::WebSession(const QString &sid, IApplication *app)
+WebSession::WebSession(const QString &sid, IApplication *app, const QHostAddress &clientAddress)
     : ApplicationComponent(app)
     , m_sid {sid}
+    , m_clientAddress {clientAddress}
 {
     updateTimestamp();
 }
@@ -911,6 +918,11 @@ WebSession::WebSession(const QString &sid, IApplication *app)
 QString WebSession::id() const
 {
     return m_sid;
+}
+
+QHostAddress WebSession::clientAddress() const
+{
+    return m_clientAddress;
 }
 
 bool WebSession::hasExpired(const qint64 seconds) const

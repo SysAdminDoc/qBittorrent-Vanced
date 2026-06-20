@@ -66,18 +66,21 @@ class WebApplication;
 class WebSession final : public ApplicationComponent<QObject>, public ISession
 {
 public:
-    explicit WebSession(const QString &sid, IApplication *app);
+    explicit WebSession(const QString &sid, IApplication *app, const QHostAddress &clientAddress = {});
 
     QString id() const override;
 
     bool hasExpired(qint64 seconds) const;
     void updateTimestamp();
 
+    QHostAddress clientAddress() const;
+
     void registerAPIController(const QString &scope, APIController *controller);
     APIController *getAPIController(const QString &scope) const;
 
 private:
     const QString m_sid;
+    const QHostAddress m_clientAddress;
     QElapsedTimer m_timer;  // timestamp
     QMap<QString, APIController *> m_apiControllers;
 };

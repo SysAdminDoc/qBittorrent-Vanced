@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  build-and-release:
+    name: Build & Release
+    runs-on: windows-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $ver = $tag -replace '^v', ''
+          "version=$ver" >> $env:GITHUB_OUTPUT
+
+      - name: Export GitHub Actions cache variables
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: "4b77da7fed37817f124936239197833469f1b9a8"
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
+          -DWEBUI=ON
+          -DGUI=ON
+          -DSTACKTRACE=OFF
+          -DTESTING=ON
+
+      - name: Build
+        run: cmake --build build --config Release -j ${{ steps.cpu.outputs.count || '2' }}
+
+      - name: Run tests
+        working-directory: build
+        run: ctest --output-on-failure --timeout 120
+
+      - name: Package
+        shell: pwsh
+        run: |
+          powershell -ExecutionPolicy Bypass -File package.ps1 -Version "${{ steps.version.outputs.version }}"
+
+      - name: Build NSIS installer
+        shell: pwsh
+        run: |
+          $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+          if (-not (Test-Path $nsis)) {
+            choco install nsis -y
+            $nsis = "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+          }
+          & $nsis installer.nsi
+
+      - name: Collect release artifacts
+        id: artifacts
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem -Path release -Filter "*.zip" | Select-Object -First 1
+          $installer = Get-ChildItem -Path . -Filter "*setup.exe" | Select-Object -First 1
+          $provenance = Get-ChildItem -Path release -Filter "RELEASE-PROVENANCE.txt" | Select-Object -First 1
+
+          $checksums = ""
+          if ($zip) {
+            $h = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash
+            $checksums += "$h  $($zip.Name)`n"
+          }
+          if ($installer) {
+            $h = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash
+            $checksums += "$h  $($installer.Name)`n"
+          }
+          $checksums | Out-File -FilePath release/SHA256SUMS.txt -Encoding utf8 -NoNewline
+
+          "zip=$($zip.FullName)" >> $env:GITHUB_OUTPUT
+          if ($installer) { "installer=$($installer.FullName)" >> $env:GITHUB_OUTPUT }
+          "provenance=$($provenance.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: qBittorrent Vanced v${{ steps.version.outputs.version }}
+          body: |
+            ## qBittorrent Vanced v${{ steps.version.outputs.version }}
+
+            Based on qBittorrent Enhanced Edition v5.1.3.10.
+
+            ### Assets
+            - **Portable ZIP** — extract and run, no install required
+            - **Installer EXE** — NSIS installer with file association registration
+            - **SHA256SUMS.txt** — checksums for verification
+            - **RELEASE-PROVENANCE.txt** — build metadata and dependency info
+
+            ### Verify
+            ```powershell
+            Get-Content SHA256SUMS.txt
+            Get-FileHash <downloaded-file> -Algorithm SHA256
+            ```
+          files: |
+            ${{ steps.artifacts.outputs.zip }}
+            ${{ steps.artifacts.outputs.installer }}
+            release/SHA256SUMS.txt
+            ${{ steps.artifacts.outputs.provenance }}
+          draft: false
+          prerelease: false

@@ -18,6 +18,10 @@
     --color-border-blue: hsl(210deg 42% 48%);
     --color-border-default: hsl(0deg 0% 85%);
     --color-text-muted: hsl(224deg 12% 44%);
+    --color-background-surface: hsl(0deg 0% 100%);
+    --color-background-alt: hsl(220deg 20% 97%);
+    --color-background-input: hsl(0deg 0% 100%);
+    --color-focus-ring: hsl(210deg 65% 55% / 40%);
     --color-icon-hover: brightness(0) invert(100%) sepia(100%) saturate(0%)
         hue-rotate(108deg) brightness(104%) contrast(104%);
 
@@ -48,6 +52,10 @@
         --color-background-popup: #1e1e2e; /* Base */
         --color-background-default: #181825; /* Mantle */
         --color-background-hover: #313244; /* Surface0 */
+        --color-background-surface: #1e1e2e; /* Base */
+        --color-background-alt: #181825; /* Mantle */
+        --color-background-input: #11111b; /* Crust */
+        --color-focus-ring: rgba(137, 180, 250, 0.4); /* Blue 40% */
         --color-border-blue: #89b4fa; /* Blue */
         --color-border-default: #313244; /* Surface0 */
         --color-icon-hover: brightness(0) saturate(100%) invert(100%) sepia(0%)

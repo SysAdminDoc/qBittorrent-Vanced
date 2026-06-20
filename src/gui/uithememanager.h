@@ -50,6 +50,9 @@
 #include "colorscheme.h"
 #endif
 
+class QEvent;
+class QWidget;
+
 class UIThemeManager final : public QObject
 {
     Q_OBJECT
@@ -81,6 +84,11 @@ private:
     void applyStyleSheet() const;
     void applyBuiltInDarkTheme() const;
     void onColorSchemeChanged();
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
+#ifdef Q_OS_WIN
+    void applyNativeDarkTitleBar(QWidget *widget) const;
+#endif
 
 #ifdef QBT_HAS_COLORSCHEME_OPTION
     void applyColorScheme() const;

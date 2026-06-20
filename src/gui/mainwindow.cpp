@@ -236,15 +236,16 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     connect(m_splitter, &QSplitter::splitterMoved, this, &MainWindow::saveSplitterSettings);
 
     // Inline speed buttons in the properties tab bar
-    const QString speedBtnStyle = u"QPushButton { font-size: 11px; padding: 2px 8px; min-height: 14px; border-radius: 3px; font-weight: normal; }"_s;
     m_inlineDlSpeedBtn = new QPushButton(this);
-    m_inlineDlSpeedBtn->setStyleSheet(speedBtnStyle + u"QPushButton { color: #89b4fa; border: 1px solid #313244; background: #181825; } QPushButton:hover { background: #313244; }"_s);
+    m_inlineDlSpeedBtn->setObjectName(u"inlineDownloadSpeedButton"_s);
+    m_inlineDlSpeedBtn->setAccessibleName(tr("Download speed limit"));
     m_inlineDlSpeedBtn->setCursor(Qt::PointingHandCursor);
-    m_inlineDlSpeedBtn->setToolTip(tr("Click to set download speed limit"));
+    m_inlineDlSpeedBtn->setToolTip(tr("Download speed limit. Click to choose a preset."));
     m_inlineUlSpeedBtn = new QPushButton(this);
-    m_inlineUlSpeedBtn->setStyleSheet(speedBtnStyle + u"QPushButton { color: #a6e3a1; border: 1px solid #313244; background: #181825; } QPushButton:hover { background: #313244; }"_s);
+    m_inlineUlSpeedBtn->setObjectName(u"inlineUploadSpeedButton"_s);
+    m_inlineUlSpeedBtn->setAccessibleName(tr("Upload speed limit"));
     m_inlineUlSpeedBtn->setCursor(Qt::PointingHandCursor);
-    m_inlineUlSpeedBtn->setToolTip(tr("Click to set upload speed limit"));
+    m_inlineUlSpeedBtn->setToolTip(tr("Upload speed limit. Click to choose a preset."));
 
     auto createSpeedMenu = [this](bool isUpload) -> QMenu *
     {
@@ -1387,13 +1388,15 @@ void MainWindow::loadSessionStats()
     {
         const int dlLimit = btSession->globalDownloadSpeedLimit();
         const QString dlLimitStr = (dlLimit <= 0) ? tr("Unlimited") : Utils::Misc::friendlyUnit(dlLimit, true);
-        m_inlineDlSpeedBtn->setText(u"D: %1 [%2]"_s.arg(m_downloadRate, dlLimitStr));
+        m_inlineDlSpeedBtn->setText(tr("Down: %1 [%2]").arg(m_downloadRate, dlLimitStr));
+        m_inlineDlSpeedBtn->setAccessibleDescription(tr("Current download speed is %1. Limit is %2.").arg(m_downloadRate, dlLimitStr));
     }
     if (m_inlineUlSpeedBtn)
     {
         const int ulLimit = btSession->globalUploadSpeedLimit();
         const QString ulLimitStr = (ulLimit <= 0) ? tr("Unlimited") : Utils::Misc::friendlyUnit(ulLimit, true);
-        m_inlineUlSpeedBtn->setText(u"U: %1 [%2]"_s.arg(m_uploadRate, ulLimitStr));
+        m_inlineUlSpeedBtn->setText(tr("Up: %1 [%2]").arg(m_uploadRate, ulLimitStr));
+        m_inlineUlSpeedBtn->setAccessibleDescription(tr("Current upload speed is %1. Limit is %2.").arg(m_uploadRate, ulLimitStr));
     }
 
     // update global information
@@ -1700,4 +1703,3 @@ void MainWindow::refreshTrayIconTooltip()
         app()->desktopIntegration()->setToolTip(tr("Paused"));
     }
 }
-

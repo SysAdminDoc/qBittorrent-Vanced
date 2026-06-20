@@ -15,11 +15,13 @@
 
 #include "torrentcardswidget.h"
 
+#include <QKeyEvent>
+#include <QLabel>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QScrollArea>
-#include <QVBoxLayout>
+#include <QStackedLayout>
 
 #include "base/bittorrent/session.h"
 #include "base/bittorrent/torrent.h"
@@ -34,13 +36,18 @@ TorrentCard::TorrentCard(BitTorrent::Torrent *torrent, QWidget *parent)
     : QWidget(parent)
     , m_torrent(torrent)
 {
-    setFixedSize(320, 140);
+    setFixedSize(336, 150);
     setCursor(Qt::PointingHandCursor);
+    setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
+    refresh();
 }
 
 void TorrentCard::refresh()
 {
+    const QString progressText = QStringLiteral("%1%").arg(m_torrent->progress() * 100.0, 0, 'f', 1);
+    setAccessibleName(m_torrent->name());
+    setAccessibleDescription(tr("%1. %2 complete.").arg(stateText(), progressText));
     update();
 }
 
@@ -69,8 +76,8 @@ void TorrentCard::paintEvent(QPaintEvent *)
     p.setRenderHint(QPainter::Antialiasing);
 
     const QRect r = rect().adjusted(2, 2, -2, -2);
-    const QColor bgColor = m_hovered ? QColor(0x31, 0x32, 0x44) : QColor(0x1e, 0x1e, 0x2e);
-    const QColor borderColor = m_selected ? QColor(0x89, 0xb4, 0xfa) : QColor(0x31, 0x32, 0x44);
+    const QColor bgColor = m_selected ? QColor(0x24, 0x27, 0x3a) : (m_hovered ? QColor(0x31, 0x32, 0x44) : QColor(0x1e, 0x1e, 0x2e));
+    const QColor borderColor = (m_selected || hasFocus()) ? QColor(0x89, 0xb4, 0xfa) : QColor(0x31, 0x32, 0x44);
     const QColor textColor(0xcd, 0xd6, 0xf4);
     const QColor dimColor(0xa6, 0xad, 0xc8);
     const QColor state = stateColor();
@@ -79,13 +86,13 @@ void TorrentCard::paintEvent(QPaintEvent *)
     QPainterPath path;
     path.addRoundedRect(QRectF(r), 10, 10);
     p.fillPath(path, bgColor);
-    p.setPen(QPen(borderColor, m_selected ? 2 : 1));
+    p.setPen(QPen(borderColor, (m_selected || hasFocus()) ? 2 : 1));
     p.drawPath(path);
 
     // State indicator dot
     p.setPen(Qt::NoPen);
     p.setBrush(state);
-    p.drawEllipse(QPointF(r.left() + 16, r.top() + 20), 5, 5);
+    p.drawEllipse(QPointF(r.left() + 17, r.top() + 21), 5, 5);
 
     // Torrent name (truncated)
     QFont nameFont = p.font();
@@ -93,7 +100,7 @@ void TorrentCard::paintEvent(QPaintEvent *)
     nameFont.setBold(true);
     p.setFont(nameFont);
     p.setPen(textColor);
-    const QRect nameRect(r.left() + 28, r.top() + 10, r.width() - 36, 22);
+    const QRect nameRect(r.left() + 30, r.top() + 11, r.width() - 40, 22);
     const QString elidedName = p.fontMetrics().elidedText(m_torrent->name(), Qt::ElideRight, nameRect.width());
     p.drawText(nameRect, Qt::AlignLeft | Qt::AlignVCenter, elidedName);
 
@@ -106,12 +113,12 @@ void TorrentCard::paintEvent(QPaintEvent *)
     QString info = stateText();
     if (!m_torrent->category().isEmpty())
         info += u" | "_s + m_torrent->category();
-    p.drawText(r.adjusted(28, 34, -8, 0), Qt::AlignLeft | Qt::AlignTop, info);
+    p.drawText(r.adjusted(30, 36, -10, 0), Qt::AlignLeft | Qt::AlignTop, info);
 
     // Progress bar
-    const int barY = r.top() + 58;
-    const int barH = 8;
-    const QRect barBg(r.left() + 12, barY, r.width() - 24, barH);
+    const int barY = r.top() + 64;
+    const int barH = 9;
+    const QRect barBg(r.left() + 14, barY, r.width() - 28, barH);
     QPainterPath barBgPath;
     barBgPath.addRoundedRect(QRectF(barBg), 4, 4);
     p.fillPath(barBgPath, QColor(0x31, 0x32, 0x44));
@@ -127,7 +134,7 @@ void TorrentCard::paintEvent(QPaintEvent *)
 
     // Progress percent
     p.setPen(textColor);
-    p.drawText(r.adjusted(12, barY + barH + 4, -12, 0), Qt::AlignLeft | Qt::AlignTop,
+    p.drawText(r.adjusted(14, barY + barH + 6, -14, 0), Qt::AlignLeft | Qt::AlignTop,
         QStringLiteral("%1%").arg(progress * 100.0, 0, 'f', 1));
 
     // Size
@@ -140,7 +147,7 @@ void TorrentCard::paintEvent(QPaintEvent *)
     };
 
     p.setPen(dimColor);
-    p.drawText(r.adjusted(12, barY + barH + 4, -12, 0), Qt::AlignRight | Qt::AlignTop,
+    p.drawText(r.adjusted(14, barY + barH + 6, -14, 0), Qt::AlignRight | Qt::AlignTop,
         fmtSize(m_torrent->totalSize()));
 
     // Bottom row: speeds + seeds/peers
@@ -151,13 +158,13 @@ void TorrentCard::paintEvent(QPaintEvent *)
     {
         p.setPen(QColor(0x89, 0xb4, 0xfa));
         p.drawText(r.adjusted(12, 0, 0, 0), Qt::AlignLeft | Qt::AlignBottom,
-            QStringLiteral("DL: %1/s").arg(fmtSize(m_torrent->downloadPayloadRate())));
+            tr("Down %1/s").arg(fmtSize(m_torrent->downloadPayloadRate())));
     }
     if (m_torrent->isUploading() || m_torrent->uploadPayloadRate() > 0)
     {
         p.setPen(QColor(0xa6, 0xe3, 0xa1));
         p.drawText(r.adjusted(0, 0, -12, 0), Qt::AlignRight | Qt::AlignBottom,
-            QStringLiteral("UL: %1/s").arg(fmtSize(m_torrent->uploadPayloadRate())));
+            tr("Up %1/s").arg(fmtSize(m_torrent->uploadPayloadRate())));
     }
 }
 
@@ -165,6 +172,7 @@ void TorrentCard::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
+        setFocus(Qt::MouseFocusReason);
         m_selected = !m_selected;
         emit clicked(m_torrent);
         update();
@@ -177,6 +185,27 @@ void TorrentCard::mouseDoubleClickEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton)
         emit doubleClicked(m_torrent);
     QWidget::mouseDoubleClickEvent(event);
+}
+
+void TorrentCard::keyPressEvent(QKeyEvent *event)
+{
+    if ((event->key() == Qt::Key_Space) || (event->key() == Qt::Key_Select))
+    {
+        m_selected = !m_selected;
+        emit clicked(m_torrent);
+        update();
+        event->accept();
+        return;
+    }
+
+    if ((event->key() == Qt::Key_Return) || (event->key() == Qt::Key_Enter))
+    {
+        emit doubleClicked(m_torrent);
+        event->accept();
+        return;
+    }
+
+    QWidget::keyPressEvent(event);
 }
 
 void TorrentCard::enterEvent(QEnterEvent *event)
@@ -203,13 +232,20 @@ TorrentCardsWidget::TorrentCardsWidget(QWidget *parent)
     m_scrollArea->setFrameShape(QFrame::NoFrame);
 
     m_container = new QWidget(m_scrollArea);
-    m_flowLayout = new FlowLayout(m_container, 10, 10, 10);
+    m_flowLayout = new FlowLayout(m_container, 12, 12, 12);
     m_container->setLayout(m_flowLayout);
     m_scrollArea->setWidget(m_container);
 
-    auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(m_scrollArea);
+    m_emptyStateLabel = new QLabel(tr("No torrents yet.\nAdd a torrent file or magnet link to get started."), this);
+    m_emptyStateLabel->setObjectName(u"torrentCardsEmptyState"_s);
+    m_emptyStateLabel->setAlignment(Qt::AlignCenter);
+    m_emptyStateLabel->setWordWrap(true);
+
+    m_stackLayout = new QStackedLayout(this);
+    m_stackLayout->setContentsMargins(0, 0, 0, 0);
+    m_stackLayout->addWidget(m_scrollArea);
+    m_stackLayout->addWidget(m_emptyStateLabel);
+    m_stackLayout->setCurrentWidget(m_emptyStateLabel);
 
     connect(&m_refreshTimer, &QTimer::timeout, this, &TorrentCardsWidget::refresh);
     m_refreshTimer.start(1500ms);
@@ -218,7 +254,11 @@ TorrentCardsWidget::TorrentCardsWidget(QWidget *parent)
 void TorrentCardsWidget::refresh()
 {
     const auto *session = BitTorrent::Session::instance();
-    if (!session) return;
+    if (!session)
+    {
+        m_stackLayout->setCurrentWidget(m_emptyStateLabel);
+        return;
+    }
 
     const int currentCount = session->torrents().size();
     if (currentCount != m_lastTorrentCount)
@@ -249,4 +289,6 @@ void TorrentCardsWidget::rebuildCards()
         m_flowLayout->addWidget(card);
         m_cards.append(card);
     }
+
+    m_stackLayout->setCurrentWidget(m_cards.isEmpty() ? static_cast<QWidget *>(m_emptyStateLabel) : static_cast<QWidget *>(m_scrollArea));
 }

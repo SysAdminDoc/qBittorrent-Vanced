@@ -32,6 +32,7 @@
 #include <functional>
 
 #include <QtContainerFwd>
+#include <QLabel>
 #include <QTreeView>
 
 #include "base/bittorrent/infohash.h"
@@ -123,6 +124,7 @@ private:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
     void openPreviewSelectDialog(const BitTorrent::Torrent *torrent);
     QModelIndex mapToSource(const QModelIndex &index) const;
@@ -137,7 +139,10 @@ private:
     void applyToSelectedTorrents(const std::function<void (BitTorrent::Torrent *const)> &fn);
     QList<BitTorrent::Torrent *> getVisibleTorrents() const;
     int visibleColumnsCount() const;
+    void updateEmptyState();
+    void updateEmptyStateGeometry();
 
     TransferListModel *m_listModel = nullptr;
     TransferListSortModel *m_sortFilterModel = nullptr;
+    QLabel *m_emptyStateLabel = nullptr;
 };

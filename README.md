@@ -1,6 +1,6 @@
 # qBittorrent Vanced
 
-![Vanced](https://img.shields.io/badge/Vanced-v1.0.0-blue) ![Base](https://img.shields.io/badge/Enhanced_Edition-v5.1.3.10-blue) ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green) ![Platform](https://img.shields.io/badge/platform-Windows_x64-lightgrey)
+![Vanced](https://img.shields.io/badge/Vanced-v1.0.1-blue) ![Base](https://img.shields.io/badge/Enhanced_Edition-v5.1.3.10-blue) ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green) ![Platform](https://img.shields.io/badge/platform-Windows_x64-lightgrey)
 
 A customized build of [qBittorrent Enhanced Edition](https://github.com/c0re100/qBittorrent-Enhanced-Edition) with a modern dark theme, streamlined interface, and quality-of-life improvements.
 
@@ -13,6 +13,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Complete Catppuccin Mocha dark theme applied across all widgets, menus, toolbars, dialogs, and the WebUI
 - Glassmorphism-inspired styling with subtle transparency and accent colors
 - Branded scrollbars, condensed spacing, and polished UI elements throughout
+- Refined focus, hover, selected, disabled, empty, and warning states across desktop widgets
 
 ### Green Progress Bars with Shimmer Effect
 
@@ -28,6 +29,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Removed the filters sidebar and status bar by default for a cleaner layout
 - Condensed vertical spacing throughout (tab bars, toolbars, table rows, headers, buttons)
 - Wider default column sizes so column titles aren't clipped
+- Cleaner batch operations, portable backup, torrent-card, toolbar, and dialog flows with clearer labels and feedback
 
 ### Inline Speed Controls
 

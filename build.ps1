@@ -93,6 +93,18 @@ Write-Output "=== Build complete ==="
 $exe = Get-ChildItem -Path "$projectRoot\build" -Recurse -Filter "qbittorrent.exe" | Select-Object -First 1
 if ($exe) {
     Write-Output "Built: $($exe.FullName)"
+    $windeployqtExe = Join-Path $projectRoot "build\vcpkg_installed\x64-windows\tools\Qt6\bin\windeployqt.exe"
+    if (Test-Path $windeployqtExe) {
+        Write-Output "=== Deploying Qt runtime plugins ==="
+        & $windeployqtExe --release --no-translations --no-compiler-runtime $exe.FullName
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "windeployqt failed with exit code $LASTEXITCODE"
+            exit 1
+        }
+    }
+    else {
+        Write-Warning "windeployqt.exe not found at $windeployqtExe; the executable may not launch without Qt plugins"
+    }
 } else {
     Write-Warning "qbittorrent.exe not found in build directory"
 }

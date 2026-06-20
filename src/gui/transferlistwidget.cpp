@@ -35,6 +35,7 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QHeaderView>
+#include <QLabel>
 #include <QList>
 #include <QMenu>
 #include <QMessageBox>
@@ -146,6 +147,14 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     m_sortFilterModel->setSortRole(TransferListModel::UnderlyingDataRole);
     setModel(m_sortFilterModel);
 
+    m_emptyStateLabel = new QLabel(viewport());
+    m_emptyStateLabel->setObjectName(u"transferListEmptyState"_s);
+    m_emptyStateLabel->setAlignment(Qt::AlignCenter);
+    m_emptyStateLabel->setWordWrap(true);
+    m_emptyStateLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_emptyStateLabel->setAccessibleName(tr("Torrent list empty state"));
+    m_emptyStateLabel->hide();
+
     // Visual settings
     setUniformRowHeights(true);
     setRootIsDecorated(false);
@@ -157,6 +166,7 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     setAcceptDrops(true);
     setDragDropMode(QAbstractItemView::DropOnly);
     setDropIndicatorShown(true);
+    setAccessibleName(tr("Torrent list"));
 #if defined(Q_OS_MACOS)
     setAttribute(Qt::WA_MacShowFocusRect, false);
     new MacOSShiftClickHandler(this);
@@ -227,6 +237,10 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     connect(header(), &QHeaderView::sectionMoved, this, &TransferListWidget::saveSettings);
     connect(header(), &QHeaderView::sectionResized, this, &TransferListWidget::saveSettings);
     connect(header(), &QHeaderView::sortIndicatorChanged, this, &TransferListWidget::saveSettings);
+    connect(m_sortFilterModel, &QAbstractItemModel::rowsInserted, this, &TransferListWidget::updateEmptyState);
+    connect(m_sortFilterModel, &QAbstractItemModel::rowsRemoved, this, &TransferListWidget::updateEmptyState);
+    connect(m_sortFilterModel, &QAbstractItemModel::modelReset, this, &TransferListWidget::updateEmptyState);
+    connect(m_sortFilterModel, &QAbstractItemModel::layoutChanged, this, &TransferListWidget::updateEmptyState);
 
     const auto *editHotkey = new QShortcut(Qt::Key_F2, this, nullptr, nullptr, Qt::WidgetShortcut);
     connect(editHotkey, &QShortcut::activated, this, &TransferListWidget::renameSelectedTorrent);
@@ -242,6 +256,8 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     connect(recheckHotkey, &QShortcut::activated, this, &TransferListWidget::recheckSelectedTorrents);
     const auto *forceStartHotkey = new QShortcut((Qt::CTRL | Qt::Key_M), this, nullptr, nullptr, Qt::WidgetShortcut);
     connect(forceStartHotkey, &QShortcut::activated, this, &TransferListWidget::forceStartSelectedTorrents);
+
+    updateEmptyState();
 }
 
 TransferListWidget::~TransferListWidget()
@@ -1448,6 +1464,12 @@ void TransferListWidget::dropEvent(QDropEvent *event)
 
 }
 
+void TransferListWidget::resizeEvent(QResizeEvent *event)
+{
+    QTreeView::resizeEvent(event);
+    updateEmptyStateGeometry();
+}
+
 void TransferListWidget::wheelEvent(QWheelEvent *event)
 {
     if (event->modifiers() & Qt::ShiftModifier)
@@ -1462,6 +1484,49 @@ void TransferListWidget::wheelEvent(QWheelEvent *event)
     }
 
     QTreeView::wheelEvent(event);  // event delegated to base class
+}
+
+void TransferListWidget::updateEmptyState()
+{
+    if (!m_emptyStateLabel)
+        return;
+
+    const bool hasVisibleTorrents = (m_sortFilterModel->rowCount() > 0);
+    if (hasVisibleTorrents)
+    {
+        setAccessibleDescription(tr("Torrent list"));
+        m_emptyStateLabel->hide();
+        return;
+    }
+
+    const bool hasTorrents = (m_listModel->rowCount() > 0);
+    if (hasTorrents)
+    {
+        m_emptyStateLabel->setText(tr("No matching torrents\nClear the filter or choose another category, tag, or status."));
+        const QString description = tr("No torrents match the current filter.");
+        m_emptyStateLabel->setAccessibleDescription(description);
+        setAccessibleDescription(description);
+    }
+    else
+    {
+        m_emptyStateLabel->setText(tr("No torrents yet\nDrop a torrent file here, open a .torrent file, or paste a magnet link with Open URL."));
+        const QString description = tr("The torrent list is empty. Add a torrent file or magnet link to begin.");
+        m_emptyStateLabel->setAccessibleDescription(description);
+        setAccessibleDescription(description);
+    }
+
+    updateEmptyStateGeometry();
+    m_emptyStateLabel->show();
+    m_emptyStateLabel->raise();
+}
+
+void TransferListWidget::updateEmptyStateGeometry()
+{
+    if (!m_emptyStateLabel)
+        return;
+
+    const QRect area = viewport()->rect().adjusted(24, 24, -24, -24);
+    m_emptyStateLabel->setGeometry(area);
 }
 
 void TransferListWidget::openPreviewSelectDialog(const BitTorrent::Torrent *torrent)

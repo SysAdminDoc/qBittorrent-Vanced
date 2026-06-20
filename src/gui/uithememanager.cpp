@@ -31,11 +31,17 @@
 #include "uithememanager.h"
 
 #include <QApplication>
+#include <QEvent>
 #include <QPalette>
 #include <QPixmapCache>
 #include <QResource>
 #include <QStyle>
 #include <QStyleHints>
+#include <QWidget>
+
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 #include "base/global.h"
 #include "base/logger.h"
@@ -51,6 +57,26 @@ namespace
         const QColor &color = palette.color(QPalette::Active, QPalette::Base);
         return (color.lightness() < 127);
     }
+
+    bool shouldPolishNativeTitleBar(const QWidget *widget)
+    {
+        return widget && widget->isWindow() && !widget->testAttribute(Qt::WA_DontShowOnScreen);
+    }
+
+#ifdef Q_OS_WIN
+    using DwmSetWindowAttributeFunc = HRESULT(WINAPI *)(HWND, DWORD, LPCVOID, DWORD);
+
+    DwmSetWindowAttributeFunc resolveDwmSetWindowAttribute()
+    {
+        static const HMODULE dwmApi = ::LoadLibraryW(L"dwmapi.dll");
+        if (!dwmApi)
+            return nullptr;
+
+        static const auto dwmSetWindowAttribute = reinterpret_cast<DwmSetWindowAttributeFunc>(
+                ::GetProcAddress(dwmApi, "DwmSetWindowAttribute"));
+        return dwmSetWindowAttribute;
+    }
+#endif
 }
 
 UIThemeManager *UIThemeManager::m_instance = nullptr;
@@ -120,6 +146,12 @@ UIThemeManager::UIThemeManager()
     {
         applyBuiltInDarkTheme();
     }
+
+#ifdef Q_OS_WIN
+    qApp->installEventFilter(this);
+    for (QWidget *widget : QApplication::topLevelWidgets())
+        applyNativeDarkTitleBar(widget);
+#endif
 }
 
 UIThemeManager *UIThemeManager::instance()
@@ -171,6 +203,44 @@ void UIThemeManager::onColorSchemeChanged()
     // workaround to refresh styled controls once color scheme is changed
     QApplication::setStyle(QApplication::style()->name());
 }
+
+bool UIThemeManager::eventFilter(QObject *watched, QEvent *event)
+{
+#ifdef Q_OS_WIN
+    if ((event->type() == QEvent::Show) || (event->type() == QEvent::WinIdChange))
+    {
+        if (auto *widget = qobject_cast<QWidget *>(watched))
+            applyNativeDarkTitleBar(widget);
+    }
+#endif
+
+    return QObject::eventFilter(watched, event);
+}
+
+#ifdef Q_OS_WIN
+void UIThemeManager::applyNativeDarkTitleBar(QWidget *widget) const
+{
+    if (!shouldPolishNativeTitleBar(widget))
+        return;
+
+    const auto dwmSetWindowAttribute = resolveDwmSetWindowAttribute();
+    if (!dwmSetWindowAttribute)
+        return;
+
+    const HWND hwnd = reinterpret_cast<HWND>(widget->winId());
+    const BOOL darkModeEnabled = TRUE;
+    // 20 is current DWMWA_USE_IMMERSIVE_DARK_MODE; 19 covers older Windows 10 builds.
+    (void)dwmSetWindowAttribute(hwnd, 20, &darkModeEnabled, sizeof(darkModeEnabled));
+    (void)dwmSetWindowAttribute(hwnd, 19, &darkModeEnabled, sizeof(darkModeEnabled));
+
+    const COLORREF captionColor = RGB(17, 17, 27);
+    const COLORREF borderColor = RGB(49, 50, 68);
+    const COLORREF textColor = RGB(205, 214, 244);
+    (void)dwmSetWindowAttribute(hwnd, 35, &captionColor, sizeof(captionColor));
+    (void)dwmSetWindowAttribute(hwnd, 34, &borderColor, sizeof(borderColor));
+    (void)dwmSetWindowAttribute(hwnd, 36, &textColor, sizeof(textColor));
+}
+#endif
 
 QIcon UIThemeManager::getIcon(const QString &iconId, [[maybe_unused]] const QString &fallback) const
 {
@@ -287,6 +357,9 @@ void UIThemeManager::applyBuiltInDarkTheme() const
     palette.setColor(QPalette::Disabled, QPalette::BrightText, overlay0);
     palette.setColor(QPalette::Disabled, QPalette::HighlightedText, overlay0);
     palette.setColor(QPalette::Disabled, QPalette::ButtonText, overlay0);
+    palette.setColor(QPalette::Disabled, QPalette::Base, crust);
+    palette.setColor(QPalette::Disabled, QPalette::Button, mantle);
+    palette.setColor(QPalette::Disabled, QPalette::Highlight, surface1);
     palette.setColor(QPalette::PlaceholderText, overlay1);
 
     qApp->setPalette(palette);
@@ -309,7 +382,10 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             color: #cdd6f4;
             border: 1px solid #45475a;
             border-radius: 4px;
-            padding: 4px 8px;
+            padding: 6px 8px;
+        }
+        QWidget:focus {
+            outline: none;
         }
 
         /* ---- Menu Bar ---- */
@@ -349,10 +425,14 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             background-color: rgba(137, 180, 250, 0.12);
             color: #89b4fa;
         }
+        QMenu::item:disabled {
+            color: #6c7086;
+            background-color: transparent;
+        }
         QMenu::separator {
             height: 1px;
             background-color: #313244;
-            margin: 4px 8px;
+            margin: 5px 10px;
         }
         QMenu::icon {
             padding-left: 8px;
@@ -366,21 +446,21 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         /* ---- Toolbar ---- */
         QToolBar {
             background-color: #11111b;
-            border: none;
-            spacing: 1px;
-            padding: 2px 4px;
+            border-bottom: 1px solid #313244;
+            spacing: 3px;
+            padding: 4px 6px;
         }
         QToolBar::separator {
             width: 1px;
             background-color: #313244;
-            margin: 6px 4px;
+            margin: 6px 5px;
         }
         QToolButton {
             background: transparent;
             color: #a6adc8;
             border: none;
-            border-radius: 4px;
-            padding: 3px 6px;
+            border-radius: 6px;
+            padding: 4px 7px;
             margin: 1px;
         }
         QToolButton:hover {
@@ -393,6 +473,14 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QToolButton:checked {
             background-color: rgba(137, 180, 250, 0.12);
             color: #89b4fa;
+        }
+        QToolButton:focus {
+            border: 1px solid #89b4fa;
+            padding: 3px 6px;
+        }
+        QToolButton:disabled {
+            color: #585b70;
+            background: transparent;
         }
 
         /* ---- Tab Bar ---- */
@@ -407,10 +495,11 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QTabBar::tab {
             background-color: transparent;
             color: #6c7086;
-            padding: 5px 12px;
-            margin-right: 1px;
+            padding: 7px 14px 6px 14px;
+            margin-right: 2px;
             border: none;
             border-bottom: 2px solid transparent;
+            min-height: 20px;
         }
         QTabBar::tab:hover {
             color: #bac2de;
@@ -419,6 +508,10 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QTabBar::tab:selected {
             color: #89b4fa;
             border-bottom: 2px solid #89b4fa;
+        }
+        QTabBar::tab:focus {
+            color: #cdd6f4;
+            background-color: rgba(137, 180, 250, 0.10);
         }
 
         /* ---- Status Bar ---- */
@@ -439,13 +532,14 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             background: transparent;
             color: #a6adc8;
             border: none;
-            padding: 2px 6px;
+            border-radius: 4px;
+            padding: 3px 7px;
             font-weight: normal;
             min-height: 0;
         }
         QStatusBar QPushButton:hover {
             color: #cdd6f4;
-            background: transparent;
+            background: rgba(49, 50, 68, 0.55);
         }
 
 )"_s + uR"(/* ---- Scrollbars ---- */
@@ -496,20 +590,25 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             alternate-background-color: #1b1b2c;
             color: #cdd6f4;
             border: none;
+            gridline-color: #313244;
             outline: none;
             selection-background-color: rgba(137, 180, 250, 0.12);
             selection-color: #cdd6f4;
         }
         QTreeView::item, QTableView::item, QListView::item {
-            padding: 2px 6px;
+            padding: 3px 8px;
             border: none;
         }
         QTreeView::item:hover, QTableView::item:hover, QListView::item:hover {
             background-color: rgba(49, 50, 68, 0.4);
         }
         QTreeView::item:selected, QTableView::item:selected, QListView::item:selected {
-            background-color: rgba(137, 180, 250, 0.12);
+            background-color: rgba(137, 180, 250, 0.18);
             color: #cdd6f4;
+        }
+        QTreeView::item:selected:active, QTableView::item:selected:active,
+        QListView::item:selected:active {
+            color: #ffffff;
         }
         QTreeView::branch {
             background: transparent;
@@ -523,7 +622,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QHeaderView::section {
             background-color: #181825;
             color: #6c7086;
-            padding: 3px 8px;
+            padding: 5px 8px;
             border: none;
             border-right: 1px solid #1e1e2e;
             border-bottom: 1px solid #313244;
@@ -554,8 +653,9 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QGroupBox {
             border: 1px solid #313244;
             border-radius: 6px;
-            margin-top: 8px;
-            padding-top: 16px;
+            margin-top: 10px;
+            padding-top: 18px;
+            background-color: rgba(24, 24, 37, 0.42);
             color: #cdd6f4;
         }
         QGroupBox::title {
@@ -572,10 +672,10 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             background-color: #313244;
             color: #cdd6f4;
             border: 1px solid #45475a;
-            border-radius: 4px;
-            padding: 4px 14px;
+            border-radius: 6px;
+            padding: 5px 14px;
             font-weight: 600;
-            min-height: 16px;
+            min-height: 22px;
         }
         QPushButton:hover {
             background-color: #45475a;
@@ -584,6 +684,10 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QPushButton:pressed {
             background-color: #585b70;
         }
+        QPushButton:focus {
+            border-color: #89b4fa;
+            background-color: #313244;
+        }
         QPushButton:disabled {
             background-color: #1e1e2e;
             color: #585b70;
@@ -591,6 +695,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         }
         QPushButton:default {
             border-color: #89b4fa;
+            background-color: rgba(137, 180, 250, 0.16);
         }
         QPushButton:flat {
             background: transparent;
@@ -599,16 +704,40 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QPushButton:flat:hover {
             background-color: rgba(49, 50, 68, 0.5);
         }
+        QPushButton#inlineDownloadSpeedButton, QPushButton#inlineUploadSpeedButton {
+            background-color: #181825;
+            border: 1px solid #313244;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            min-height: 18px;
+            padding: 3px 9px;
+        }
+        QPushButton#inlineDownloadSpeedButton {
+            color: #89b4fa;
+        }
+        QPushButton#inlineUploadSpeedButton {
+            color: #a6e3a1;
+        }
+        QPushButton#inlineDownloadSpeedButton:hover, QPushButton#inlineUploadSpeedButton:hover {
+            background-color: #313244;
+            border-color: #45475a;
+        }
 
         /* ---- Line Edit / Text Edit / Spin Box ---- */
         QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox {
             background-color: #11111b;
             color: #cdd6f4;
             border: 1px solid #313244;
-            border-radius: 4px;
-            padding: 4px 8px;
+            border-radius: 6px;
+            padding: 5px 8px;
+            min-height: 20px;
             selection-background-color: rgba(137, 180, 250, 0.25);
             selection-color: #cdd6f4;
+        }
+        QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover,
+        QSpinBox:hover, QDoubleSpinBox:hover {
+            border-color: #45475a;
         }
         QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus,
         QSpinBox:focus, QDoubleSpinBox:focus {
@@ -618,6 +747,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         QSpinBox:disabled, QDoubleSpinBox:disabled {
             background-color: #181825;
             color: #585b70;
+            border-color: #313244;
         }
         QSpinBox::up-button, QDoubleSpinBox::up-button,
         QSpinBox::down-button, QDoubleSpinBox::down-button {
@@ -641,9 +771,9 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             background-color: #11111b;
             color: #cdd6f4;
             border: 1px solid #313244;
-            border-radius: 4px;
-            padding: 4px 8px;
-            min-height: 18px;
+            border-radius: 6px;
+            padding: 5px 8px;
+            min-height: 20px;
         }
         QComboBox:hover {
             border-color: #45475a;
@@ -670,6 +800,11 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             selection-color: #cdd6f4;
             outline: none;
             padding: 2px;
+        }
+        QComboBox:disabled {
+            background-color: #181825;
+            color: #585b70;
+            border-color: #313244;
         }
 
 )"_s + uR"(/* ---- Check Box / Radio Button ---- */
@@ -701,6 +836,13 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             background-color: #89b4fa;
             border-color: #89b4fa;
         }
+        QCheckBox:disabled, QRadioButton:disabled {
+            color: #6c7086;
+        }
+        QCheckBox::indicator:disabled, QRadioButton::indicator:disabled {
+            background-color: #181825;
+            border-color: #313244;
+        }
 
         /* ---- Progress Bar ---- */
         QProgressBar {
@@ -709,7 +851,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             border-radius: 3px;
             text-align: center;
             color: #bac2de;
-            max-height: 16px;
+            max-height: 18px;
             font-size: 11px;
         }
         QProgressBar::chunk {
@@ -729,7 +871,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             width: 14px;
             height: 14px;
             margin: -5px 0;
-            border-radius: 7px;
+            border-radius: 4px;
         }
         QSlider::handle:horizontal:hover {
             background-color: #b4befe;
@@ -740,10 +882,10 @@ void UIThemeManager::applyBuiltInDarkTheme() const
             background-color: #11111b;
         }
         QSplitter::handle:horizontal {
-            width: 1px;
+            width: 3px;
         }
         QSplitter::handle:vertical {
-            height: 1px;
+            height: 3px;
         }
         QSplitter::handle:hover {
             background-color: #89b4fa;
@@ -770,6 +912,17 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         /* ---- Label ---- */
         QLabel {
             background: transparent;
+        }
+        QLabel#torrentCardsEmptyState {
+            color: #a6adc8;
+            font-size: 13px;
+            padding: 28px;
+        }
+        QLabel#transferListEmptyState {
+            color: #a6adc8;
+            font-size: 14px;
+            line-height: 150%;
+            padding: 36px;
         }
 
         /* ---- Properties panel ---- */

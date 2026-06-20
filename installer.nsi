@@ -6,7 +6,7 @@
 
 ; --- General ---
 Name "qBittorrent Vanced"
-OutFile "qBittorrent-Vanced-v1.0.0-base5.1.3.10-x64-setup.exe"
+OutFile "qBittorrent-Vanced-v1.0.1-base5.1.3.10-x64-setup.exe"
 InstallDir "$PROGRAMFILES64\qBittorrent Vanced"
 InstallDirRegKey HKLM "Software\qBittorrent Vanced" "InstallLocation"
 RequestExecutionLevel admin
@@ -16,8 +16,8 @@ Unicode True
 VIProductVersion "5.1.3.10"
 VIAddVersionKey "ProductName" "qBittorrent Vanced"
 VIAddVersionKey "FileDescription" "qBittorrent Vanced Installer"
-VIAddVersionKey "FileVersion" "1.0.0"
-VIAddVersionKey "ProductVersion" "1.0.0 (base: Enhanced Edition 5.1.3.10)"
+VIAddVersionKey "FileVersion" "1.0.1"
+VIAddVersionKey "ProductVersion" "1.0.1 (base: Enhanced Edition 5.1.3.10)"
 VIAddVersionKey "LegalCopyright" "Copyright 2006-2025 The qBittorrent project, GPLv2+"
 
 ; --- Interface ---
@@ -81,7 +81,7 @@ Section "Install"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "InstallLocation" "$INSTDIR"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayIcon" "$INSTDIR\qbittorrent.exe"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "Publisher" "qBittorrent Vanced"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayVersion" "1.0.0 (5.1.3.10)"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayVersion" "1.0.1 (5.1.3.10)"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoRepair" 1
 

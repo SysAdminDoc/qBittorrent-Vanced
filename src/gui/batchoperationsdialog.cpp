@@ -22,6 +22,7 @@
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QSpinBox>
 #include <QVBoxLayout>
@@ -35,21 +36,23 @@ BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> 
     : QDialog(parent)
     , m_torrents(torrents)
 {
-    setWindowTitle(tr("Batch Operations - %1 torrents selected").arg(torrents.size()));
-    setMinimumWidth(500);
-    resize(520, 480);
+    setWindowTitle(tr("Apply Changes to %1 Torrents").arg(torrents.size()));
+    setMinimumWidth(540);
+    resize(560, 500);
 
     auto *mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(16, 16, 16, 14);
+    mainLayout->setSpacing(12);
 
     // Info label
-    auto *infoLabel = new QLabel(tr("Check the options you want to change. Only checked options will be applied."), this);
+    auto *infoLabel = new QLabel(tr("Choose the fields to update. Unchecked fields are left unchanged for every selected torrent."), this);
     infoLabel->setWordWrap(true);
     mainLayout->addWidget(infoLabel);
 
     // Category
     auto *categoryGroup = new QGroupBox(tr("Category"), this);
     auto *categoryLayout = new QHBoxLayout(categoryGroup);
-    m_chkCategory = new QCheckBox(tr("Set category:"), categoryGroup);
+    m_chkCategory = new QCheckBox(tr("Change category"), categoryGroup);
     m_comboCategory = new QComboBox(categoryGroup);
     m_comboCategory->setEditable(true);
     m_comboCategory->addItem(QString()); // empty = no category
@@ -65,7 +68,7 @@ BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> 
     // Save path
     auto *pathGroup = new QGroupBox(tr("Save Path"), this);
     auto *pathLayout = new QHBoxLayout(pathGroup);
-    m_chkSavePath = new QCheckBox(tr("Set save path:"), pathGroup);
+    m_chkSavePath = new QCheckBox(tr("Change save path"), pathGroup);
     m_editSavePath = new QLineEdit(pathGroup);
     m_editSavePath->setEnabled(false);
     connect(m_chkSavePath, &QCheckBox::toggled, m_editSavePath, &QLineEdit::setEnabled);
@@ -88,7 +91,7 @@ BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> 
     connect(m_chkDownLimit, &QCheckBox::toggled, m_spinDownLimit, &QSpinBox::setEnabled);
     dlRow->addWidget(m_chkDownLimit);
     dlRow->addWidget(m_spinDownLimit, 1);
-    speedLayout->addRow(tr("Download limit:"), dlRow);
+    speedLayout->addRow(tr("Download:"), dlRow);
 
     auto *ulRow = new QHBoxLayout;
     m_chkUpLimit = new QCheckBox(speedGroup);
@@ -101,29 +104,29 @@ BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> 
     connect(m_chkUpLimit, &QCheckBox::toggled, m_spinUpLimit, &QSpinBox::setEnabled);
     ulRow->addWidget(m_chkUpLimit);
     ulRow->addWidget(m_spinUpLimit, 1);
-    speedLayout->addRow(tr("Upload limit:"), ulRow);
+    speedLayout->addRow(tr("Upload:"), ulRow);
     mainLayout->addWidget(speedGroup);
 
     // Options group
-    auto *optionsGroup = new QGroupBox(tr("Options"), this);
+    auto *optionsGroup = new QGroupBox(tr("Torrent Options"), this);
     auto *optionsLayout = new QFormLayout(optionsGroup);
 
     auto *seqRow = new QHBoxLayout;
     m_chkSequential = new QCheckBox(optionsGroup);
     m_comboSequential = new QComboBox(optionsGroup);
-    m_comboSequential->addItem(tr("Disable"), false);
-    m_comboSequential->addItem(tr("Enable"), true);
+    m_comboSequential->addItem(tr("Off"), false);
+    m_comboSequential->addItem(tr("On"), true);
     m_comboSequential->setEnabled(false);
     connect(m_chkSequential, &QCheckBox::toggled, m_comboSequential, &QComboBox::setEnabled);
     seqRow->addWidget(m_chkSequential);
     seqRow->addWidget(m_comboSequential, 1);
-    optionsLayout->addRow(tr("Sequential download:"), seqRow);
+    optionsLayout->addRow(tr("Sequential downloading:"), seqRow);
 
     auto *ssRow = new QHBoxLayout;
     m_chkSuperSeeding = new QCheckBox(optionsGroup);
     m_comboSuperSeeding = new QComboBox(optionsGroup);
-    m_comboSuperSeeding->addItem(tr("Disable"), false);
-    m_comboSuperSeeding->addItem(tr("Enable"), true);
+    m_comboSuperSeeding->addItem(tr("Off"), false);
+    m_comboSuperSeeding->addItem(tr("On"), true);
     m_comboSuperSeeding->setEnabled(false);
     connect(m_chkSuperSeeding, &QCheckBox::toggled, m_comboSuperSeeding, &QComboBox::setEnabled);
     ssRow->addWidget(m_chkSuperSeeding);
@@ -133,26 +136,55 @@ BatchOperationsDialog::BatchOperationsDialog(const QList<BitTorrent::Torrent *> 
     auto *tmmRow = new QHBoxLayout;
     m_chkAutoTMM = new QCheckBox(optionsGroup);
     m_comboAutoTMM = new QComboBox(optionsGroup);
-    m_comboAutoTMM->addItem(tr("Disable"), false);
-    m_comboAutoTMM->addItem(tr("Enable"), true);
+    m_comboAutoTMM->addItem(tr("Off"), false);
+    m_comboAutoTMM->addItem(tr("On"), true);
     m_comboAutoTMM->setEnabled(false);
     connect(m_chkAutoTMM, &QCheckBox::toggled, m_comboAutoTMM, &QComboBox::setEnabled);
     tmmRow->addWidget(m_chkAutoTMM);
     tmmRow->addWidget(m_comboAutoTMM, 1);
-    optionsLayout->addRow(tr("Auto TMM:"), tmmRow);
+    optionsLayout->addRow(tr("Automatic Torrent Management:"), tmmRow);
 
     mainLayout->addWidget(optionsGroup);
     mainLayout->addStretch();
 
     // Buttons
     auto *buttonBox = new QDialogButtonBox(QDialogButtonBox::Apply | QDialogButtonBox::Close, this);
-    connect(buttonBox->button(QDialogButtonBox::Apply), &QPushButton::clicked, this, &BatchOperationsDialog::applyChanges);
+    auto *applyButton = buttonBox->button(QDialogButtonBox::Apply);
+    applyButton->setText(tr("Apply Changes"));
+    applyButton->setEnabled(false);
+    connect(applyButton, &QPushButton::clicked, this, &BatchOperationsDialog::applyChanges);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     mainLayout->addWidget(buttonBox);
+
+    const auto updateApplyButton = [this, applyButton]()
+    {
+        applyButton->setEnabled(m_chkCategory->isChecked()
+            || m_chkSavePath->isChecked()
+            || m_chkDownLimit->isChecked()
+            || m_chkUpLimit->isChecked()
+            || m_chkSequential->isChecked()
+            || m_chkSuperSeeding->isChecked()
+            || m_chkAutoTMM->isChecked());
+    };
+
+    connect(m_chkCategory, &QCheckBox::toggled, this, updateApplyButton);
+    connect(m_chkSavePath, &QCheckBox::toggled, this, updateApplyButton);
+    connect(m_chkDownLimit, &QCheckBox::toggled, this, updateApplyButton);
+    connect(m_chkUpLimit, &QCheckBox::toggled, this, updateApplyButton);
+    connect(m_chkSequential, &QCheckBox::toggled, this, updateApplyButton);
+    connect(m_chkSuperSeeding, &QCheckBox::toggled, this, updateApplyButton);
+    connect(m_chkAutoTMM, &QCheckBox::toggled, this, updateApplyButton);
 }
 
 void BatchOperationsDialog::applyChanges()
 {
+    if (m_chkSavePath->isChecked() && m_editSavePath->text().trimmed().isEmpty())
+    {
+        QMessageBox::warning(this, tr("Save Path Required"), tr("Choose a save path before applying changes."));
+        m_editSavePath->setFocus();
+        return;
+    }
+
     for (BitTorrent::Torrent *torrent : m_torrents)
     {
         if (m_chkCategory->isChecked())
@@ -161,14 +193,20 @@ void BatchOperationsDialog::applyChanges()
         if (m_chkSavePath->isChecked())
         {
             torrent->setAutoTMMEnabled(false);
-            torrent->setSavePath(Path(m_editSavePath->text()));
+            torrent->setSavePath(Path(m_editSavePath->text().trimmed()));
         }
 
         if (m_chkDownLimit->isChecked())
-            torrent->setDownloadLimit(m_spinDownLimit->value() * 1024);
+        {
+            const int limit = m_spinDownLimit->value();
+            torrent->setDownloadLimit((limit < 0) ? limit : (limit * 1024));
+        }
 
         if (m_chkUpLimit->isChecked())
-            torrent->setUploadLimit(m_spinUpLimit->value() * 1024);
+        {
+            const int limit = m_spinUpLimit->value();
+            torrent->setUploadLimit((limit < 0) ? limit : (limit * 1024));
+        }
 
         if (m_chkSequential->isChecked())
             torrent->setSequentialDownload(m_comboSequential->currentData().toBool());

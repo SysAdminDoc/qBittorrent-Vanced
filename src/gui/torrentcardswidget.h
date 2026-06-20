@@ -20,7 +20,9 @@
 #include <QWidget>
 
 class QFlowLayout;
-class QVBoxLayout;
+class QKeyEvent;
+class QLabel;
+class QStackedLayout;
 
 namespace BitTorrent
 {
@@ -44,6 +46,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     void enterEvent(QEnterEvent *event) override;
     void leaveEvent(QEvent *event) override;
 
@@ -76,6 +79,8 @@ private:
     QScrollArea *m_scrollArea = nullptr;
     QWidget *m_container = nullptr;
     QLayout *m_flowLayout = nullptr;
+    QStackedLayout *m_stackLayout = nullptr;
+    QLabel *m_emptyStateLabel = nullptr;
     QList<TorrentCard *> m_cards;
     int m_lastTorrentCount = -1;
 };

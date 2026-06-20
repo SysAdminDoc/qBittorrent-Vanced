@@ -50,20 +50,22 @@ StatusBar::StatusBar(QWidget *parent)
 #ifndef Q_OS_MACOS
     // Redefining global stylesheet breaks certain elements on mac like tabs.
     // Qt checks whether the stylesheet class inherits("QMacStyle") and this becomes false.
-    setStyleSheet(u"QStatusBar::item { border-width: 0; }"_s);
+    setStyleSheet(u"QStatusBar::item { border-width: 0; } QStatusBar QWidget { margin: 0; }"_s);
 #endif
 
     BitTorrent::Session *const session = BitTorrent::Session::instance();
     connect(session, &BitTorrent::Session::speedLimitModeChanged, this, &StatusBar::updateAltSpeedsBtn);
     QWidget *container = new QWidget(this);
     auto *layout = new QHBoxLayout(container);
-    layout->setContentsMargins(0,0,0,0);
+    layout->setContentsMargins(2, 0, 2, 0);
+    layout->setSpacing(4);
 
     container->setLayout(layout);
     m_connecStatusLblIcon = new QPushButton(this);
     m_connecStatusLblIcon->setFlat(true);
     m_connecStatusLblIcon->setFocusPolicy(Qt::NoFocus);
     m_connecStatusLblIcon->setCursor(Qt::PointingHandCursor);
+    m_connecStatusLblIcon->setAccessibleName(tr("Connection status"));
     m_connecStatusLblIcon->setIcon(UIThemeManager::instance()->getIcon(u"firewalled"_s));
     m_connecStatusLblIcon->setToolTip(u"<b>%1</b><br><i>%2</i>"_s.arg(tr("Connection status:")
         , tr("No direct connections. This may indicate network configuration problems.")));
@@ -75,8 +77,9 @@ StatusBar::StatusBar(QWidget *parent)
     m_dlSpeedLbl->setFlat(true);
     m_dlSpeedLbl->setFocusPolicy(Qt::NoFocus);
     m_dlSpeedLbl->setCursor(Qt::PointingHandCursor);
+    m_dlSpeedLbl->setAccessibleName(tr("Download speed"));
     m_dlSpeedLbl->setStyleSheet(u"text-align:left; color: #89b4fa;"_s);
-    m_dlSpeedLbl->setMinimumWidth(200);
+    m_dlSpeedLbl->setMinimumWidth(180);
 
     m_upSpeedLbl = new QPushButton(this);
     m_upSpeedLbl->setIcon(UIThemeManager::instance()->getIcon(u"upload"_s, u"seeding"_s));
@@ -84,19 +87,23 @@ StatusBar::StatusBar(QWidget *parent)
     m_upSpeedLbl->setFlat(true);
     m_upSpeedLbl->setFocusPolicy(Qt::NoFocus);
     m_upSpeedLbl->setCursor(Qt::PointingHandCursor);
+    m_upSpeedLbl->setAccessibleName(tr("Upload speed"));
     m_upSpeedLbl->setStyleSheet(u"text-align:left; color: #a6e3a1;"_s);
-    m_upSpeedLbl->setMinimumWidth(200);
+    m_upSpeedLbl->setMinimumWidth(180);
 
     m_lastExternalIPsLbl = new QLabel(tr("External IP: N/A"));
+    m_lastExternalIPsLbl->setAccessibleName(tr("External IP address"));
     m_lastExternalIPsLbl->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
     m_DHTLbl = new QLabel(tr("DHT: %1 nodes").arg(0), this);
+    m_DHTLbl->setAccessibleName(tr("DHT nodes"));
     m_DHTLbl->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
 
     m_altSpeedsBtn = new QPushButton(this);
     m_altSpeedsBtn->setFlat(true);
     m_altSpeedsBtn->setFocusPolicy(Qt::NoFocus);
     m_altSpeedsBtn->setCursor(Qt::PointingHandCursor);
+    m_altSpeedsBtn->setAccessibleName(tr("Alternative speed limits"));
     updateAltSpeedsBtn(session->isAltGlobalSpeedLimitEnabled());
     connect(m_altSpeedsBtn, &QAbstractButton::clicked, this, &StatusBar::alternativeSpeedsButtonClicked);
 
@@ -151,7 +158,6 @@ StatusBar::StatusBar(QWidget *parent)
     layout->addWidget(m_upSpeedLbl);
 
     addPermanentWidget(container);
-    setStyleSheet(u"QWidget {margin: 0;}"_s);
     container->adjustSize();
     adjustSize();
     updateExternalAddressesVisibility();
@@ -192,6 +198,7 @@ void StatusBar::updateConnectionStatus()
         m_connecStatusLblIcon->setIcon(UIThemeManager::instance()->getIcon(u"disconnected"_s));
         const QString tooltip = u"<b>%1</b><br>%2"_s.arg(tr("Connection Status:"), tr("Offline. This usually means that qBittorrent failed to listen on the selected port for incoming connections."));
         m_connecStatusLblIcon->setToolTip(tooltip);
+        m_connecStatusLblIcon->setAccessibleDescription(tr("Offline. qBittorrent is not listening for incoming connections."));
     }
     else
     {
@@ -201,12 +208,14 @@ void StatusBar::updateConnectionStatus()
             m_connecStatusLblIcon->setIcon(UIThemeManager::instance()->getIcon(u"connected"_s));
             const QString tooltip = u"<b>%1</b><br>%2"_s.arg(tr("Connection Status:"), tr("Online"));
             m_connecStatusLblIcon->setToolTip(tooltip);
+            m_connecStatusLblIcon->setAccessibleDescription(tr("Online. Incoming connections are available."));
         }
         else
         {
             m_connecStatusLblIcon->setIcon(UIThemeManager::instance()->getIcon(u"firewalled"_s));
             const QString tooltip = u"<b>%1</b><br><i>%2</i>"_s.arg(tr("Connection Status:"), tr("No direct connections. This may indicate network configuration problems."));
             m_connecStatusLblIcon->setToolTip(tooltip);
+            m_connecStatusLblIcon->setAccessibleDescription(tr("No direct connections. Network configuration may need attention."));
         }
     }
 }
@@ -253,17 +262,29 @@ void StatusBar::updateSpeedLabels()
 
     QString dlSpeedLbl = Utils::Misc::friendlyUnit(sessionStatus.payloadDownloadRate, true);
     const int dlSpeedLimit = BitTorrent::Session::instance()->downloadSpeedLimit();
+    const QString dlLimitText = (dlSpeedLimit > 0) ? Utils::Misc::friendlyUnit(dlSpeedLimit, true) : tr("Unlimited");
     if (dlSpeedLimit > 0)
-        dlSpeedLbl += u" [" + Utils::Misc::friendlyUnit(dlSpeedLimit, true) + u']';
-    dlSpeedLbl += u" (" + Utils::Misc::friendlyUnit(sessionStatus.totalPayloadDownload) + u')';
+        dlSpeedLbl += u" [" + dlLimitText + u']';
+    const QString dlTotalText = Utils::Misc::friendlyUnit(sessionStatus.totalPayloadDownload);
+    dlSpeedLbl += u" (" + dlTotalText + u')';
     m_dlSpeedLbl->setText(dlSpeedLbl);
+    m_dlSpeedLbl->setToolTip(tr("Download speed: %1\nDownloaded this session: %2\nLimit: %3\nClick to change global speed limits.")
+        .arg(Utils::Misc::friendlyUnit(sessionStatus.payloadDownloadRate, true), dlTotalText, dlLimitText));
+    m_dlSpeedLbl->setAccessibleDescription(tr("Download speed %1. Downloaded this session %2. Limit %3.")
+        .arg(Utils::Misc::friendlyUnit(sessionStatus.payloadDownloadRate, true), dlTotalText, dlLimitText));
 
     QString upSpeedLbl = Utils::Misc::friendlyUnit(sessionStatus.payloadUploadRate, true);
     const int upSpeedLimit = BitTorrent::Session::instance()->uploadSpeedLimit();
+    const QString upLimitText = (upSpeedLimit > 0) ? Utils::Misc::friendlyUnit(upSpeedLimit, true) : tr("Unlimited");
     if (upSpeedLimit > 0)
-        upSpeedLbl += u" [" + Utils::Misc::friendlyUnit(upSpeedLimit, true) + u']';
-    upSpeedLbl += u" (" + Utils::Misc::friendlyUnit(sessionStatus.totalPayloadUpload) + u')';
+        upSpeedLbl += u" [" + upLimitText + u']';
+    const QString upTotalText = Utils::Misc::friendlyUnit(sessionStatus.totalPayloadUpload);
+    upSpeedLbl += u" (" + upTotalText + u')';
     m_upSpeedLbl->setText(upSpeedLbl);
+    m_upSpeedLbl->setToolTip(tr("Upload speed: %1\nUploaded this session: %2\nLimit: %3\nClick to change global speed limits.")
+        .arg(Utils::Misc::friendlyUnit(sessionStatus.payloadUploadRate, true), upTotalText, upLimitText));
+    m_upSpeedLbl->setAccessibleDescription(tr("Upload speed %1. Uploaded this session %2. Limit %3.")
+        .arg(Utils::Misc::friendlyUnit(sessionStatus.payloadUploadRate, true), upTotalText, upLimitText));
 }
 
 void StatusBar::refresh()
@@ -280,12 +301,14 @@ void StatusBar::updateAltSpeedsBtn(bool alternative)
     {
         m_altSpeedsBtn->setIcon(UIThemeManager::instance()->getIcon(u"slow"_s));
         m_altSpeedsBtn->setToolTip(tr("Click to switch to regular speed limits"));
+        m_altSpeedsBtn->setAccessibleDescription(tr("Alternative speed limits are enabled."));
         m_altSpeedsBtn->setDown(true);
     }
     else
     {
         m_altSpeedsBtn->setIcon(UIThemeManager::instance()->getIcon(u"slow_off"_s));
         m_altSpeedsBtn->setToolTip(tr("Click to switch to alternative speed limits"));
+        m_altSpeedsBtn->setAccessibleDescription(tr("Alternative speed limits are disabled."));
         m_altSpeedsBtn->setDown(false);
     }
     refresh();

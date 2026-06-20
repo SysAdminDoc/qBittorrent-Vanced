@@ -16,13 +16,14 @@
 #include "portablebackupdialog.h"
 
 #include <QCheckBox>
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
-#include <QProcess>
 #include <QProgressBar>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -36,13 +37,15 @@ PortableBackupDialog::PortableBackupDialog(QWidget *parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Portable Backup"));
-    setMinimumWidth(450);
-    resize(480, 400);
+    setMinimumWidth(500);
+    resize(540, 420);
 
     auto *mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(16, 16, 16, 14);
+    mainLayout->setSpacing(12);
 
     // Info
-    auto *infoLabel = new QLabel(tr("Export or import your qBittorrent configuration, categories, RSS feeds, and torrent resume data as a portable backup."), this);
+    auto *infoLabel = new QLabel(tr("Create a timestamped backup folder or restore from one. Backups can include settings, categories, RSS data, and torrent resume files."), this);
     infoLabel->setWordWrap(true);
     mainLayout->addWidget(infoLabel);
 
@@ -79,14 +82,15 @@ PortableBackupDialog::PortableBackupDialog(QWidget *parent)
 
     m_statusLabel = new QLabel(this);
     m_statusLabel->setVisible(false);
+    m_statusLabel->setWordWrap(true);
     mainLayout->addWidget(m_statusLabel);
 
     mainLayout->addStretch();
 
     // Buttons
     auto *buttonLayout = new QHBoxLayout;
-    auto *exportBtn = new QPushButton(tr("Export Backup"), this);
-    auto *importBtn = new QPushButton(tr("Import Backup"), this);
+    auto *exportBtn = new QPushButton(tr("Export Backup Folder"), this);
+    auto *importBtn = new QPushButton(tr("Import Backup Folder"), this);
     auto *closeBtn = new QPushButton(tr("Close"), this);
 
     connect(exportBtn, &QPushButton::clicked, this, &PortableBackupDialog::exportBackup);
@@ -102,13 +106,21 @@ PortableBackupDialog::PortableBackupDialog(QWidget *parent)
 
 void PortableBackupDialog::exportBackup()
 {
-    const QString destPath = QFileDialog::getSaveFileName(this, tr("Export Backup"),
-        QDir::homePath() + u"/qbittorrent-backup.zip"_s, tr("ZIP files (*.zip)"));
-    if (destPath.isEmpty()) return;
+    const QString exportRoot = QFileDialog::getExistingDirectory(this, tr("Choose Backup Location"),
+        QDir::homePath());
+    if (exportRoot.isEmpty()) return;
+
+    const QString backupDir = QDir(exportRoot).filePath(u"qBittorrent-Vanced-backup-"_s
+        + QDateTime::currentDateTime().toString(u"yyyyMMdd-hhmmss"_s));
+    if (!QDir().mkpath(backupDir))
+    {
+        QMessageBox::warning(this, tr("Backup Folder Not Created"), tr("qBittorrent could not create the backup folder:\n%1").arg(backupDir));
+        return;
+    }
 
     m_progressBar->setVisible(true);
     m_statusLabel->setVisible(true);
-    m_statusLabel->setText(tr("Exporting..."));
+    m_statusLabel->setText(tr("Exporting backup to %1...").arg(backupDir));
     m_progressBar->setRange(0, 0); // indeterminate
 
     const Path configDir = specialFolderLocation(SpecialFolder::Config);
@@ -148,11 +160,6 @@ void PortableBackupDialog::exportBackup()
             filesToBackup << rulesPath;
     }
 
-    // Create a simple directory copy as a backup (not a real zip for now, using a flat directory)
-    // For real ZIP support, would need QuaZip or similar. For now, copy files to a directory.
-    const QString backupDir = destPath.chopped(4); // remove .zip
-    QDir().mkpath(backupDir);
-
     int copied = 0;
     for (const QString &file : filesToBackup)
     {
@@ -172,32 +179,35 @@ void PortableBackupDialog::exportBackup()
             const QFileInfoList entries = QDir(btBackupSrc).entryInfoList(QDir::Files);
             for (const QFileInfo &entry : entries)
             {
-                QFile::copy(entry.absoluteFilePath(), btBackupDst + u"/"_s + entry.fileName());
-                ++copied;
+                if (QFile::copy(entry.absoluteFilePath(), btBackupDst + u"/"_s + entry.fileName()))
+                    ++copied;
             }
         }
     }
 
     m_progressBar->setRange(0, 1);
     m_progressBar->setValue(1);
-    m_statusLabel->setText(tr("Exported %1 files to: %2").arg(copied).arg(backupDir));
+    if (copied > 0)
+        m_statusLabel->setText(tr("Exported %1 files to: %2").arg(copied).arg(backupDir));
+    else
+        m_statusLabel->setText(tr("No matching files were found. Created an empty backup folder at: %1").arg(backupDir));
     LogMsg(tr("Portable backup exported to: %1 (%2 files)").arg(backupDir).arg(copied));
 }
 
 void PortableBackupDialog::importBackup()
 {
-    const QString srcDir = QFileDialog::getExistingDirectory(this, tr("Select Backup Directory"),
+    const QString srcDir = QFileDialog::getExistingDirectory(this, tr("Select Backup Folder"),
         QDir::homePath());
     if (srcDir.isEmpty()) return;
 
     const int result = QMessageBox::warning(this, tr("Import Backup"),
-        tr("Importing a backup will overwrite your current settings. A restart will be required.\n\nContinue?"),
+        tr("Importing a backup replaces matching settings and resume files. Restart qBittorrent after the import completes.\n\nContinue?"),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     if (result != QMessageBox::Yes) return;
 
     m_progressBar->setVisible(true);
     m_statusLabel->setVisible(true);
-    m_statusLabel->setText(tr("Importing..."));
+    m_statusLabel->setText(tr("Importing backup from %1...").arg(srcDir));
     m_progressBar->setRange(0, 0);
 
     const Path configDir = specialFolderLocation(SpecialFolder::Config);
@@ -268,6 +278,9 @@ void PortableBackupDialog::importBackup()
 
     m_progressBar->setRange(0, 1);
     m_progressBar->setValue(1);
-    m_statusLabel->setText(tr("Imported %1 files. Please restart qBittorrent.").arg(restored));
+    if (restored > 0)
+        m_statusLabel->setText(tr("Imported %1 files. Restart qBittorrent to finish applying the backup.").arg(restored));
+    else
+        m_statusLabel->setText(tr("No restorable files were found in: %1").arg(srcDir));
     LogMsg(tr("Portable backup imported from: %1 (%2 files). Restart required.").arg(srcDir).arg(restored));
 }

@@ -79,10 +79,3 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 ## Research-Driven Additions
 
-- [ ] P2 - Add hardlink and atomic-move setup validation
-  Why: media automation users rely on qBittorrent categories and save paths preserving hardlinks; valid writable paths can still cause slow copies or broken imports across filesystems.
-  Evidence: TRaSH hardlink/atomic-move guide, autobrr category/save-path docs, src/webui/api/torrentscontroller.cpp, category dialogs.
-  Touches: src/gui/torrentcategorydialog.*, src/gui/addnewtorrentdialog.*, src/webui/api/torrentscontroller.cpp, WebUI category/location dialogs.
-  Acceptance: category/save-location flows warn when paths cross filesystem roots or cannot support hardlinks, show the resolved category save path before apply, and keep advanced users able to proceed after an explicit warning.
-  Complexity: M
-

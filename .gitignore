@@ -45,6 +45,7 @@ build/
 # Packaging artifacts
 dist_package/
 release/
+patches/
 *.zip
 *.setup.exe
 test_output.txt

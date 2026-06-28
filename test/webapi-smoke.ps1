@@ -118,6 +118,34 @@ try {
     Write-Result "torrents/count" ([int]$count -ge 0) "count=$count"
 } catch { Write-Result "torrents/count" $false $_.Exception.Message }
 
+# --- Path validation: empty setLocation ---
+try {
+    $resp = Invoke-Api POST "torrents/setLocation" @{ hashes = "all"; location = "" }
+    Write-Result "setLocation (empty)" $false "expected error"
+} catch {
+    $ok = $_.Exception.Response.StatusCode.value__ -eq 400
+    Write-Result "setLocation (empty → 400)" $ok
+}
+
+# --- Path validation: invalid setLocation ---
+try {
+    $resp = Invoke-Api POST "torrents/setLocation" @{ hashes = "all"; location = "Z:\nonexistent_root_99\smoke" }
+    Write-Result "setLocation (invalid path)" $false "expected error"
+} catch {
+    $code = $_.Exception.Response.StatusCode.value__
+    $ok = ($code -eq 409) -or ($code -eq 403)
+    Write-Result "setLocation (invalid → 409/403)" $ok "status=$code"
+}
+
+# --- Path validation: empty setSavePath ---
+try {
+    $resp = Invoke-Api POST "torrents/setSavePath" @{ id = "all"; path = "" }
+    Write-Result "setSavePath (empty)" $false "expected error"
+} catch {
+    $ok = $_.Exception.Response.StatusCode.value__ -eq 400
+    Write-Result "setSavePath (empty → 400)" $ok
+}
+
 # --- Sync maindata ---
 try {
     $sync = (Invoke-Api GET "sync/maindata?rid=0").Content | ConvertFrom-Json

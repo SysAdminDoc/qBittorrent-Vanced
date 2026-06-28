@@ -43,7 +43,7 @@
                 // check field
                 const location = $("setLocation").value.trim();
                 if ((location === null) || (location === "")) {
-                    $("error_div").textContent = "QBT_TR(Save path is empty)QBT_TR[CONTEXT=TorrentsController]";
+                    $("error_div").textContent = "QBT_TR(Save path cannot be empty. Enter an absolute path (e.g. C:\\Downloads or /data/downloads).)QBT_TR[CONTEXT=TorrentsController]";
                     return;
                 }
 

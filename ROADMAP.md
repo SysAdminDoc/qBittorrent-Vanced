@@ -73,15 +73,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 - Shimmer-on-progress-bar as paintEvent override — already in place; document it as a standalone widget so other qBittorrent forks can pick it up via upstream PR
 - Fork hygiene against the double-upstream (c0re100 on top of qbittorrent/qbittorrent) — keep our delta in patchable data + one isolated paintEvent override to stay mergeable with two ancestors
 
-## Research-Driven Additions
-
-- [ ] P2 — Add dependency and security provenance to release artifacts
-  Why: qBittorrent publishes library versions/checksums and recent OpenSSL/Qt/vcpkg releases show why binary provenance matters.
-  Evidence: qBittorrent download page, OpenSSL security timeline, Qt 6.10.3 release notes, `vcpkg.json`
-  Touches: release scripts, `vcpkg.json`, installer packaging, portable packaging
-  Acceptance: every release includes SHA256 hashes, Qt/libtorrent/Boost/OpenSSL/zlib versions, vcpkg baseline, and advisory-check output next to installer/portable assets.
-  Complexity: M
-
 ## Research Expansion — 2026-06-19
 
 Note: existing research wording that says `.qbttheme` is stale; qBittorrent's current documented bundle extension and this repo's loader use `.qbtheme`.
@@ -100,13 +91,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 ## Research-Driven Additions
 
-- [ ] P2 - Bump dependency baseline for libtorrent web seed credential hardening
-  Why: libtorrent 2.0.13 clears HTTP credentials on redirected web seeds and fixes Merkle proof cleanup; Vanced's vcpkg baseline should not lag known torrent-core security fixes.
-  Evidence: libtorrent 2.0.13 release notes, vcpkg.json, qBittorrent 5.2.2 library versions.
-  Touches: vcpkg.json, build scripts, release provenance output, smoke documentation.
-  Acceptance: local build uses a baseline containing libtorrent 2.0.13 or an explicitly patched equivalent, release provenance prints the resolved libtorrent version, and web seed redirect behavior is covered by a targeted smoke/test.
-  Complexity: M
-
 - [ ] P2 - Add hardlink and atomic-move setup validation
   Why: media automation users rely on qBittorrent categories and save paths preserving hardlinks; valid writable paths can still cause slow copies or broken imports across filesystems.
   Evidence: TRaSH hardlink/atomic-move guide, autobrr category/save-path docs, src/webui/api/torrentscontroller.cpp, category dialogs.
@@ -114,9 +98,3 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
   Acceptance: category/save-location flows warn when paths cross filesystem roots or cannot support hardlinks, show the resolved category save path before apply, and keep advanced users able to proceed after an explicit warning.
   Complexity: M
 
-- [ ] P2 - Add official-source and checksum cues to installer and About surfaces
-  Why: upstream qBittorrent warns about repackaged store clones; Vanced should make official GitHub releases, GPL source availability, and artifact hashes visible without telemetry or marketing.
-  Evidence: qBittorrent 5.2.2 scam warning, installer.nsi, dist/windows/config.nsh, src/gui/aboutdialog.cpp.
-  Touches: installer.nsi, dist/windows/config.nsh, src/gui/aboutdialog.*, package/provenance scripts.
-  Acceptance: installer and About dialog show the official repository URL and release identity, package output includes SHA256 files beside artifacts, and no user-facing path suggests Microsoft Store or third-party download channels.
-  Complexity: S

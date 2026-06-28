@@ -147,6 +147,15 @@ Items moved here from ROADMAP.md because they depend on external resources, upst
   Blocker: Depends on WebAPI token work and WebUI test harness; requires external WebUI testing (VueTorrent, Flood).
   Original description: Document supported alternate WebUI install paths; run smoke checks for core operations.
 
+## Blocked on vcpkg baseline verification
+
+- [ ] P2 - Bump dependency baseline for libtorrent web seed credential hardening
+  Status: Proposed
+  Category: Security
+  Priority: P2
+  Blocker: Current baseline pins libtorrent 2.0.11; needs a baseline that includes 2.0.13+. Bumping the vcpkg baseline requires a full rebuild to verify Qt/Boost/libtorrent compatibility. Cannot verify without build environment.
+  Original description: libtorrent 2.0.13 clears HTTP credentials on redirected web seeds and fixes Merkle proof cleanup; Vanced's vcpkg baseline should not lag known torrent-core security fixes.
+
 ## Blocked on design / human judgment
 
 - [ ] P3 — Evaluate dual libtorrent 1.2 and 2.x release flavors with explicit v2 torrent labeling

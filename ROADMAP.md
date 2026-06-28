@@ -100,20 +100,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 ## Research-Driven Additions
 
-- [ ] P1 - Add large-library WebUI and queue performance smoke
-  Why: 10k+ torrent sessions expose CPU, queueing, checkbox, and sync-update regressions that ordinary smoke tests miss.
-  Evidence: qBittorrent issue #23384, qBittorrent 5.2.2 WebUI global-checkbox performance fix, src/webui/api/synccontroller.cpp, src/webui/www/private/scripts/dynamicTable.js.
-  Touches: src/base/bittorrent/sessionimpl.cpp, src/webui/api/synccontroller.cpp, src/webui/www/private/scripts/*.js, test fixtures.
-  Acceptance: a synthetic profile with at least 10,000 torrent records can load the WebUI transfer list, toggle global selection, apply queue filters, and request sync data under documented CPU/time ceilings.
-  Complexity: L
-
-- [ ] P1 - Add WebAPI compatibility smoke for automation clients
-  Why: qBittorrent 5.2.x clients and tools expect stable categories, tags, auth, and WebAPI version behavior, and Vanced currently has no compatibility fixture.
-  Evidence: qBittorrent API-key documentation, qbittorrent-api v5.2.2 support, autobrr qBittorrent action docs, qbit_manage category/tag cleanup docs.
-  Touches: src/webui/api/*controller.*, src/webui/webapplication.cpp, src/base/preferences.*, test or tooling scripts.
-  Acceptance: smoke script authenticates, reads app/version data, creates categories/tags, adds a paused magnet or fixture torrent, sets save path/category/tags, queries transfer info, and records the supported WebAPI version without requiring real tracker traffic.
-  Complexity: M
-
 - [ ] P2 - Bump dependency baseline for libtorrent web seed credential hardening
   Why: libtorrent 2.0.13 clears HTTP credentials on redirected web seeds and fixes Merkle proof cleanup; Vanced's vcpkg baseline should not lag known torrent-core security fixes.
   Evidence: libtorrent 2.0.13 release notes, vcpkg.json, qBittorrent 5.2.2 library versions.

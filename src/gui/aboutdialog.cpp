@@ -73,15 +73,21 @@ AboutDialog::AboutDialog(QWidget *parent)
         u"<table>"
         u"%3"
         u"<tr><td>%4</td><td><a href=\"https://github.com/SysAdminDoc/qBittorrent-Vanced\">GitHub Repo</a></td></tr>"
-        u"<tr><td>%5</td><td><a href=\"https://www.qbittorrent.org\">https://www.qbittorrent.org</a></td></tr>"
+        u"<tr><td>%5</td><td><a href=\"https://github.com/SysAdminDoc/qBittorrent-Vanced/releases\">Releases</a></td></tr>"
+        u"<tr><td>%6</td><td><a href=\"https://www.qbittorrent.org\">https://www.qbittorrent.org</a></td></tr>"
         u"</table>"
+        u"\n%7"
         u"</p>"_s
         .arg(tr("An advanced BitTorrent client programmed in C++, based on Qt toolkit and libtorrent-rasterbar.")
                 .replace(u"C++"_s, u"C\u2060+\u2060+"_s) // make C++ non-breaking
             , tr("Copyright %1 2006-2026 The qBittorrent project").arg(C_COPYRIGHT)
             , versionRows
             , tr("Vanced:")
-            , tr("Upstream:"));
+            , tr("Official releases:")
+            , tr("Upstream:")
+            , tr("This is free software licensed under the GNU GPLv2+. "
+                 "The only official distribution is the GitHub repository above. "
+                 "Do not download from the Microsoft Store or third-party websites."));
     m_ui->labelAbout->setText(aboutText);
 
     m_ui->labelMascot->setPixmap(Utils::Gui::scaledPixmap(Path(u":/icons/mascot.png"_s)));

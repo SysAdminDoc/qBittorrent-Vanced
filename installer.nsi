@@ -40,6 +40,7 @@ VIAddVersionKey "LegalCopyright" "Copyright 2006-2026 The qBittorrent project, G
 !define MUI_UNICON "src\icons\qbittorrent.ico"
 
 ; --- Pages ---
+!define MUI_WELCOMEPAGE_TEXT "This will install qBittorrent Vanced v${VANCED_VERSION} on your computer.$\r$\n$\r$\nOfficial source: https://github.com/SysAdminDoc/qBittorrent-Vanced$\r$\nLicense: GNU General Public License v2.0 or later$\r$\n$\r$\nThis is the only official distribution channel. Do not download qBittorrent Vanced from the Microsoft Store or third-party websites.$\r$\n$\r$\nClick Next to continue."
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "COPYING"
 !insertmacro MUI_PAGE_DIRECTORY
@@ -100,6 +101,9 @@ Section "Install"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoRepair" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "EstimatedSize" 150000
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "URLInfoAbout" "https://github.com/SysAdminDoc/qBittorrent-Vanced"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "URLUpdateInfo" "https://github.com/SysAdminDoc/qBittorrent-Vanced/releases"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "HelpLink" "https://github.com/SysAdminDoc/qBittorrent-Vanced"
 
     ; Register as handler for .torrent files and magnet: links
     WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities" "ApplicationDescription" "qBittorrent Vanced - A Customized BitTorrent Client"

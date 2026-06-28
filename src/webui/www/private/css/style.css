@@ -877,6 +877,91 @@ td.generalLabel {
     outline: none;
 }
 
+.addTorrentForm {
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: auto;
+    padding: 0 10px 10px;
+}
+
+.addTorrentForm *,
+.addTorrentForm *::before,
+.addTorrentForm *::after,
+.mobileDialogForm *,
+.mobileDialogForm *::before,
+.mobileDialogForm *::after {
+    box-sizing: border-box;
+}
+
+.addTorrentFlow {
+    margin: 0 auto;
+    max-width: 560px;
+}
+
+.addTorrentOptions {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.addTorrentOptionsTable {
+    border-spacing: 0 6px;
+    width: 100%;
+}
+
+.addTorrentOptionsTable td {
+    padding: 3px 4px;
+    vertical-align: middle;
+}
+
+.addTorrentOptionsTable td:first-child {
+    padding-right: 8px;
+    text-align: right;
+    white-space: normal;
+}
+
+.torrentFilePicker {
+    background-color: var(--color-background-default);
+    border-color: var(--color-border-default) !important;
+    max-width: 100%;
+    padding: 8px;
+}
+
+.mobileDialogForm {
+    display: grid;
+    gap: 5px;
+    max-width: 420px;
+    min-width: 0;
+    padding: 10px !important;
+}
+
+.mobileDialogForm input[type="text"] {
+    width: 100% !important;
+}
+
+.mobileDialogForm label {
+    margin-top: 6px;
+}
+
+.mobileDialogActions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.mobileFormError {
+    color: var(--color-text-red);
+    font-weight: bold;
+    min-height: 1.5em;
+    overflow-wrap: anywhere;
+    padding-top: 6px;
+    white-space: pre-line;
+}
+
+#download_error,
+#upload_error {
+    text-align: center;
+}
+
 /*
  * Workaround to prevent the transfer list from
  * disappearing when zooming in the browser.
@@ -1074,8 +1159,60 @@ td.statusBarSeparator {
 
 @media (width <= 600px) {
     #mochaToolbar {
+        align-items: center;
+        display: flex;
         flex-wrap: wrap;
         gap: 2px;
+        overflow-x: visible;
+        padding: 4px;
+    }
+
+    #mochaToolbar > a,
+    #queueingButtons > a {
+        align-items: center;
+        display: inline-flex;
+        justify-content: center;
+        min-height: 40px;
+        min-width: 40px;
+        padding: 0;
+    }
+
+    #mochaToolbar .divider {
+        background-image: none;
+        padding-left: 0;
+        padding-top: 0;
+    }
+
+    #mainWindowTabs {
+        float: none;
+        margin: 4px 0 0;
+        order: 20;
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    #queueingButtons {
+        display: flex;
+        gap: 4px;
+    }
+
+    #torrentsFilterToolbar {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        order: 30;
+        width: 100%;
+    }
+
+    #torrentsFilterInput {
+        flex: 1 1 180px;
+        min-width: 0;
+        width: auto;
+    }
+
+    .mochaToolButton {
+        margin-right: 0;
     }
 
     #mochaToolbar select,
@@ -1095,6 +1232,103 @@ td.statusBarSeparator {
         box-sizing: border-box;
         max-width: 100%;
         width: 100%;
+    }
+
+    .addTorrentForm {
+        padding: 8px 10px 14px !important;
+        text-align: left !important;
+    }
+
+    .addTorrentFlow {
+        max-width: none;
+        text-align: left !important;
+    }
+
+    .addTorrentFlow h2 {
+        text-align: left;
+    }
+
+    .addTorrentOptions {
+        margin-top: 10px !important;
+        padding: 0;
+    }
+
+    .addTorrentOptionsTable,
+    .addTorrentOptionsTable tbody,
+    .addTorrentOptionsTable tr,
+    .addTorrentOptionsTable td {
+        display: block;
+        width: 100%;
+    }
+
+    .addTorrentOptionsTable tr {
+        margin-bottom: 8px;
+    }
+
+    .addTorrentOptionsTable td {
+        padding: 0;
+    }
+
+    .addTorrentOptionsTable td:first-child {
+        padding-right: 0;
+        text-align: left;
+    }
+
+    #downloadForm .addTorrentOptionsTable input[type="text"],
+    #downloadForm .addTorrentOptionsTable select,
+    #uploadForm .addTorrentOptionsTable input[type="text"],
+    #uploadForm .addTorrentOptionsTable select {
+        max-width: 100%;
+        min-width: 0;
+        width: 100% !important;
+    }
+
+    #download_error,
+    #upload_error {
+        text-align: left;
+    }
+
+    #fileselect,
+    #urls {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    #urls {
+        min-height: 34vh;
+    }
+
+    .mobileDialogActions {
+        justify-content: stretch;
+        padding-top: 8px !important;
+    }
+
+    .mobileDialogActions button,
+    .mobileDialogActions input {
+        width: 100%;
+    }
+
+    .mobileDialogForm {
+        gap: 6px;
+        max-width: none;
+        padding: 12px !important;
+    }
+
+    .mobileFormError {
+        text-align: left;
+    }
+
+    .select-watched-folder-editable {
+        height: 36px;
+        width: 100%;
+    }
+
+    .select-watched-folder-editable input {
+        width: calc(100% - 18px) !important;
+    }
+
+    .select-watched-folder-editable select {
+        width: 100% !important;
     }
 
     .confirmDeletionGrid,

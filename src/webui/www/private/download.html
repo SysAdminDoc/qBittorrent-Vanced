@@ -17,15 +17,15 @@
 
 <body>
     <iframe id="download_frame" name="download_frame" class="invisible" title="" src="about:blank"></iframe>
-    <form action="api/v2/torrents/add" enctype="multipart/form-data" method="post" id="downloadForm" style="text-align: center;" target="download_frame" autocorrect="off" autocapitalize="none">
-        <div style="text-align: center;">
+    <form action="api/v2/torrents/add" enctype="multipart/form-data" method="post" id="downloadForm" class="addTorrentForm" style="text-align: center;" target="download_frame" autocorrect="off" autocapitalize="none">
+        <div class="addTorrentFlow" style="text-align: center;">
             <br>
             <h2><label for="urls">QBT_TR(Add torrent links)QBT_TR[CONTEXT=AddNewTorrentDialog]</label></h2>
             <textarea id="urls" rows="10" name="urls"></textarea>
             <p><i>QBT_TR(One link per line (HTTP links, Magnet links and info-hashes are supported))QBT_TR[CONTEXT=AddNewTorrentDialog]</i></p>
-            <fieldset class="settings" style="border: 0; text-align: left; margin-top: 6px;">
+            <fieldset class="settings addTorrentOptions" style="border: 0; text-align: left; margin-top: 6px;">
                 <legend>QBT_TR(Torrent options)QBT_TR[CONTEXT=AddNewTorrentDialog]</legend>
-                <table style="margin: auto;">
+                <table class="addTorrentOptionsTable" style="margin: auto;">
                     <tbody>
                         <tr>
                             <td>
@@ -152,7 +152,8 @@
                         </tr>
                     </tbody>
                 </table>
-                <div id="submitbutton" style="margin-top: 12px; text-align: center;">
+                <div id="download_error" class="mobileFormError" role="alert" aria-live="polite"></div>
+                <div id="submitbutton" class="mobileDialogActions" style="margin-top: 12px; text-align: center;">
                     <button type="submit" id="submitButton">QBT_TR(Download)QBT_TR[CONTEXT=downloadFromURL]</button>
                 </div>
             </fieldset>
@@ -172,7 +173,18 @@
 
         let submitted = false;
 
-        $("downloadForm").addEventListener("submit", () => {
+        $("urls").addEventListener("input", () => {
+            $("download_error").textContent = "";
+        });
+
+        $("downloadForm").addEventListener("submit", (event) => {
+            if ($("urls").value.trim() === "") {
+                event.preventDefault();
+                $("download_error").textContent = "QBT_TR(URL cannot be empty)QBT_TR[CONTEXT=RSSWidget]";
+                $("urls").focus();
+                return;
+            }
+
             $("startTorrentHidden").value = $("startTorrent").checked ? "false" : "true";
 
             $("dlLimitHidden").value = Number($("dlLimitText").value) * 1024;

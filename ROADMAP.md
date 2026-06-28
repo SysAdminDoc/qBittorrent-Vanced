@@ -75,13 +75,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 
 ## Research-Driven Additions
 
-- [ ] P2 — Add a mobile-first WebUI add/manage flow
-  Why: qBittorrent users repeatedly report mobile WebUI friction, while Flood/VueTorrent and commercial clients compete on touch-friendly add/play flows.
-  Evidence: qBittorrent issue #8887; Flood; VueTorrent; BitTorrent Web
-  Touches: `src/webui/www/private/index.html`, `src/webui/www/private/css/style.css`, `src/webui/www/private/scripts/*`, WebAPI tests
-  Acceptance: a 375px viewport can add magnets/torrents, set category/tag/save path, search/filter, select/delete, and recover from validation errors without horizontal trapping; mobile smoke tests cover the flow.
-  Complexity: L
-
 - [ ] P2 — Add dependency and security provenance to release artifacts
   Why: qBittorrent publishes library versions/checksums and recent OpenSSL/Qt/vcpkg releases show why binary provenance matters.
   Evidence: qBittorrent download page, OpenSSL security timeline, Qt 6.10.3 release notes, `vcpkg.json`

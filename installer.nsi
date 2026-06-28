@@ -6,10 +6,10 @@
 
 ; --- Version defines (override via makensis /DVANCED_VERSION=x.y.z /DBASE_VERSION=a.b.c.d) ---
 !ifndef VANCED_VERSION
-  !define VANCED_VERSION "1.0.1"
+  !define VANCED_VERSION "1.0.2"
 !endif
 !ifndef VANCED_VERSION_4
-  !define VANCED_VERSION_4 "1.0.1.0"
+  !define VANCED_VERSION_4 "1.0.2.0"
 !endif
 !ifndef BASE_VERSION
   !define BASE_VERSION "5.1.3.10"

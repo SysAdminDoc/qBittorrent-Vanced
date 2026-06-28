@@ -15,13 +15,13 @@
 
 <body>
     <iframe id="upload_frame" name="upload_frame" class="invisible" title="" src="about:blank"></iframe>
-    <form action="api/v2/torrents/add" enctype="multipart/form-data" method="post" id="uploadForm" style="text-align: center;" target="upload_frame" autocorrect="off" autocapitalize="none">
-        <div style="margin-top: 25px; display: inline-block; border: 1px solid lightgrey; border-radius: 4px;">
+    <form action="api/v2/torrents/add" enctype="multipart/form-data" method="post" id="uploadForm" class="addTorrentForm" style="text-align: center;" target="upload_frame" autocorrect="off" autocapitalize="none">
+        <div class="torrentFilePicker" style="margin-top: 25px; display: inline-block; border: 1px solid lightgrey; border-radius: 4px;">
             <input type="file" id="fileselect" accept=".torrent, application/x-bittorrent" name="fileselect[]" multiple aria-label="QBT_TR(Select .torrent files)QBT_TR[CONTEXT=AddNewTorrentDialog]">
         </div>
-        <fieldset class="settings" style="border: 0; text-align: left; margin-top: 12px;">
+        <fieldset class="settings addTorrentOptions" style="border: 0; text-align: left; margin-top: 12px;">
             <legend>QBT_TR(Torrent options)QBT_TR[CONTEXT=AddNewTorrentDialog]</legend>
-            <table style="margin: auto;">
+            <table class="addTorrentOptionsTable" style="margin: auto;">
                 <tbody>
                     <tr>
                         <td>
@@ -148,7 +148,8 @@
                     </tr>
                 </tbody>
             </table>
-            <div id="submitbutton" style="margin-top: 30px; text-align: center;">
+            <div id="upload_error" class="mobileFormError" role="alert" aria-live="polite"></div>
+            <div id="submitbutton" class="mobileDialogActions" style="margin-top: 30px; text-align: center;">
                 <button type="submit" style="font-size: 1em;">QBT_TR(Upload Torrents)QBT_TR[CONTEXT=HttpServer]</button>
             </div>
         </fieldset>
@@ -160,7 +161,18 @@
 
         let submitted = false;
 
-        $("uploadForm").addEventListener("submit", () => {
+        $("fileselect").addEventListener("change", () => {
+            $("upload_error").textContent = "";
+        });
+
+        $("uploadForm").addEventListener("submit", (event) => {
+            if ($("fileselect").files.length === 0) {
+                event.preventDefault();
+                $("upload_error").textContent = "QBT_TR(Select .torrent files)QBT_TR[CONTEXT=AddNewTorrentDialog]";
+                $("fileselect").focus();
+                return;
+            }
+
             $("startTorrentHidden").value = $("startTorrent").checked ? "false" : "true";
 
             $("dlLimitHidden").value = Number($("dlLimitText").value) * 1024;

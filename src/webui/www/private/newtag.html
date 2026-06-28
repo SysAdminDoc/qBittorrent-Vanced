@@ -29,6 +29,10 @@
 
             const searchParams = new URLSearchParams(window.location.search);
             const uriAction = window.qBittorrent.Misc.safeTrim(searchParams.get("action"));
+            const showError = (message, field = null) => {
+                $("tagError").textContent = message;
+                field?.focus();
+            };
 
             if (uriAction === "create")
                 $("legendText").textContent = "QBT_TR(Tag:)QBT_TR[CONTEXT=TagFilterWidget]";
@@ -42,10 +46,14 @@
                 const tagName = $("tagName").value.trim();
 
                 const verifyTagName = (name) => {
-                    if ((name === null) || (name === ""))
+                    $("tagError").textContent = "";
+
+                    if ((name === null) || (name === "")) {
+                        showError("QBT_TR(Name cannot be empty)QBT_TR[CONTEXT=HttpServer]", $("tagName"));
                         return false;
+                    }
                     if (name.includes(",")) {
-                        alert("QBT_TR(Invalid tag name)QBT_TR[CONTEXT=TagFilterWidget]");
+                        showError("QBT_TR(Invalid tag name)QBT_TR[CONTEXT=TagFilterWidget]", $("tagName"));
                         return false;
                     }
                     return true;
@@ -65,8 +73,10 @@
                                 })
                             })
                             .then(async (response) => {
-                                if (!response.ok)
+                                if (!response.ok) {
+                                    showError("QBT_TR(Unable to add tags)QBT_TR[CONTEXT=TagFilterWidget]");
                                     return;
+                                }
 
                                 window.parent.qBittorrent.Client.closeFrameWindow(window);
                             });
@@ -84,8 +94,10 @@
                                 })
                             })
                             .then(async (response) => {
-                                if (!response.ok)
+                                if (!response.ok) {
+                                    showError("QBT_TR(Unable to create tags)QBT_TR[CONTEXT=TagFilterWidget]");
                                     return;
+                                }
 
                                 window.parent.qBittorrent.Client.closeFrameWindow(window);
                             });
@@ -97,10 +109,11 @@
 </head>
 
 <body>
-    <div style="padding: 10px 10px 0px 10px;">
+    <div class="mobileDialogForm" style="padding: 10px 10px 0px 10px;">
         <label for="tagName" id="legendText" style="font-weight: bold;">QBT_TR(Comma-separated tags:)QBT_TR[CONTEXT=TransferListWidget]</label>
         <input type="text" id="tagName" style="width: 99%;">
-        <div style="text-align: center; padding-top: 10px;">
+        <div id="tagError" class="mobileFormError" role="alert" aria-live="polite"></div>
+        <div class="mobileDialogActions" style="text-align: center; padding-top: 10px;">
             <input type="button" value="QBT_TR(Add)QBT_TR[CONTEXT=HttpServer]" id="tagNameButton">
         </div>
     </div>

@@ -1,6 +1,6 @@
 # qBittorrent Vanced
 
-![Vanced](https://img.shields.io/badge/Vanced-v1.0.1-blue) ![Base](https://img.shields.io/badge/Enhanced_Edition-v5.1.3.10-blue) ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green) ![Platform](https://img.shields.io/badge/platform-Windows_x64-lightgrey)
+![Vanced](https://img.shields.io/badge/Vanced-v1.0.2-blue) ![Base](https://img.shields.io/badge/Enhanced_Edition-v5.1.3.10-blue) ![License](https://img.shields.io/badge/license-GPL--2.0--or--later-green) ![Platform](https://img.shields.io/badge/platform-Windows_x64-lightgrey)
 
 A customized build of [qBittorrent Enhanced Edition](https://github.com/c0re100/qBittorrent-Enhanced-Edition) with a modern dark theme, streamlined interface, and quality-of-life improvements.
 
@@ -30,6 +30,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Condensed vertical spacing throughout (tab bars, toolbars, table rows, headers, buttons)
 - Wider default column sizes so column titles aren't clipped
 - Cleaner batch operations, portable backup, torrent-card, toolbar, and dialog flows with clearer labels and feedback
+- Mobile-first WebUI add/manage dialogs for torrent links, local torrent files, category/tag edits, save-location edits, and toolbar/filter controls
 
 ### Inline Speed Controls
 
@@ -68,7 +69,7 @@ The build script discovers Visual Studio Build Tools/Community, CMake, Ninja, an
 Expected smoke output:
 
 ```text
-qBittorrent Vanced v1.0.1 (base: qBittorrent Enhanced Edition v5.1.3.10; upstream: qBittorrent v5.1.3)
+qBittorrent Vanced v1.0.2 (base: qBittorrent Enhanced Edition v5.1.3.10; upstream: qBittorrent v5.1.3)
 ```
 
 The batch wrapper exposes the same release smoke:
@@ -88,6 +89,7 @@ npm run lint
 ```
 
 The WebUI toolchain is pinned in `package.json` and `package-lock.json` so `npm ci` installs the same lint stack on each machine.
+Mobile WebUI smoke checks should include a 375px viewport for `download.html`, `upload.html`, `newcategory.html`, `newtag.html`, `setlocation.html`, and the main `index.html` toolbar/filter shell.
 
 ## License
 

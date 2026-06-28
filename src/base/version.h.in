@@ -36,7 +36,7 @@
 
 #define QBT_VANCED_VERSION_MAJOR 1
 #define QBT_VANCED_VERSION_MINOR 0
-#define QBT_VANCED_VERSION_BUGFIX 1
+#define QBT_VANCED_VERSION_BUGFIX 2
 #define QBT_VANCED_VERSION_STATUS ""  // Should be empty for stable releases!
 
 #define QBT__STRINGIFY(x) #x

@@ -2,7 +2,7 @@
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" manifestVersion="1.0">
   <assemblyIdentity
     name="org.qbittorrent.qBittorrent"
-    version="1.0.1.0"
+    version="1.0.2.0"
     processorArchitecture="*"
     type="win32"
   />

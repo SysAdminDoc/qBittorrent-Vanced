@@ -100,13 +100,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 ## Research-Driven Additions
 
-- [ ] P0 - Add redirect hardening regression coverage
-  Why: Vanced now has a local redirect scheme allowlist, but the SSRF-class behavior needs a test so future upstream merges cannot reopen it.
-  Evidence: qBittorrent 5.2.1 SSRF redirect fix, src/base/net/downloadhandlerimpl.cpp.
-  Touches: src/base/net/downloadhandlerimpl.cpp, test/CMakeLists.txt, test/.
-  Acceptance: tests prove HTTP/HTTPS redirects are followed, magnet redirects return the magnet handoff status, file/javascript/ftp redirects fail with the dangerous-protocol error, and max redirect count still fails closed.
-  Complexity: M
-
 - [ ] P1 - Backport reverse-proxy Host/X-Forwarded-Host handling
   Why: qBittorrent 5.2.2 limits X-Forwarded-Host use to explicit reverse-proxy mode, while community issues show WebUI Host/CSRF behavior remains fragile behind Cloudflare and Nginx.
   Evidence: qBittorrent 5.2.2 changelog entry for #24457, qBittorrent issues #21106 and #21673, src/webui/webapplication.cpp.

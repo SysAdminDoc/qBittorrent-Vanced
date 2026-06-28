@@ -229,10 +229,11 @@ void Net::DownloadHandlerImpl::handleRedirection(const QUrl &newUrl)
         return;
     }
 
-    const QString scheme = resolvedUrl.scheme().toLower();
+    // SSRF protection: strict scheme whitelist
+    const QString scheme = resolvedUrl.scheme();
     if ((scheme != u"http") && (scheme != u"https"))
     {
-        setError(tr("Redirect to unsupported scheme: %1").arg(scheme));
+        setError(tr("Redirect to unsupported or dangerous protocol: '%1'.").arg(scheme));
         finish();
         return;
     }

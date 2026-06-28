@@ -107,18 +107,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 
 Note: existing research wording that says `.qbttheme` is stale; qBittorrent's current documented bundle extension and this repo's loader use `.qbtheme`.
 
-- [ ] Backport safe redirect scheme handling for torrent URL downloads
-  Status: Proposed
-  Category: Security
-  Priority: P0
-  Time horizon: Now
-  User value: Prevents malicious torrent URL redirects from reaching unsupported/local schemes while preserving normal HTTP, HTTPS, and magnet flows.
-  Implementation notes: Compare upstream qBittorrent 5.2.1 security patch `#24270`; update `Net::DownloadHandlerImpl::handleRedirection()` and/or `DownloadManager::hasSupportedScheme()` to allow only expected redirect schemes; add tests for `http -> https`, `http -> magnet`, `http -> file`, `http -> ftp`, relative redirects, and max-redirect behavior.
-  Dependencies: Current `DownloadManager` test harness or new Qt network unit tests.
-  Risks: Overly strict scheme handling could break legitimate torrent URL sources; preserve magnet redirect behavior explicitly.
-  Acceptance criteria: Redirects to `file://`, `ftp://`, and unknown schemes fail with a clear error; `http(s)` and `magnet:` redirects still work; regression tests cover accepted and rejected redirects.
-  Research references: `RESEARCH.md` > `Research Pass — 2026-06-19 Expansion` > `Feature Gap Analysis`; local `src/base/net/downloadhandlerimpl.cpp`, `src/base/net/downloadmanager.cpp`; qBittorrent v5.2.1 news.
-
 - [ ] Add path/action validation and recovery for WebUI move/delete flows
   Status: Proposed
   Category: Reliability

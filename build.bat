@@ -4,14 +4,21 @@ setlocal
 set "PROJECT_ROOT=%~dp0"
 if "%PROJECT_ROOT:~-1%"=="\" set "PROJECT_ROOT=%PROJECT_ROOT:~0,-1%"
 set "TEST_BUILD=OFF"
+set "RELEASE_GATE=OFF"
 
 :parse_args
 if "%~1"=="" goto after_args
 if /i "%~1"=="--test" set "TEST_BUILD=ON"
 if /i "%~1"=="--verify" rem accepted for parity with build.ps1; verification runs after every build
+if /i "%~1"=="--release-gate" set "RELEASE_GATE=ON"
 shift
 goto parse_args
 :after_args
+
+if "%RELEASE_GATE%"=="ON" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PROJECT_ROOT%\build.ps1" -ReleaseGate
+    exit /b %ERRORLEVEL%
+)
 
 :: Find Visual Studio via vswhere if available
 set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"

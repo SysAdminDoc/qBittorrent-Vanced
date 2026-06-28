@@ -100,13 +100,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 ## Research-Driven Additions
 
-- [ ] P0 - Add a local release verification gate
-  Why: GitHub Actions are intentionally absent, so release trust needs a repeatable local command that replaces CI without remote workflows.
-  Evidence: c878dc2ee, .github/workflows absent, qBittorrent 5.2.2 release library-version disclosure.
-  Touches: build.ps1, build.bat, package.ps1, build_dist.sh, installer.nsi, dist/windows/config.nsh, vcpkg.json.
-  Acceptance: one local command cleans stale artifacts, builds Release, runs WebUI lint, verifies qbittorrent.exe --version, packages installer and portable ZIP, writes SHA256/provenance output, and exits nonzero on version/license/dependency mismatches.
-  Complexity: M
-
 - [ ] P0 - Add redirect hardening regression coverage
   Why: Vanced now has a local redirect scheme allowlist, but the SSRF-class behavior needs a test so future upstream merges cannot reopen it.
   Evidence: qBittorrent 5.2.1 SSRF redirect fix, src/base/net/downloadhandlerimpl.cpp.

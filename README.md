@@ -80,6 +80,14 @@ build.bat --verify
 
 Optional C++ tests use `build.ps1 -Test` or `build.bat --test`. They require the Qt6 Test component (`qtbase[testlib]`) to be installed in the local vcpkg tree; without it the `check` target fails with setup guidance.
 
+For a local release verification gate, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1 -ReleaseGate
+```
+
+The gate checks version/license/dependency metadata, installs the pinned WebUI lint toolchain, runs WebUI lint, builds and verifies `qbittorrent.exe`, cleans stale release artifacts, builds the portable ZIP and NSIS installer, then writes `release\SHA256SUMS.txt`, `release\RELEASE-PROVENANCE.txt`, and `release\ADVISORY-CHECK.txt`.
+
 ### WebUI Checks
 
 ```powershell

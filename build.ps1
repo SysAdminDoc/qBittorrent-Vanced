@@ -1,12 +1,167 @@
 param(
     [switch]$Test,
     [switch]$Verify,
+    [switch]$ReleaseGate,
     [string]$VSPath
 )
 
 $ErrorActionPreference = "Stop"
 $projectRoot = $PSScriptRoot
 if (-not $projectRoot) { $projectRoot = (Get-Location).Path }
+
+function Get-RegexValue {
+    param(
+        [string]$Text,
+        [string]$Pattern,
+        [string]$Label
+    )
+
+    $match = [regex]::Match($Text, $Pattern)
+    if (-not $match.Success) {
+        throw "Could not read $Label from version metadata."
+    }
+
+    return $match.Groups[1].Value
+}
+
+function Get-ReleaseInfo {
+    $versionHeader = Get-Content (Join-Path $projectRoot "src\base\version.h.in") -Raw
+
+    $baseMajor = Get-RegexValue $versionHeader '#define QBT_VERSION_MAJOR\s+(\d+)' "base major version"
+    $baseMinor = Get-RegexValue $versionHeader '#define QBT_VERSION_MINOR\s+(\d+)' "base minor version"
+    $baseBugfix = Get-RegexValue $versionHeader '#define QBT_VERSION_BUGFIX\s+(\d+)' "base bugfix version"
+    $baseBuild = Get-RegexValue $versionHeader '#define QBT_VERSION_BUILD\s+(\d+)' "base build version"
+    $vancedMajor = Get-RegexValue $versionHeader '#define QBT_VANCED_VERSION_MAJOR\s+(\d+)' "Vanced major version"
+    $vancedMinor = Get-RegexValue $versionHeader '#define QBT_VANCED_VERSION_MINOR\s+(\d+)' "Vanced minor version"
+    $vancedBugfix = Get-RegexValue $versionHeader '#define QBT_VANCED_VERSION_BUGFIX\s+(\d+)' "Vanced bugfix version"
+    $upstream = Get-RegexValue $versionHeader '#define QBT_UPSTREAM_VERSION_2\s+"([^"]+)"' "upstream version"
+
+    $baseVersion = "$baseMajor.$baseMinor.$baseBugfix"
+    if ($baseBuild -ne "0") {
+        $baseVersion = "$baseVersion.$baseBuild"
+    }
+
+    return [pscustomobject]@{
+        Base = $baseVersion
+        Vanced = "$vancedMajor.$vancedMinor.$vancedBugfix"
+        Upstream = $upstream
+    }
+}
+
+function Assert-FileContains {
+    param(
+        [string]$Path,
+        [string]$Needle,
+        [string]$Label
+    )
+
+    $fullPath = Join-Path $projectRoot $Path
+    if (-not (Test-Path $fullPath)) {
+        throw "$Label missing: $Path"
+    }
+
+    $text = Get-Content $fullPath -Raw
+    if (-not $text.Contains($Needle)) {
+        throw "$Label mismatch in ${Path}: expected '$Needle'."
+    }
+}
+
+function Test-ManifestDependency {
+    param(
+        [object]$Manifest,
+        [string]$Name
+    )
+
+    foreach ($dependency in $Manifest.dependencies) {
+        if (($dependency -is [string]) -and ($dependency -eq $Name)) {
+            return $true
+        }
+        if (($dependency -isnot [string]) -and ($dependency.name -eq $Name)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Assert-ReleaseMetadata {
+    param([object]$ReleaseInfo)
+
+    Write-Output "=== Checking release metadata ==="
+
+    Assert-FileContains "README.md" "Vanced-v$($ReleaseInfo.Vanced)" "README badge"
+    Assert-FileContains "README.md" "license-GPL--2.0--or--later" "README license badge"
+    Assert-FileContains "README.md" "qBittorrent Vanced v$($ReleaseInfo.Vanced) (base: qBittorrent Enhanced Edition v$($ReleaseInfo.Base); upstream: qBittorrent v$($ReleaseInfo.Upstream))" "README smoke output"
+    Assert-FileContains "installer.nsi" "!define VANCED_VERSION `"$($ReleaseInfo.Vanced)`"" "NSIS Vanced version"
+    Assert-FileContains "installer.nsi" "!define VANCED_VERSION_4 `"$($ReleaseInfo.Vanced).0`"" "NSIS four-part Vanced version"
+    Assert-FileContains "dist\windows\config.nsh" "!define /ifndef QBT_VANCED_VERSION `"$($ReleaseInfo.Vanced)`"" "Windows installer config version"
+    Assert-FileContains "src\qbittorrent.exe.manifest" "version=`"$($ReleaseInfo.Vanced).0`"" "Windows application manifest version"
+
+    foreach ($licensePath in @("LICENSE", "COPYING", "COPYING.GPLv2", "COPYING.GPLv3")) {
+        if (-not (Test-Path (Join-Path $projectRoot $licensePath))) {
+            throw "License file missing: $licensePath"
+        }
+    }
+
+    $vcpkgJson = Get-Content (Join-Path $projectRoot "vcpkg.json") -Raw | ConvertFrom-Json
+    if ($vcpkgJson.'version-string' -ne $ReleaseInfo.Vanced) {
+        throw "vcpkg.json version-string '$($vcpkgJson.'version-string')' does not match Vanced $($ReleaseInfo.Vanced)."
+    }
+    if ($vcpkgJson.description -notlike "*v$($ReleaseInfo.Vanced)*") {
+        throw "vcpkg.json description does not mention Vanced v$($ReleaseInfo.Vanced)."
+    }
+    if ($vcpkgJson.license -ne "GPL-2.0-or-later") {
+        throw "vcpkg.json license '$($vcpkgJson.license)' does not match GPL-2.0-or-later source licensing."
+    }
+    if (-not $vcpkgJson.'builtin-baseline') {
+        throw "vcpkg.json must pin builtin-baseline for reproducible releases."
+    }
+
+    foreach ($dependency in @("boost-circular-buffer", "boost-stacktrace", "libtorrent", "openssl", "qtbase", "qtsvg", "qttools", "zlib")) {
+        if (-not (Test-ManifestDependency $vcpkgJson $dependency)) {
+            throw "vcpkg.json is missing required dependency '$dependency'."
+        }
+    }
+
+    $workflowDir = Join-Path $projectRoot ".github\workflows"
+    if ((Test-Path $workflowDir) -and (Get-ChildItem -Path $workflowDir -File -ErrorAction SilentlyContinue)) {
+        throw "GitHub Actions workflows are present; releases must be verified locally in this repo."
+    }
+
+    Write-Output "=== Release metadata OK ==="
+}
+
+function Invoke-WebUILint {
+    $webuiPath = Join-Path $projectRoot "src\webui\www"
+    if (-not (Test-Path (Join-Path $webuiPath "package-lock.json"))) {
+        throw "WebUI package-lock.json missing; cannot run deterministic lint."
+    }
+
+    Push-Location $webuiPath
+    try {
+        Write-Output "=== Installing WebUI lint dependencies ==="
+        & npm ci
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm ci failed with exit code $LASTEXITCODE"
+        }
+
+        Write-Output "=== Running WebUI lint ==="
+        & npm run lint
+        if ($LASTEXITCODE -ne 0) {
+            throw "npm run lint failed with exit code $LASTEXITCODE"
+        }
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+$releaseInfo = Get-ReleaseInfo
+
+if ($ReleaseGate) {
+    Assert-ReleaseMetadata $releaseInfo
+    Invoke-WebUILint
+}
 
 if (-not $VSPath) {
     $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -129,9 +284,26 @@ if ($Test) {
 if ($exe) {
     Write-Output "=== Verifying executable ==="
     & $exe.FullName --version
-    if ($LASTEXITCODE -ne 0) {
+    if (($null -ne $LASTEXITCODE) -and ($LASTEXITCODE -ne 0)) {
         Write-Error "Executable verification failed with exit code $LASTEXITCODE"
         exit 1
     }
+    $expectedVersion = "qBittorrent Vanced v$($releaseInfo.Vanced) (base: qBittorrent Enhanced Edition v$($releaseInfo.Base); upstream: qBittorrent v$($releaseInfo.Upstream))"
+    $versionInfo = (Get-Item $exe.FullName).VersionInfo
+    if (($versionInfo.FileVersion -ne $releaseInfo.Vanced) -or ($versionInfo.ProductVersion -ne $expectedVersion)) {
+        Write-Error "Executable version resource mismatch. Expected '$expectedVersion', got file '$($versionInfo.FileVersion)' product '$($versionInfo.ProductVersion)'."
+        exit 1
+    }
+    Write-Output $expectedVersion
     Write-Output "=== Verification complete ==="
+}
+
+if ($ReleaseGate) {
+    Write-Output "=== Packaging release artifacts ==="
+    & (Join-Path $projectRoot "package.ps1") -Version $releaseInfo.Vanced -BaseVersion $releaseInfo.Base -Clean -BuildInstaller
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Packaging failed with exit code $LASTEXITCODE"
+        exit 1
+    }
+    Write-Output "=== Release gate complete ==="
 }

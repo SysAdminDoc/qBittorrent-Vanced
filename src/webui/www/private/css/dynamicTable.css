@@ -196,7 +196,7 @@ div:has(> div.dynamicTableFixedHeaderDiv):not(.invisible) {
     }
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
     .dynamicTableDiv {
         -webkit-overflow-scrolling: touch;
     }

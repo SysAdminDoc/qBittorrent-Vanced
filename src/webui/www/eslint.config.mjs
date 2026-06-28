@@ -54,7 +54,7 @@ export default [
                 "double",
                 {
                     avoidEscape: true,
-                    allowTemplateLiterals: true
+                    allowTemplateLiterals: "always"
                 }
             ],
             "Stylistic/quote-props": ["error", "consistent-as-needed"],

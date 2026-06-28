@@ -79,6 +79,16 @@ build.bat --verify
 
 Optional C++ tests use `build.ps1 -Test` or `build.bat --test`. They require the Qt6 Test component (`qtbase[testlib]`) to be installed in the local vcpkg tree; without it the `check` target fails with setup guidance.
 
+### WebUI Checks
+
+```powershell
+cd src\webui\www
+npm ci
+npm run lint
+```
+
+The WebUI toolchain is pinned in `package.json` and `package-lock.json` so `npm ci` installs the same lint stack on each machine.
+
 ## License
 
 Licensed under the [GNU General Public License v2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) (or later), same as upstream qBittorrent.

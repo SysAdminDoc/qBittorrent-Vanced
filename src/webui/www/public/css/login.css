@@ -17,7 +17,7 @@
     --login-error: #f38ba8;
     --login-input-bg: #181825;
     --login-button-text: #11111b;
-    --login-shadow: rgba(0, 0, 0, 0.24);
+    --login-shadow: rgb(0 0 0 / 24%);
     --login-radius: 12px;
 }
 
@@ -34,39 +34,39 @@
         --login-error: #d20f39;
         --login-input-bg: #dce0e8;
         --login-button-text: #eff1f5;
-        --login-shadow: rgba(0, 0, 0, 0.12);
+        --login-shadow: rgb(0 0 0 / 12%);
     }
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
+    align-items: center;
     background-color: var(--login-bg);
     color: var(--login-text);
-    min-height: 100vh;
     display: flex;
-    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
     justify-content: center;
+    line-height: 1.5;
+    min-height: 100vh;
 }
 
 #main {
     background-color: var(--login-surface);
     border: 1px solid var(--login-border);
     border-radius: var(--login-radius);
-    padding: 48px 40px 40px;
-    width: 100%;
-    max-width: 380px;
-    text-align: center;
     box-shadow: 0 8px 32px var(--login-shadow);
+    max-width: 380px;
+    padding: 48px 40px 40px;
+    text-align: center;
+    width: 100%;
 }
 
 #main h1 {
+    color: var(--login-text);
     font-size: 20px;
     font-weight: 600;
     letter-spacing: -0.01em;
     margin-bottom: 32px;
-    color: var(--login-text);
 }
 
 .col {
@@ -80,8 +80,8 @@ body {
 
 #logo img {
     height: 64px;
-    width: 64px;
     opacity: 0.9;
+    width: 64px;
 }
 
 #formplace {
@@ -99,25 +99,25 @@ body {
 }
 
 label {
+    color: var(--login-subtext);
     display: block;
     font-size: 13px;
     font-weight: 500;
-    color: var(--login-subtext);
     margin-bottom: 6px;
 }
 
 input[type="text"],
 input[type="password"] {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--login-text);
     background-color: var(--login-input-bg);
     border: 1px solid var(--login-border);
     border-radius: 8px;
+    color: var(--login-text);
+    font-size: 14px;
+    line-height: 1.5;
     outline: none;
+    padding: 10px 14px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    width: 100%;
 }
 
 input[type="text"]:focus,
@@ -133,17 +133,17 @@ input[type="password"]::placeholder {
 }
 
 #loginButton {
-    float: none;
-    width: 100%;
-    padding: 10px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--login-button-text);
     background-color: var(--login-accent);
     border: none;
     border-radius: 8px;
+    color: var(--login-button-text);
     cursor: pointer;
+    float: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 20px;
     transition: background-color 0.15s ease, transform 0.1s ease;
+    width: 100%;
 }
 
 #loginButton:hover {
@@ -164,9 +164,9 @@ input[type="password"]::placeholder {
     font-size: 13px;
     font-weight: 500;
     margin-top: 16px;
-    white-space: pre-wrap;
-    text-align: center;
     min-height: 20px;
+    text-align: center;
+    white-space: pre-wrap;
 }
 
 #error_msg:empty {

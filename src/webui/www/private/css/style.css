@@ -55,7 +55,7 @@
         --color-background-surface: #1e1e2e; /* Base */
         --color-background-alt: #181825; /* Mantle */
         --color-background-input: #11111b; /* Crust */
-        --color-focus-ring: rgba(137, 180, 250, 0.4); /* Blue 40% */
+        --color-focus-ring: rgb(137 180 250 / 40%); /* Blue 40% */
         --color-border-blue: #89b4fa; /* Blue */
         --color-border-default: #313244; /* Surface0 */
         --color-icon-hover: brightness(0) saturate(100%) invert(100%) sepia(0%)
@@ -1038,21 +1038,21 @@ td.statusBarSeparator {
 }
 
 /* Tablet: condensed layout with larger touch targets */
-@media (max-width: 768px) {
+@media (width <= 768px) {
     a.propButton {
         padding: 6px;
     }
 
     a.propButton img {
-        width: 20px;
         height: 20px;
+        width: 20px;
     }
 
     #Filters ul li a {
-        padding: 4px 8px;
-        min-height: 36px;
-        display: flex;
         align-items: center;
+        display: flex;
+        min-height: 36px;
+        padding: 4px 8px;
     }
 
     input[type="search"],
@@ -1060,19 +1060,19 @@ td.statusBarSeparator {
     input[type="number"],
     input[type="password"],
     select {
-        padding: 7px 10px;
         min-height: 36px;
+        padding: 7px 10px;
     }
 
     input[type="button"],
     input[type="submit"],
     button {
-        padding: 7px 14px;
         min-height: 36px;
+        padding: 7px 14px;
     }
 }
 
-@media (max-width: 600px) {
+@media (width <= 600px) {
     #mochaToolbar {
         flex-wrap: wrap;
         gap: 2px;
@@ -1092,9 +1092,9 @@ td.statusBarSeparator {
     .formRow input[type="text"],
     .formRow select,
     .formRow textarea {
+        box-sizing: border-box;
         max-width: 100%;
         width: 100%;
-        box-sizing: border-box;
     }
 
     .confirmDeletionGrid,

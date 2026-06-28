@@ -80,9 +80,9 @@
                     return;
 
                 const shareLimit = getSelectedRadioValue("shareLimit");
-                let ratioLimitValue = 0.00;
-                let seedingTimeLimitValue = 0;
-                let inactiveSeedingTimeLimitValue = 0;
+                let ratioLimitValue;
+                let seedingTimeLimitValue;
+                let inactiveSeedingTimeLimitValue;
 
                 if (shareLimit === "default") {
                     ratioLimitValue = seedingTimeLimitValue = inactiveSeedingTimeLimitValue = UseGlobalLimit;

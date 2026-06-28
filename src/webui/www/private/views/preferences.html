@@ -346,7 +346,7 @@
                             <label for="mail_password_text">QBT_TR(Password:)QBT_TR[CONTEXT=OptionsDialog]</label>
                         </td>
                         <td>
-                            <input type="password" id="mail_password_text">
+                            <input type="password" id="mail_password_text" autocomplete="current-password">
                         </td>
                     </tr>
                 </tbody>
@@ -535,7 +535,7 @@
                             <label for="peer_proxy_password_text">QBT_TR(Password:)QBT_TR[CONTEXT=OptionsDialog]</label>
                         </td>
                         <td>
-                            <input type="password" id="peer_proxy_password_text">
+                            <input type="password" id="peer_proxy_password_text" autocomplete="current-password">
                         </td>
                     </tr>
                 </tbody>
@@ -1139,7 +1139,7 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
                         <label for="dyndns_password_text">QBT_TR(Password:)QBT_TR[CONTEXT=OptionsDialog]</label>
                     </td>
                     <td>
-                        <input type="password" id="dyndns_password_text">
+                        <input type="password" id="dyndns_password_text" autocomplete="current-password">
                     </td>
                 </tr>
             </tbody>
@@ -2330,7 +2330,7 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
                             continue;
 
                         const folderType = pref.scan_dirs[folder];
-                        let sel = "";
+                        let sel;
                         let other = "";
                         if (typeof folderType === "number") {
                             sel = (folderType === 0) ? "watch_folder" : "default_folder";
@@ -2494,7 +2494,7 @@ Use ';' to split multiple entries. Can use wildcard '*'.)QBT_TR[CONTEXT=OptionsD
                     $("max_seeding_time_value").value = (pref.max_seeding_time_enabled ? Number(pref.max_seeding_time) : 1440);
                     $("max_inactive_seeding_time_checkbox").checked = pref.max_inactive_seeding_time_enabled;
                     $("max_inactive_seeding_time_value").value = (pref.max_inactive_seeding_time_enabled ? Number(pref.max_inactive_seeding_time) : 1440);
-                    let maxRatioAct = 0;
+                    let maxRatioAct;
                     switch (Number(pref.max_ratio_act)) {
                         case 0: // Stop
                         default:

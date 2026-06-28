@@ -394,7 +394,7 @@ td.speedLabel {
 }
 
 /* Mobile responsive layout */
-@media (max-width: 600px) {
+@media (width <= 600px) {
     #desktop {
         min-width: auto;
     }
@@ -426,8 +426,8 @@ td.speedLabel {
     }
 
     #desktopFooterWrapper {
-        position: relative;
         height: auto;
+        position: relative;
     }
 
     #desktopFooter {
@@ -441,13 +441,13 @@ td.speedLabel {
 
     .toolbox {
         float: none;
-        text-align: left;
         padding: 4px;
+        text-align: left;
     }
 
     .iconWrapper {
-        min-width: 44px;
         height: 44px;
+        min-width: 44px;
     }
 
     .iconWrapper img {

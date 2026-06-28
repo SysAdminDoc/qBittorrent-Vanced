@@ -75,13 +75,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 
 ## Research-Driven Additions
 
-- [ ] P1 — Make WebUI dependency and lint runs reproducible
-  Why: Wildcard WebUI devDependencies make lint/format/security behavior drift between releases and machines.
-  Evidence: `src/webui/www/package.json`
-  Touches: `src/webui/www/package.json`, WebUI lockfile, CI workflow
-  Acceptance: a pinned lockfile is committed, `npm ci` or equivalent works offline from the lock, and `npm run lint` is deterministic in CI.
-  Complexity: S
-
 - [ ] P1 — Restore localized manpage encoding and issue routing
   Why: Russian manpage sources are mojibake and generated docs still point bug reports at upstream qBittorrent without a Vanced policy.
   Evidence: `doc/ru/qbittorrent.1.md`, `doc/ru/qbittorrent-nox.1.md`, `doc/en/qbittorrent.1.md`

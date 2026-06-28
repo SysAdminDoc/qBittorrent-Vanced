@@ -104,3 +104,61 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
   Risks: Strict validation may block legitimate paths not visible from the UI process; preserve advanced override with explicit warning if needed.
   Acceptance criteria: WebAPI returns actionable errors for invalid/unwritable destinations; WebUI displays recovery guidance; tests cover invalid path, permission failure, existing destination, and success.
   Research references: `RESEARCH.md` > `Improvement Opportunities for Current Features`; local `src/webui/api/torrentscontroller.cpp`; qBittorrent v5.2.x Add Torrent and WebUI recovery fixes.
+
+## Research-Driven Additions
+
+- [ ] P0 - Add a local release verification gate
+  Why: GitHub Actions are intentionally absent, so release trust needs a repeatable local command that replaces CI without remote workflows.
+  Evidence: c878dc2ee, .github/workflows absent, qBittorrent 5.2.2 release library-version disclosure.
+  Touches: build.ps1, build.bat, package.ps1, build_dist.sh, installer.nsi, dist/windows/config.nsh, vcpkg.json.
+  Acceptance: one local command cleans stale artifacts, builds Release, runs WebUI lint, verifies qbittorrent.exe --version, packages installer and portable ZIP, writes SHA256/provenance output, and exits nonzero on version/license/dependency mismatches.
+  Complexity: M
+
+- [ ] P0 - Add redirect hardening regression coverage
+  Why: Vanced now has a local redirect scheme allowlist, but the SSRF-class behavior needs a test so future upstream merges cannot reopen it.
+  Evidence: qBittorrent 5.2.1 SSRF redirect fix, src/base/net/downloadhandlerimpl.cpp.
+  Touches: src/base/net/downloadhandlerimpl.cpp, test/CMakeLists.txt, test/.
+  Acceptance: tests prove HTTP/HTTPS redirects are followed, magnet redirects return the magnet handoff status, file/javascript/ftp redirects fail with the dangerous-protocol error, and max redirect count still fails closed.
+  Complexity: M
+
+- [ ] P1 - Backport reverse-proxy Host/X-Forwarded-Host handling
+  Why: qBittorrent 5.2.2 limits X-Forwarded-Host use to explicit reverse-proxy mode, while community issues show WebUI Host/CSRF behavior remains fragile behind Cloudflare and Nginx.
+  Evidence: qBittorrent 5.2.2 changelog entry for #24457, qBittorrent issues #21106 and #21673, src/webui/webapplication.cpp.
+  Touches: src/webui/webapplication.cpp, src/base/preferences.*, src/webui/api/appcontroller.*, WebUI options text.
+  Acceptance: reverse-proxy disabled ignores X-Forwarded-Host, reverse-proxy enabled accepts configured forwarded hosts, CSRF/Host failures produce actionable log messages, and local/non-proxy WebUI behavior is unchanged.
+  Complexity: M
+
+- [ ] P1 - Add large-library WebUI and queue performance smoke
+  Why: 10k+ torrent sessions expose CPU, queueing, checkbox, and sync-update regressions that ordinary smoke tests miss.
+  Evidence: qBittorrent issue #23384, qBittorrent 5.2.2 WebUI global-checkbox performance fix, src/webui/api/synccontroller.cpp, src/webui/www/private/scripts/dynamicTable.js.
+  Touches: src/base/bittorrent/sessionimpl.cpp, src/webui/api/synccontroller.cpp, src/webui/www/private/scripts/*.js, test fixtures.
+  Acceptance: a synthetic profile with at least 10,000 torrent records can load the WebUI transfer list, toggle global selection, apply queue filters, and request sync data under documented CPU/time ceilings.
+  Complexity: L
+
+- [ ] P1 - Add WebAPI compatibility smoke for automation clients
+  Why: qBittorrent 5.2.x clients and tools expect stable categories, tags, auth, and WebAPI version behavior, and Vanced currently has no compatibility fixture.
+  Evidence: qBittorrent API-key documentation, qbittorrent-api v5.2.2 support, autobrr qBittorrent action docs, qbit_manage category/tag cleanup docs.
+  Touches: src/webui/api/*controller.*, src/webui/webapplication.cpp, src/base/preferences.*, test or tooling scripts.
+  Acceptance: smoke script authenticates, reads app/version data, creates categories/tags, adds a paused magnet or fixture torrent, sets save path/category/tags, queries transfer info, and records the supported WebAPI version without requiring real tracker traffic.
+  Complexity: M
+
+- [ ] P2 - Bump dependency baseline for libtorrent web seed credential hardening
+  Why: libtorrent 2.0.13 clears HTTP credentials on redirected web seeds and fixes Merkle proof cleanup; Vanced's vcpkg baseline should not lag known torrent-core security fixes.
+  Evidence: libtorrent 2.0.13 release notes, vcpkg.json, qBittorrent 5.2.2 library versions.
+  Touches: vcpkg.json, build scripts, release provenance output, smoke documentation.
+  Acceptance: local build uses a baseline containing libtorrent 2.0.13 or an explicitly patched equivalent, release provenance prints the resolved libtorrent version, and web seed redirect behavior is covered by a targeted smoke/test.
+  Complexity: M
+
+- [ ] P2 - Add hardlink and atomic-move setup validation
+  Why: media automation users rely on qBittorrent categories and save paths preserving hardlinks; valid writable paths can still cause slow copies or broken imports across filesystems.
+  Evidence: TRaSH hardlink/atomic-move guide, autobrr category/save-path docs, src/webui/api/torrentscontroller.cpp, category dialogs.
+  Touches: src/gui/torrentcategorydialog.*, src/gui/addnewtorrentdialog.*, src/webui/api/torrentscontroller.cpp, WebUI category/location dialogs.
+  Acceptance: category/save-location flows warn when paths cross filesystem roots or cannot support hardlinks, show the resolved category save path before apply, and keep advanced users able to proceed after an explicit warning.
+  Complexity: M
+
+- [ ] P2 - Add official-source and checksum cues to installer and About surfaces
+  Why: upstream qBittorrent warns about repackaged store clones; Vanced should make official GitHub releases, GPL source availability, and artifact hashes visible without telemetry or marketing.
+  Evidence: qBittorrent 5.2.2 scam warning, installer.nsi, dist/windows/config.nsh, src/gui/aboutdialog.cpp.
+  Touches: installer.nsi, dist/windows/config.nsh, src/gui/aboutdialog.*, package/provenance scripts.
+  Acceptance: installer and About dialog show the official repository URL and release identity, package output includes SHA256 files beside artifacts, and no user-facing path suggests Microsoft Store or third-party download channels.
+  Complexity: S

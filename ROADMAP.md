@@ -77,18 +77,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 
 Note: existing research wording that says `.qbttheme` is stale; qBittorrent's current documented bundle extension and this repo's loader use `.qbtheme`.
 
-- [ ] Add path/action validation and recovery for WebUI move/delete flows
-  Status: Proposed
-  Category: Reliability
-  Priority: P2
-  Time horizon: Next
-  User value: Reduces data-loss and automation-breakage risk when users move torrents, change save locations, or run bulk actions remotely.
-  Implementation notes: Resolve the local `setLocation` destination validation TODO; preflight path existence/permissions; improve WebUI error copy; add dry-run style summaries for bulk move/delete/category operations where feasible.
-  Dependencies: WebAPI test harness and current mobile WebUI smoke.
-  Risks: Strict validation may block legitimate paths not visible from the UI process; preserve advanced override with explicit warning if needed.
-  Acceptance criteria: WebAPI returns actionable errors for invalid/unwritable destinations; WebUI displays recovery guidance; tests cover invalid path, permission failure, existing destination, and success.
-  Research references: `RESEARCH.md` > `Improvement Opportunities for Current Features`; local `src/webui/api/torrentscontroller.cpp`; qBittorrent v5.2.x Add Torrent and WebUI recovery fixes.
-
 ## Research-Driven Additions
 
 - [ ] P2 - Add hardlink and atomic-move setup validation

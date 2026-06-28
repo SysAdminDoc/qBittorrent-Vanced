@@ -129,7 +129,7 @@ namespace
 
     void displayVersion()
     {
-        printf("%s %s\n", qUtf8Printable(qApp->applicationName()), QBT_VERSION);
+        printf("%s\n", QBT_RELEASE_IDENTITY);
     }
 
 #ifndef DISABLE_GUI
@@ -137,7 +137,7 @@ namespace
     {
         QPixmap splashImg(u":/icons/splash.png"_s);
         QPainter painter(&splashImg);
-        const auto version = QStringLiteral(QBT_VERSION);
+        const auto version = QStringLiteral(QBT_VANCED_VERSION);
         painter.setPen(QPen(Qt::white));
         painter.setFont(QFont(u"Arial"_s, 22, QFont::Black));
         painter.drawText(224 - painter.fontMetrics().horizontalAdvance(version), 270, version);
@@ -210,7 +210,6 @@ int main(int argc, char *argv[])
                                                         "--random-parameter is an unknown command line parameter.")
                                                         .arg(params.unknownParameter));
         }
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
         if (params.showVersion)
         {
             if (isOneArg)
@@ -221,7 +220,6 @@ int main(int argc, char *argv[])
             throw CommandLineParameterError(QCoreApplication::translate("Main", "%1 must be the single command line parameter.")
                                      .arg(u"-v (or --version)"_s));
         }
-#endif
         if (params.showHelp)
         {
             if (isOneArg)

@@ -1,6 +1,15 @@
-find_package(Qt6 REQUIRED COMPONENTS Test)
-
 enable_testing(true)
+find_package(Qt6 QUIET COMPONENTS Test)
+
+if (NOT TARGET Qt6::Test)
+    message(WARNING "Qt6 Test component is not available; the check target will fail with setup guidance.")
+    add_custom_target(check
+        COMMAND ${CMAKE_COMMAND} -E echo "Qt6 Test component is not available. Install qtbase with the testlib feature before running C++ tests."
+        COMMAND ${CMAKE_COMMAND} -E false
+    )
+    return()
+endif()
+
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
 
 include_directories("../src")

@@ -5,7 +5,7 @@
 ; Doing so may make antivirus software flag the installer as virus/malware
 ;!define USE_UPX
 
-; qBittorrent version
+; qBittorrent Vanced and base versions
 ; The string MUST contain ONLY numbers delimited by dots.
 ; It MUST contain a maximum of 4 delimited numbers
 ; Other values will result in undefined behavior
@@ -14,7 +14,10 @@
 ; 4.5.1.3 -> good
 ; 4.5.1.3.2 -> bad
 ; 4.5.0beta -> bad
-!define /ifndef QBT_VERSION "5.1.3.10"
+!define /ifndef QBT_VANCED_VERSION "1.0.1"
+!define /ifndef QBT_BASE_VERSION "5.1.3.10"
+!define /ifndef QBT_UPSTREAM_VERSION "5.1.3"
+!define /ifndef QBT_VERSION "${QBT_BASE_VERSION}"
 
 ; Option that controls the installer's window name
 ; If set, its value will be used like this:
@@ -37,10 +40,10 @@
 
 !ifndef QBT_INSTALLER_WINDOWNAME | QBT_INSTALLER_FILENAME
   ; The name of the installer
-  !define QBT_INSTALLER_WINDOWNAME "${QBT_VERSION} x64"
+  !define QBT_INSTALLER_WINDOWNAME "Vanced ${QBT_VANCED_VERSION} (base ${QBT_BASE_VERSION}) x64"
 
   ; The file to write
-  !define QBT_INSTALLER_FILENAME "${QBT_VERSION}_x64"
+  !define QBT_INSTALLER_FILENAME "v${QBT_VANCED_VERSION}_base${QBT_BASE_VERSION}_x64"
 !endif
 
 !define /ifndef QBT_DIST_DIR "qBittorrent"
@@ -86,21 +89,22 @@ OutFile "qbittorrent_vanced_${QBT_INSTALLER_FILENAME}_setup.exe"
 ;Installer Version Information
 VIAddVersionKey "ProductName" "qBittorrent Vanced"
 VIAddVersionKey "CompanyName" "qBittorrent Vanced"
-VIAddVersionKey "LegalCopyright" "Copyright 2006-2025 The qBittorrent project, GPLv2+"
+VIAddVersionKey "LegalCopyright" "Copyright 2006-2026 The qBittorrent project, GPLv2+ source / GPLv3+ binary assets"
 VIAddVersionKey "FileDescription" "qBittorrent Vanced - A Customized Bittorrent Client"
-VIAddVersionKey "FileVersion" "${QBT_VERSION}"
+VIAddVersionKey "FileVersion" "${QBT_VANCED_VERSION}"
+VIAddVersionKey "ProductVersion" "${QBT_VANCED_VERSION} (base: Enhanced Edition ${QBT_BASE_VERSION}; upstream: qBittorrent ${QBT_UPSTREAM_VERSION})"
 
 ; VIProductVersion needs a 4 part version.
-; If QBT_VERSION contains less than 4 parts then VersionCompleteXXXX, will extend it with zeroes.
-${VersionCompleteXXXX} ${QBT_VERSION} VERSION_4_PART
+; If QBT_VANCED_VERSION contains less than 4 parts then VersionCompleteXXXX, will extend it with zeroes.
+${VersionCompleteXXXX} ${QBT_VANCED_VERSION} VERSION_4_PART
 VIProductVersion "${VERSION_4_PART}"
 
 ; The default installation directory.
-InstallDir $PROGRAMFILES64\qBittorrent
+InstallDir "$PROGRAMFILES64\qBittorrent Vanced"
 
 ; Registry key to check for directory (so if you install again, it will
 ; overwrite the old one automatically)
-InstallDirRegKey HKLM Software\qbittorrent InstallLocation
+InstallDirRegKey HKLM "Software\qBittorrent Vanced" InstallLocation
 
 ; Request application privileges for Windows Vista
 RequestExecutionLevel user
@@ -118,7 +122,7 @@ RequestExecutionLevel user
 ;--------------------------------
 ;Remember the uninstaller/installer language
 !define MUI_LANGDLL_REGISTRY_ROOT "HKLM"
-!define MUI_LANGDLL_REGISTRY_KEY "Software\qbittorrent"
+!define MUI_LANGDLL_REGISTRY_KEY "Software\qBittorrent Vanced"
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
 ;--------------------------------

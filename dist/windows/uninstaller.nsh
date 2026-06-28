@@ -15,18 +15,20 @@ SectionEnd
 Section "un.$(remove_shortcuts)" ;"un.Remove shortcuts"
   SectionIn RO
 ; Remove shortcuts, if any
-  RMDir /r "$SMPROGRAMS\qBittorrent"
-  Delete "$DESKTOP\qBittorrent.lnk"
+  RMDir /r "$SMPROGRAMS\qBittorrent Vanced"
+  Delete "$DESKTOP\qBittorrent Vanced.lnk"
 SectionEnd
 
 Section "un.$(remove_registry)" ;"un.Remove registry keys"
   SectionIn RO
   ; Remove registry keys
-  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent"
-  DeleteRegKey HKLM "Software\qBittorrent"
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced"
+  DeleteRegKey HKLM "Software\qBittorrent Vanced"
+  DeleteRegValue HKLM "Software\RegisteredApplications" "qBittorrent Vanced"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "qBittorrent Vanced"
   ; Remove ProgIDs
-  DeleteRegKey HKLM "Software\Classes\qBittorrent.File.Torrent"
-  DeleteRegKey HKLM "Software\Classes\qBittorrent.Url.Magnet"
+  DeleteRegKey HKLM "Software\Classes\qBittorrentVanced.File.Torrent"
+  DeleteRegKey HKLM "Software\Classes\qBittorrentVanced.Url.Magnet"
   System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, p 0, p 0)'
 SectionEnd
 

@@ -559,7 +559,7 @@ void MainWindow::setTitleSuffix(const QString &suffix)
 {
     const auto emDash = QChar(0x2014);
     const QString separator = u' ' + emDash + u' ';
-    m_windowTitle = QStringLiteral("qBittorrent Vanced " QBT_VERSION)
+    m_windowTitle = QStringLiteral("qBittorrent Vanced " QBT_VANCED_VERSION)
         + (!suffix.isEmpty() ? (separator + suffix) : QString());
 
     refreshWindowTitle();

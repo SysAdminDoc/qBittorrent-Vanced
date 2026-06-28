@@ -44,9 +44,7 @@ class QProcessEnvironment;
 struct QBtCommandLineParameters
 {
     bool showHelp = false;
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
     bool showVersion = false;
-#endif
     bool confirmLegalNotice = false;
     bool relativeFastresumePaths = false;
 #ifndef DISABLE_GUI

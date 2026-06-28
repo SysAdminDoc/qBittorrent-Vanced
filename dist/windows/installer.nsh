@@ -2,7 +2,7 @@ Var uninstallerPath
 
 Section "-hidden"
 
-    ;Search if qBittorrent is already installed.
+    ;Search if qBittorrent Vanced is already installed.
     FindFirst $0 $1 "$uninstallerPath\uninst.exe"
     FindClose $0
     StrCmp $1 "" done
@@ -18,7 +18,7 @@ Section "-hidden"
 SectionEnd
 
 
-Section $(inst_qbt_req) ;"qBittorrent (required)"
+Section $(inst_qbt_req) ;"qBittorrent Vanced (required)"
 
   SectionIn RO
 
@@ -31,21 +31,21 @@ Section $(inst_qbt_req) ;"qBittorrent (required)"
   Exec '"cmd.exe" /c COMPACT /C "$INSTDIR\qbittorrent.pdb"'
 
   ; Write the installation path into the registry
-  WriteRegStr HKLM "Software\qBittorrent" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKLM "Software\qBittorrent Vanced" "InstallLocation" "$INSTDIR"
 
-  ; Register qBittorrent as possible default program for .torrent files and magnet links
-  WriteRegStr HKLM "Software\qBittorrent\Capabilities" "ApplicationDescription" "A BitTorrent client in Qt"
-  WriteRegStr HKLM "Software\qBittorrent\Capabilities" "ApplicationName" "qBittorrent"
-  WriteRegStr HKLM "Software\qBittorrent\Capabilities\FileAssociations" ".torrent" "qBittorrent.File.Torrent"
-  WriteRegStr HKLM "Software\qBittorrent\Capabilities\UrlAssociations" "magnet" "qBittorrent.Url.Magnet"
-  WriteRegStr HKLM "Software\RegisteredApplications" "qBittorrent" "Software\qBittorrent\Capabilities"
-  ; Register qBittorrent ProgIDs
-  WriteRegStr HKLM "Software\Classes\qBittorrent.File.Torrent" "" "Torrent File"
-  WriteRegStr HKLM "Software\Classes\qBittorrent.File.Torrent\DefaultIcon" "" '"$INSTDIR\qbittorrent.exe",1'
-  WriteRegStr HKLM "Software\Classes\qBittorrent.File.Torrent\shell\open\command" "" '"$INSTDIR\qbittorrent.exe" "%1"'
-  WriteRegStr HKLM "Software\Classes\qBittorrent.Url.Magnet" "" "Magnet URI"
-  WriteRegStr HKLM "Software\Classes\qBittorrent.Url.Magnet\DefaultIcon" "" '"$INSTDIR\qbittorrent.exe",1'
-  WriteRegStr HKLM "Software\Classes\qBittorrent.Url.Magnet\shell\open\command" "" '"$INSTDIR\qbittorrent.exe" "%1"'
+  ; Register qBittorrent Vanced as possible default program for .torrent files and magnet links
+  WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities" "ApplicationDescription" "qBittorrent Vanced - A customized BitTorrent client in Qt"
+  WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities" "ApplicationName" "qBittorrent Vanced"
+  WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities\FileAssociations" ".torrent" "qBittorrentVanced.File.Torrent"
+  WriteRegStr HKLM "Software\qBittorrent Vanced\Capabilities\UrlAssociations" "magnet" "qBittorrentVanced.Url.Magnet"
+  WriteRegStr HKLM "Software\RegisteredApplications" "qBittorrent Vanced" "Software\qBittorrent Vanced\Capabilities"
+  ; Register qBittorrent Vanced ProgIDs
+  WriteRegStr HKLM "Software\Classes\qBittorrentVanced.File.Torrent" "" "Torrent File"
+  WriteRegStr HKLM "Software\Classes\qBittorrentVanced.File.Torrent\DefaultIcon" "" '"$INSTDIR\qbittorrent.exe",1'
+  WriteRegStr HKLM "Software\Classes\qBittorrentVanced.File.Torrent\shell\open\command" "" '"$INSTDIR\qbittorrent.exe" "%1"'
+  WriteRegStr HKLM "Software\Classes\qBittorrentVanced.Url.Magnet" "" "Magnet URI"
+  WriteRegStr HKLM "Software\Classes\qBittorrentVanced.Url.Magnet\DefaultIcon" "" '"$INSTDIR\qbittorrent.exe",1'
+  WriteRegStr HKLM "Software\Classes\qBittorrentVanced.Url.Magnet\shell\open\command" "" '"$INSTDIR\qbittorrent.exe" "%1"'
 
   WriteRegStr HKLM "Software\Classes\.torrent" "Content Type" "application/x-bittorrent"
   WriteRegStr HKLM "Software\Classes\magnet" "" "URL:Magnet URI"
@@ -55,33 +55,33 @@ Section $(inst_qbt_req) ;"qBittorrent (required)"
   System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, p 0, p 0)'
 
   ; Write the uninstall keys for Windows
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "DisplayName" "qBittorrent"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "UninstallString" '"$INSTDIR\uninst.exe"'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "DisplayIcon" '"$INSTDIR\qbittorrent.exe",0'
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "Publisher" "The qBittorrent project"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "URLInfoAbout" "https://www.qbittorrent.org"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "DisplayVersion" "${QBT_VERSION}"
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "NoModify" 1
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "NoRepair" 1
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayName" "qBittorrent Vanced"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "UninstallString" '"$INSTDIR\uninst.exe"'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayIcon" '"$INSTDIR\qbittorrent.exe",0'
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "Publisher" "qBittorrent Vanced"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "URLInfoAbout" "https://github.com/SysAdminDoc/qBittorrent-Vanced"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayVersion" "${QBT_VANCED_VERSION} (base ${QBT_BASE_VERSION})"
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoModify" 1
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoRepair" 1
   WriteUninstaller "uninst.exe"
   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   IntFmt $0 "0x%08X" $0
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent" "EstimatedSize" "$0"
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "EstimatedSize" "$0"
 
 SectionEnd
 
 ; Optional section (can be disabled by the user)
 Section /o $(inst_desktop) ;"Create Desktop Shortcut"
 
-  CreateShortCut "$DESKTOP\qBittorrent.lnk" "$INSTDIR\qbittorrent.exe"
+  CreateShortCut "$DESKTOP\qBittorrent Vanced.lnk" "$INSTDIR\qbittorrent.exe"
 
 SectionEnd
 
 Section $(inst_startmenu) ;"Create Start Menu Shortcut"
 
-  CreateDirectory "$SMPROGRAMS\qBittorrent"
-  CreateShortCut "$SMPROGRAMS\qBittorrent\qBittorrent.lnk" "$INSTDIR\qbittorrent.exe"
-  CreateShortCut "$SMPROGRAMS\qBittorrent\$(inst_uninstall_link_description).lnk" "$INSTDIR\uninst.exe"
+  CreateDirectory "$SMPROGRAMS\qBittorrent Vanced"
+  CreateShortCut "$SMPROGRAMS\qBittorrent Vanced\qBittorrent Vanced.lnk" "$INSTDIR\qbittorrent.exe"
+  CreateShortCut "$SMPROGRAMS\qBittorrent Vanced\$(inst_uninstall_link_description).lnk" "$INSTDIR\uninst.exe"
 
 SectionEnd
 
@@ -93,14 +93,14 @@ SectionEnd
 
 Function inst_startup_user
 
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "qBittorrent" "$INSTDIR\qbittorrent.exe"
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "qBittorrent Vanced" "$INSTDIR\qbittorrent.exe"
 
 FunctionEnd
 
 Section $(inst_firewall)
 
   DetailPrint $(inst_firewallinfo)
-  nsisFirewallW::AddAuthorizedApplication "$INSTDIR\qbittorrent.exe" "qBittorrent"
+  nsisFirewallW::AddAuthorizedApplication "$INSTDIR\qbittorrent.exe" "qBittorrent Vanced"
 
 SectionEnd
 
@@ -129,7 +129,7 @@ Function .onInit
     Abort
   ${EndIf}
 
-  ;Search if qBittorrent is already installed.
+  ;Search if qBittorrent Vanced is already installed.
   FindFirst $0 $1 "$INSTDIR\uninst.exe"
   FindClose $0
   StrCmp $1 "" done

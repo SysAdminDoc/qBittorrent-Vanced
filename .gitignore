@@ -52,6 +52,8 @@ test_output.txt
 .idea/*
 CLAUDE.md
 
-# Markdown files local-only (except README)
+# Markdown files local-only (except README and roadmap state)
 *.md
 !README.md
+!ROADMAP.md
+!Roadmap_Blocked.md

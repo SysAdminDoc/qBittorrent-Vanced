@@ -50,23 +50,36 @@ AboutDialog::AboutDialog(QWidget *parent)
     m_ui->setupUi(this);
 
     // Title
-    m_ui->labelName->setText(QStringLiteral("<b><h2>qBittorrent Vanced " QBT_VERSION " (%1-bit)</h2></b>").arg(QT_POINTER_SIZE * 8));
+    m_ui->labelName->setText(QStringLiteral("<b><h2>qBittorrent Vanced " QBT_VANCED_VERSION " (%1-bit)</h2></b>").arg(QT_POINTER_SIZE * 8));
 
     m_ui->logo->setPixmap(UIThemeManager::instance()->getScaledPixmap(u"qbittorrent-tray"_s, 32));
 
     // About
+    const QString versionRows =
+        u"<tr><td>%1</td><td>%2</td></tr>"
+        u"<tr><td>%3</td><td>%4</td></tr>"
+        u"<tr><td>%5</td><td>%6</td></tr>"_s
+        .arg(tr("Vanced version:")
+            , QStringLiteral(QBT_VANCED_VERSION)
+            , tr("Base version:")
+            , tr("qBittorrent Enhanced Edition %1").arg(QStringLiteral(QBT_ENHANCED_EDITION_VERSION))
+            , tr("Upstream version:")
+            , tr("qBittorrent %1").arg(QStringLiteral(QBT_UPSTREAM_VERSION)));
+
     const QString aboutText =
         u"<p style=\"white-space: pre-wrap;\">"
         u"%1\n\n"
         u"%2\n\n"
         u"<table>"
-        u"<tr><td>%3</td><td><a href=\"https://github.com/SysAdminDoc/qBittorrent-Vanced\">GitHub Repo</a></td></tr>"
-        u"<tr><td>%4</td><td><a href=\"https://www.qbittorrent.org\">https://www.qbittorrent.org</a></td></tr>"
+        u"%3"
+        u"<tr><td>%4</td><td><a href=\"https://github.com/SysAdminDoc/qBittorrent-Vanced\">GitHub Repo</a></td></tr>"
+        u"<tr><td>%5</td><td><a href=\"https://www.qbittorrent.org\">https://www.qbittorrent.org</a></td></tr>"
         u"</table>"
         u"</p>"_s
         .arg(tr("An advanced BitTorrent client programmed in C++, based on Qt toolkit and libtorrent-rasterbar.")
                 .replace(u"C++"_s, u"C\u2060+\u2060+"_s) // make C++ non-breaking
             , tr("Copyright %1 2006-2026 The qBittorrent project").arg(C_COPYRIGHT)
+            , versionRows
             , tr("Vanced:")
             , tr("Upstream:"));
     m_ui->labelAbout->setText(aboutText);
@@ -119,11 +132,12 @@ AboutDialog::~AboutDialog()
 
 void AboutDialog::copyVersionsToClipboard() const
 {
-    const QString versions = u"%1 %2\n%3 %4\n%5 %6\n%7 %8\n%9 %10\n"_s
-        .arg(m_ui->labelQt->text(), m_ui->labelQtVer->text()
-            , m_ui->labelLibt->text(), m_ui->labelLibtVer->text()
-            , m_ui->labelBoost->text(), m_ui->labelBoostVer->text()
-            , m_ui->labelOpenssl->text(), m_ui->labelOpensslVer->text()
-            , m_ui->labelZlib->text(), m_ui->labelZlibVer->text());
+    QString versions = u"qBittorrent Vanced %1\nEnhanced Edition base %2\nqBittorrent upstream %3\n"_s
+        .arg(QStringLiteral(QBT_VANCED_VERSION), QStringLiteral(QBT_ENHANCED_EDITION_VERSION), QStringLiteral(QBT_UPSTREAM_VERSION));
+    versions += u"%1 %2\n"_s.arg(m_ui->labelQt->text(), m_ui->labelQtVer->text());
+    versions += u"%1 %2\n"_s.arg(m_ui->labelLibt->text(), m_ui->labelLibtVer->text());
+    versions += u"%1 %2\n"_s.arg(m_ui->labelBoost->text(), m_ui->labelBoostVer->text());
+    versions += u"%1 %2\n"_s.arg(m_ui->labelOpenssl->text(), m_ui->labelOpensslVer->text());
+    versions += u"%1 %2\n"_s.arg(m_ui->labelZlib->text(), m_ui->labelZlibVer->text());
     qApp->clipboard()->setText(versions);
 }

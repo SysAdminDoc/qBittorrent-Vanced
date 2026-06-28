@@ -63,7 +63,21 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-The build script automatically configures MSVC, vcpkg dependencies, and builds with Ninja.
+The build script discovers Visual Studio Build Tools/Community, CMake, Ninja, and vcpkg, then configures and builds this checkout with Ninja. It deploys the Qt runtime beside `build\qbittorrent.exe` and verifies the result with `--version`.
+
+Expected smoke output:
+
+```text
+qBittorrent Vanced v1.0.1 (base: qBittorrent Enhanced Edition v5.1.3.10; upstream: qBittorrent v5.1.3)
+```
+
+The batch wrapper exposes the same release smoke:
+
+```bat
+build.bat --verify
+```
+
+Optional C++ tests use `build.ps1 -Test` or `build.bat --test`. They require the Qt6 Test component (`qtbase[testlib]`) to be installed in the local vcpkg tree; without it the `check` target fails with setup guidance.
 
 ## License
 

@@ -8,8 +8,14 @@
 !ifndef VANCED_VERSION
   !define VANCED_VERSION "1.0.1"
 !endif
+!ifndef VANCED_VERSION_4
+  !define VANCED_VERSION_4 "1.0.1.0"
+!endif
 !ifndef BASE_VERSION
   !define BASE_VERSION "5.1.3.10"
+!endif
+!ifndef UPSTREAM_VERSION
+  !define UPSTREAM_VERSION "5.1.3"
 !endif
 
 ; --- General ---
@@ -21,12 +27,12 @@ RequestExecutionLevel admin
 Unicode True
 
 ; --- Version Info ---
-VIProductVersion "${BASE_VERSION}"
+VIProductVersion "${VANCED_VERSION_4}"
 VIAddVersionKey "ProductName" "qBittorrent Vanced"
 VIAddVersionKey "FileDescription" "qBittorrent Vanced Installer"
 VIAddVersionKey "FileVersion" "${VANCED_VERSION}"
-VIAddVersionKey "ProductVersion" "${VANCED_VERSION} (base: Enhanced Edition ${BASE_VERSION})"
-VIAddVersionKey "LegalCopyright" "Copyright 2006-2026 The qBittorrent project, GPLv2+"
+VIAddVersionKey "ProductVersion" "${VANCED_VERSION} (base: Enhanced Edition ${BASE_VERSION}; upstream: qBittorrent ${UPSTREAM_VERSION})"
+VIAddVersionKey "LegalCopyright" "Copyright 2006-2026 The qBittorrent project, GPLv2+ source / GPLv3+ binary assets"
 
 ; --- Interface ---
 !define MUI_ABORTWARNING
@@ -90,7 +96,7 @@ Section "Install"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "InstallLocation" "$INSTDIR"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayIcon" "$INSTDIR\qbittorrent.exe"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "Publisher" "qBittorrent Vanced"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayVersion" "${VANCED_VERSION} (${BASE_VERSION})"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "DisplayVersion" "${VANCED_VERSION} (base ${BASE_VERSION})"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "NoRepair" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\qBittorrent Vanced" "EstimatedSize" 150000

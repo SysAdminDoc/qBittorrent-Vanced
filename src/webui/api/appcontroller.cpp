@@ -102,6 +102,9 @@ void AppController::buildInfoAction()
     const QJsonObject versions =
     {
         {u"qt"_s, QStringLiteral(QT_VERSION_STR)},
+        {u"vanced"_s, QStringLiteral(QBT_VANCED_VERSION)},
+        {u"enhancedEditionBase"_s, QStringLiteral(QBT_ENHANCED_EDITION_VERSION)},
+        {u"qbittorrentUpstream"_s, QStringLiteral(QBT_UPSTREAM_VERSION)},
         {u"libtorrent"_s, Utils::Misc::libtorrentVersionString()},
         {u"boost"_s, Utils::Misc::boostVersionString()},
         {u"openssl"_s, Utils::Misc::opensslVersionString()},

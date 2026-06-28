@@ -312,8 +312,8 @@ Application::Application(int &argc, char **argv)
 #endif
 #endif
 
-    LogMsg(tr("qBittorrent Vanced %1 started. Process ID: %2", "qBittorrent Vanced v3.2.0alpha started")
-        .arg(QStringLiteral(QBT_VERSION), QString::number(QCoreApplication::applicationPid())));
+    LogMsg(tr("qBittorrent Vanced %1 started. Base: Enhanced Edition %2. Process ID: %3", "qBittorrent Vanced v1.0.1 started")
+        .arg(QStringLiteral(QBT_VANCED_VERSION), QStringLiteral(QBT_ENHANCED_EDITION_VERSION), QString::number(QCoreApplication::applicationPid())));
     if (portableModeEnabled)
     {
         LogMsg(tr("Running in portable mode. Auto detected profile folder at: %1").arg(profileDir.toString()));

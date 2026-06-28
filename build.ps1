@@ -11,11 +11,15 @@ if (-not $projectRoot) { $projectRoot = (Get-Location).Path }
 if (-not $VSPath) {
     $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (Test-Path $vswhere) {
-        $VSPath = & $vswhere -latest -property installationPath 2>$null
+        $VSPath = & $vswhere -products * -latest -property installationPath 2>$null
     }
     if (-not $VSPath) {
         $candidates = @(
+            "C:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools",
+            "C:\Program Files\Microsoft Visual Studio\18\BuildTools",
             "C:\Program Files\Microsoft Visual Studio\18\Community",
+            "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools",
+            "C:\Program Files\Microsoft Visual Studio\2022\BuildTools",
             "C:\Program Files\Microsoft Visual Studio\2022\Community",
             "C:\Program Files\Microsoft Visual Studio\2022\Professional",
             "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
@@ -59,7 +63,9 @@ if (-not $ninjaExe) { Write-Error "ninja not found"; exit 1 }
 
 $vcpkgRoot = "$VSPath\VC\vcpkg"
 if (-not (Test-Path "$vcpkgRoot\scripts\buildsystems\vcpkg.cmake")) {
+    $repoVcpkgRoot = Join-Path $env:USERPROFILE "repos\vcpkg"
     if ($env:VCPKG_ROOT) { $vcpkgRoot = $env:VCPKG_ROOT }
+    elseif (Test-Path "$repoVcpkgRoot\scripts\buildsystems\vcpkg.cmake") { $vcpkgRoot = $repoVcpkgRoot }
     else { Write-Error "vcpkg not found at $vcpkgRoot and VCPKG_ROOT not set"; exit 1 }
 }
 
@@ -106,12 +112,13 @@ if ($exe) {
         Write-Warning "windeployqt.exe not found at $windeployqtExe; the executable may not launch without Qt plugins"
     }
 } else {
-    Write-Warning "qbittorrent.exe not found in build directory"
+    Write-Error "qbittorrent.exe not found in build directory"
+    exit 1
 }
 
 if ($Test) {
     Write-Output "=== Running tests ==="
-    & $cmakeExe --build "$projectRoot\build" --target test
+    & $cmakeExe --build "$projectRoot\build" --target check
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Tests failed with exit code $LASTEXITCODE"
         exit 1
@@ -119,8 +126,12 @@ if ($Test) {
     Write-Output "=== Tests passed ==="
 }
 
-if ($Verify -and $exe) {
+if ($exe) {
     Write-Output "=== Verifying executable ==="
     & $exe.FullName --version
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Executable verification failed with exit code $LASTEXITCODE"
+        exit 1
+    }
     Write-Output "=== Verification complete ==="
 }

@@ -58,3 +58,12 @@ CLAUDE.md
 !ROADMAP.md
 !Roadmap_Blocked.md
 !doc/**/*.1.md
+
+# AI config
+CODEX_CHANGELOG.md
+AGENTS.md
+.claude/
+.codex/
+.ai/
+PROJECT_CONTEXT.md
+CONTINUATION_PROMPT.md

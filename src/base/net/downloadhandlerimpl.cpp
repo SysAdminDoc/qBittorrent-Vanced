@@ -46,7 +46,38 @@
 #include "base/utils/os.h"
 #endif // Q_OS_MACOS || Q_OS_WIN
 
-const int MAX_REDIRECTIONS = 20;  // the common value for web browsers
+Net::DownloadRedirectionDecision Net::classifyDownloadRedirection(const QUrl &currentUrl, const QUrl &newUrl, const int redirectionCount)
+{
+    if (redirectionCount >= MAX_DOWNLOAD_REDIRECTIONS)
+    {
+        DownloadRedirectionDecision decision;
+        decision.action = DownloadRedirectionAction::RejectTooManyRedirects;
+        return decision;
+    }
+
+    const QUrl resolvedUrl = newUrl.isRelative() ? currentUrl.resolved(newUrl) : newUrl;
+    const QString newUrlString = resolvedUrl.toString();
+    const QString scheme = resolvedUrl.scheme();
+    DownloadRedirectionDecision decision;
+    decision.resolvedUrl = resolvedUrl;
+    decision.urlString = newUrlString;
+    decision.scheme = scheme;
+
+    if (newUrlString.startsWith(u"magnet:", Qt::CaseInsensitive))
+    {
+        decision.action = DownloadRedirectionAction::RedirectToMagnet;
+        return decision;
+    }
+
+    if ((scheme != u"http") && (scheme != u"https"))
+    {
+        decision.action = DownloadRedirectionAction::RejectDangerousProtocol;
+        return decision;
+    }
+
+    decision.action = DownloadRedirectionAction::Follow;
+    return decision;
+}
 
 Net::DownloadHandlerImpl::DownloadHandlerImpl(DownloadManager *manager
         , const DownloadRequest &downloadRequest, const bool useProxy)
@@ -207,39 +238,36 @@ void Net::DownloadHandlerImpl::checkDownloadSize(const qint64 bytesReceived, con
 
 void Net::DownloadHandlerImpl::handleRedirection(const QUrl &newUrl)
 {
-    if (m_redirectionCount >= MAX_REDIRECTIONS)
+    const DownloadRedirectionDecision redirection = classifyDownloadRedirection(m_reply->url(), newUrl, m_redirectionCount);
+    if (redirection.action == DownloadRedirectionAction::RejectTooManyRedirects)
     {
-        setError(tr("Exceeded max redirections (%1)").arg(MAX_REDIRECTIONS));
+        setError(tr("Exceeded max redirections (%1)").arg(MAX_DOWNLOAD_REDIRECTIONS));
         finish();
         return;
     }
 
-    // Resolve relative urls
-    const QUrl resolvedUrl = newUrl.isRelative() ? m_reply->url().resolved(newUrl) : newUrl;
-    const QString newUrlString = resolvedUrl.toString();
-    qDebug("Redirecting from %s to %s...", qUtf8Printable(m_reply->url().toString()), qUtf8Printable(newUrlString));
+    qDebug("Redirecting from %s to %s...", qUtf8Printable(m_reply->url().toString()), qUtf8Printable(redirection.urlString));
 
     // Redirect to magnet workaround
-    if (newUrlString.startsWith(u"magnet:", Qt::CaseInsensitive))
+    if (redirection.action == DownloadRedirectionAction::RedirectToMagnet)
     {
         m_result.status = Net::DownloadStatus::RedirectedToMagnet;
-        m_result.magnetURI = newUrlString;
+        m_result.magnetURI = redirection.urlString;
         m_result.errorString = tr("Redirected to magnet URI");
         finish();
         return;
     }
 
     // SSRF protection: strict scheme whitelist
-    const QString scheme = resolvedUrl.scheme();
-    if ((scheme != u"http") && (scheme != u"https"))
+    if (redirection.action == DownloadRedirectionAction::RejectDangerousProtocol)
     {
-        setError(tr("Redirect to unsupported or dangerous protocol: '%1'.").arg(scheme));
+        setError(tr("Redirect to unsupported or dangerous protocol: '%1'.").arg(redirection.scheme));
         finish();
         return;
     }
 
     m_redirectionHandler = static_cast<DownloadHandlerImpl *>(
-            m_manager->download(DownloadRequest(m_downloadRequest).url(newUrlString), useProxy()));
+            m_manager->download(DownloadRequest(m_downloadRequest).url(redirection.urlString), useProxy()));
     m_redirectionHandler->m_redirectionCount = m_redirectionCount + 1;
     connect(m_redirectionHandler, &DownloadHandlerImpl::finished, this, [this](const DownloadResult &result)
     {

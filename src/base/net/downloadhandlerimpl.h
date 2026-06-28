@@ -30,14 +30,34 @@
 #pragma once
 
 #include <QNetworkReply>
+#include <QString>
+#include <QUrl>
 
 #include "base/net/downloadmanager.h"
 
 class QObject;
-class QUrl;
-
 namespace Net
 {
+    inline constexpr int MAX_DOWNLOAD_REDIRECTIONS = 20;  // the common value for web browsers
+
+    enum class DownloadRedirectionAction
+    {
+        Follow,
+        RedirectToMagnet,
+        RejectDangerousProtocol,
+        RejectTooManyRedirects
+    };
+
+    struct DownloadRedirectionDecision
+    {
+        DownloadRedirectionAction action = DownloadRedirectionAction::RejectDangerousProtocol;
+        QUrl resolvedUrl;
+        QString urlString;
+        QString scheme;
+    };
+
+    DownloadRedirectionDecision classifyDownloadRedirection(const QUrl &currentUrl, const QUrl &newUrl, int redirectionCount);
+
     class DownloadHandlerImpl final : public DownloadHandler
     {
         Q_OBJECT

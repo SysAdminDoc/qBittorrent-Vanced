@@ -100,13 +100,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 ## Research-Driven Additions
 
-- [ ] P1 - Backport reverse-proxy Host/X-Forwarded-Host handling
-  Why: qBittorrent 5.2.2 limits X-Forwarded-Host use to explicit reverse-proxy mode, while community issues show WebUI Host/CSRF behavior remains fragile behind Cloudflare and Nginx.
-  Evidence: qBittorrent 5.2.2 changelog entry for #24457, qBittorrent issues #21106 and #21673, src/webui/webapplication.cpp.
-  Touches: src/webui/webapplication.cpp, src/base/preferences.*, src/webui/api/appcontroller.*, WebUI options text.
-  Acceptance: reverse-proxy disabled ignores X-Forwarded-Host, reverse-proxy enabled accepts configured forwarded hosts, CSRF/Host failures produce actionable log messages, and local/non-proxy WebUI behavior is unchanged.
-  Complexity: M
-
 - [ ] P1 - Add large-library WebUI and queue performance smoke
   Why: 10k+ torrent sessions expose CPU, queueing, checkbox, and sync-update regressions that ordinary smoke tests miss.
   Evidence: qBittorrent issue #23384, qBittorrent 5.2.2 WebUI global-checkbox performance fix, src/webui/api/synccontroller.cpp, src/webui/www/private/scripts/dynamicTable.js.

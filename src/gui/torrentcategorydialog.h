@@ -32,6 +32,8 @@
 
 #include "base/path.h"
 
+class QLabel;
+
 namespace BitTorrent
 {
     struct CategoryOptions;
@@ -63,8 +65,10 @@ public:
 private slots:
     void categoryNameChanged(const QString &categoryName);
     void useDownloadPathChanged(int index);
+    void updateFilesystemWarning();
 
 private:
     Ui::TorrentCategoryDialog *m_ui = nullptr;
+    QLabel *m_filesystemWarning = nullptr;
     Path m_lastEnteredDownloadPath;
 };

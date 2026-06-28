@@ -53,6 +53,7 @@ namespace Utils::Fs
     bool isNetworkFileSystem(const Path &path);
     QDateTime lastModified(const Path &path);
     bool sameFiles(const Path &path1, const Path &path2);
+    bool isSameFileSystem(const Path &path1, const Path &path2);
 
     QString toValidFileName(const QString &name, const QString &pad = u" "_s);
     Path toValidPath(const QString &name, const QString &pad = u" "_s);

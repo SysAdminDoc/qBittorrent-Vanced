@@ -1289,8 +1289,15 @@ void TorrentsController::setLocationAction()
 
     applyToTorrents(hashes, [newLocation](BitTorrent::Torrent *const torrent)
     {
+        const Path currentPath = torrent->savePath();
         LogMsg(tr("WebUI Set location: moving \"%1\", from \"%2\" to \"%3\"")
-            .arg(torrent->name(), torrent->savePath().toString(), newLocation.toString()));
+            .arg(torrent->name(), currentPath.toString(), newLocation.toString()));
+        if (!currentPath.isEmpty() && !Utils::Fs::isSameFileSystem(currentPath, newLocation))
+        {
+            LogMsg(tr("WebUI Set location: \"%1\" is moving across filesystems (from \"%2\" to \"%3\"). "
+                      "Hardlinks will not work; files will be copied instead.")
+                .arg(torrent->name(), currentPath.toString(), newLocation.toString()), Log::WARNING);
+        }
         torrent->setAutoTMMEnabled(false);
         torrent->setSavePath(newLocation);
     });

@@ -187,6 +187,13 @@ bool Utils::Fs::sameFiles(const Path &path1, const Path &path2)
     return true;
 }
 
+bool Utils::Fs::isSameFileSystem(const Path &path1, const Path &path2)
+{
+    const QStorageInfo storage1 {path1.data()};
+    const QStorageInfo storage2 {path2.data()};
+    return storage1.isValid() && storage2.isValid() && (storage1.rootPath() == storage2.rootPath());
+}
+
 QString Utils::Fs::toValidFileName(const QString &name, const QString &pad)
 {
     const QRegularExpression regex {u"[\\\\/:?\"*<>|]+"_s};

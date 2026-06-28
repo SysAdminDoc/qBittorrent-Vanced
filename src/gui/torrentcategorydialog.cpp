@@ -28,6 +28,7 @@
 
 #include "torrentcategorydialog.h"
 
+#include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
 
@@ -54,8 +55,15 @@ TorrentCategoryDialog::TorrentCategoryDialog(QWidget *parent)
     connect(m_ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(m_ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    m_filesystemWarning = new QLabel(this);
+    m_filesystemWarning->setWordWrap(true);
+    m_filesystemWarning->setStyleSheet(u"QLabel { color: #fab387; padding: 4px; }"_s);
+    m_filesystemWarning->hide();
+    m_ui->verticalLayout->insertWidget(2, m_filesystemWarning);
+
     connect(m_ui->textCategoryName, &QLineEdit::textChanged, this, &TorrentCategoryDialog::categoryNameChanged);
     connect(m_ui->comboUseDownloadPath, &QComboBox::currentIndexChanged, this, &TorrentCategoryDialog::useDownloadPathChanged);
+    connect(m_ui->comboSavePath, &FileSystemPathComboEdit::selectedPathChanged, this, &TorrentCategoryDialog::updateFilesystemWarning);
 }
 
 TorrentCategoryDialog::~TorrentCategoryDialog()
@@ -178,6 +186,29 @@ void TorrentCategoryDialog::categoryNameChanged(const QString &categoryName)
         m_ui->comboDownloadPath->setPlaceholder(btSession->categoryDownloadPath(categoryName, categoryOptions()));
 
     m_ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(!categoryName.isEmpty());
+}
+
+void TorrentCategoryDialog::updateFilesystemWarning()
+{
+    const Path categoryPath = m_ui->comboSavePath->selectedPath();
+    if (categoryPath.isEmpty())
+    {
+        m_filesystemWarning->hide();
+        return;
+    }
+
+    const Path defaultSavePath = BitTorrent::Session::instance()->savePath();
+    if (!Utils::Fs::isSameFileSystem(categoryPath, defaultSavePath))
+    {
+        m_filesystemWarning->setText(tr("Warning: this path is on a different drive/filesystem than the default save path (%1). "
+                                        "Hardlinks will not work across filesystems — files will be copied instead, using more disk space and time.")
+                                     .arg(defaultSavePath.toString()));
+        m_filesystemWarning->show();
+    }
+    else
+    {
+        m_filesystemWarning->hide();
+    }
 }
 
 void TorrentCategoryDialog::useDownloadPathChanged(const int index)

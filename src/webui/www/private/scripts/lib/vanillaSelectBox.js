@@ -212,9 +212,9 @@ function vanillaSelectBox(domSelector, options) {
                 { "key": "width", "value": "100%" },
                 { "key": "text-align", "value": "left" },
                 { "key": "z-index", "value": "1" },
-                { "key": "color", "value": "#333" },
-                { "key": "background", "value": "white !important" },
-                { "key": "border", "value": "1px solid #999 !important" },
+                { "key": "color", "value": "var(--color-text-default, #cdd6f4)" },
+                { "key": "background", "value": "var(--color-background-popup, #1e1e2e) !important" },
+                { "key": "border", "value": "1px solid var(--color-border-default, #313244) !important" },
                 { "key": "line-height", "value": "20px" },
                 { "key": "font-size", "value": "14px" },
                 { "key": "padding", "value": "6px 12px" }

@@ -285,7 +285,7 @@ window.qBittorrent.DynamicTable ??= (() => {
                 }
                 else {
                     this.currentHeaderAction = "drag";
-                    el.style.backgroundColor = "#C1D5E7";
+                    el.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue("--color-background-hover").trim() || "#313244";
                 }
             }.bind(this);
 

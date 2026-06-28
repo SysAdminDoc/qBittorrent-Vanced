@@ -75,13 +75,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 
 ## Research-Driven Additions
 
-- [ ] P1 — Restore localized manpage encoding and issue routing
-  Why: Russian manpage sources are mojibake and generated docs still point bug reports at upstream qBittorrent without a Vanced policy.
-  Evidence: `doc/ru/qbittorrent.1.md`, `doc/ru/qbittorrent-nox.1.md`, `doc/en/qbittorrent.1.md`
-  Touches: `doc/**`, `dist/unix/CMakeLists.txt`, documentation generation commands
-  Acceptance: localized manpage markdown is valid UTF-8, generated manpages are refreshed, and every bug-report URL intentionally routes to Vanced, Enhanced, or upstream.
-  Complexity: S
-
 - [ ] P2 — Add a mobile-first WebUI add/manage flow
   Why: qBittorrent users repeatedly report mobile WebUI friction, while Flood/VueTorrent and commercial clients compete on touch-friendly add/play flows.
   Evidence: qBittorrent issue #8887; Flood; VueTorrent; BitTorrent Web
@@ -111,4 +104,3 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
   Risks: Strict validation may block legitimate paths not visible from the UI process; preserve advanced override with explicit warning if needed.
   Acceptance criteria: WebAPI returns actionable errors for invalid/unwritable destinations; WebUI displays recovery guidance; tests cover invalid path, permission failure, existing destination, and success.
   Research references: `RESEARCH.md` > `Improvement Opportunities for Current Features`; local `src/webui/api/torrentscontroller.cpp`; qBittorrent v5.2.x Add Torrent and WebUI recovery fixes.
-

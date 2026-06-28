@@ -8,7 +8,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 - Centralize the palette in a `Palette` struct; swap Catppuccin Latte/Frappe/Macchiato/Mocha at runtime
 - Respect system dark/light preference on first launch
 - Theme picker dialog with live preview of the torrent list and progress bars
-- WebUI theme parity — several Qt-driven list items still leak stock colors into the served CSS
 
 ### Progress bars
 - Accessibility: add an alt-style mode (solid color + text percent) for users who find the shimmer distracting
@@ -23,13 +22,9 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 - Search-bar scoped filter: `seeders>10 size<4gb category:movies` mini-DSL on the main list
 
 ### Platform
-- Portable ZIP build alongside the NSIS installer
 - Winget + Scoop manifests
 - Self-update via AppCast XML on GitHub Releases with in-app toast on new release
 - Linux AppImage and Flatpak so the fork isn't Windows-only
-
-### Upstream hygiene
-- Publish the divergence as a quilt-style patch series under `patches/` so individual tweaks are reusable and rebase is mechanical
 
 ## Competitive Research
 
@@ -76,6 +71,3 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Research Expansion — 2026-06-19
 
 Note: existing research wording that says `.qbttheme` is stale; qBittorrent's current documented bundle extension and this repo's loader use `.qbtheme`.
-
-## Research-Driven Additions
-

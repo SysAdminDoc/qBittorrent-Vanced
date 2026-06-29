@@ -44,6 +44,7 @@ window.qBittorrent.ColorScheme ??= (() => {
         const colorScheme = LocalPreferences.get("color_scheme");
         const validScheme = (colorScheme === "light") || (colorScheme === "dark");
         const isDark = colorSchemeQuery.matches;
+        root.classList.toggle("light", colorScheme === "light");
         root.classList.toggle("dark", ((!validScheme && isDark) || (colorScheme === "dark")));
     };
 

@@ -80,6 +80,50 @@
     }
 }
 
+@media (prefers-color-scheme: dark) {
+    :root:not(.light, .dark) {
+        /* Catppuccin Mocha palette */
+        --color-accent-blue: #89b4fa; /* Blue */
+        --color-text-blue: #89b4fa; /* Blue */
+        --color-text-orange: #fab387; /* Peach */
+        --color-text-red: #f38ba8; /* Red */
+        --color-text-green: #a6e3a1; /* Green */
+        --color-text-disabled: #585b70; /* Surface2 */
+        --color-text-muted: #a6adc8; /* Subtext0 */
+        --color-text-default: #cdd6f4; /* Text */
+        --color-background-primary: #11111b; /* Crust */
+        --color-background-blue: #89b4fa; /* Blue */
+        --color-background-popup: #1e1e2e; /* Base */
+        --color-background-default: #181825; /* Mantle */
+        --color-background-hover: #313244; /* Surface0 */
+        --color-background-surface: #1e1e2e; /* Base */
+        --color-background-alt: #181825; /* Mantle */
+        --color-background-input: #11111b; /* Crust */
+        --color-focus-ring: rgb(137 180 250 / 40%); /* Blue 40% */
+        --color-border-blue: #89b4fa; /* Blue */
+        --color-border-default: #313244; /* Surface0 */
+        --color-icon-hover: brightness(0) saturate(100%) invert(100%) sepia(0%)
+            saturate(1%) hue-rotate(156deg) brightness(106%) contrast(101%);
+
+        & #torrentTrackersTableDiv tr {
+            --color-tracker-disabled: #6c7086; /* Overlay0 */
+            --color-tracker-not-contacted: #fab387; /* Peach */
+            --color-tracker-working: #a6e3a1; /* Green */
+            --color-tracker-updating: #89b4fa; /* Blue */
+            --color-tracker-not-working: #f38ba8; /* Red */
+        }
+
+        color-scheme: dark;
+
+        #rssButtonBar img,
+        #startSearchButton img,
+        #manageSearchPlugins img {
+            filter: brightness(0) saturate(100%) invert(100%) sepia(0%)
+                saturate(1%) hue-rotate(156deg) brightness(106%) contrast(101%);
+        }
+    }
+}
+
 /* Reset */
 
 *,

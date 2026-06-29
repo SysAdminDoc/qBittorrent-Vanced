@@ -75,10 +75,3 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 ## Research-Driven Additions — 2026-06-29
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
-
-- [ ] P3 — Add `prefers-color-scheme` media query to WebUI for non-`.dark` class fallback
-  Why: The WebUI hard-codes `class="dark"` on the HTML element. Users who override this or use the WebUI in a non-dark system preference context get no fallback. The login page already has `@media (prefers-color-scheme: light)` but the main UI does not.
-  Evidence: src/webui/www/private/index.html:3 hardcodes `class="dark"`; src/webui/www/public/css/login.css:24 has prefers-color-scheme; style.css has `.dark` block but no `@media (prefers-color-scheme: dark)` fallback.
-  Touches: src/webui/www/private/css/style.css, src/webui/www/private/scripts/color-scheme.js
-  Acceptance: WebUI respects system dark/light preference when no explicit theme class is set; dark class remains the default but can be overridden.
-  Complexity: S

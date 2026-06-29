@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added a WebUI `prefers-color-scheme` fallback so the main UI uses Catppuccin Mocha tokens when system dark mode applies and no explicit light class is set.
 - Added alternate WebUI static-bundle validation to the WebAPI smoke script for VueTorrent compatibility checks.
 - Added WebUI CSP nonce plumbing for built-in HTML responses while keeping the existing inline-script policy during migration.
 - Added TRaSH Guides-aligned hints when category save paths look like media-library roots.

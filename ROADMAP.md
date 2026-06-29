@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P1 — Add dependency security scanning to release gate
-  Why: vcpkg baseline pins specific dependency versions but the release gate doesn't check for known vulnerabilities. Qt 6.8.8 fixes 6 CVEs (CVE-2026-6210 SVG heap overflow, CVE-2025-14575 Windows cert path, CVE-2025-6338 Schannel TLS); OpenSSL 3.5.7 fixes CVE-2026-45447 (HIGH: heap UAF in PKCS7_verify).
-  Evidence: Qt vulnerability list (wiki.qt.io), OpenSSL advisory page, libtorrent PR #8455 credential leak fix, existing ADVISORY-CHECK.txt only runs `vcpkg update` and `npm audit`.
-  Touches: package.ps1 Write-AdvisoryCheck function, possibly add `grype` or manual known-CVE checklist
-  Acceptance: release gate fails or warns if the vcpkg baseline contains packages with known HIGH/CRITICAL CVEs; advisory output lists Qt, OpenSSL, and libtorrent versions with advisory status.
-  Complexity: M
-
 - [ ] P1 — Add WCAG 2.2 focus-appearance compliance for custom-painted controls
   Why: Custom-painted progress bars in `progressbarpainter.cpp` and torrent cards in `torrentcardswidget.cpp` must draw visible focus rings per WCAG 2.2 criterion 2.4.11 (Focus Appearance). Currently, progress bar cells have no visible focus indicator when navigated via keyboard. Torrent cards have StrongFocus policy but no drawn focus ring.
   Evidence: WCAG 2.2 criterion 2.4.11 requires >= 2px focus indicator with 3:1 contrast; Qt accessibility docs (doc.qt.io/qt-6/accessible-qwidget.html); `torrentcardswidget.cpp:41` sets `setFocusPolicy(Qt::StrongFocus)` but `paintEvent` does not draw a focus rectangle.

@@ -98,16 +98,123 @@ function Get-VcpkgStatusPackages {
     return $records | Where-Object { $_.Status -eq "install ok installed" }
 }
 
+function Convert-ToComparableVersion {
+    param([string]$Value)
+
+    $match = [regex]::Match($Value, '\d+(?:\.\d+){0,3}')
+    if (-not $match.Success) {
+        throw "Cannot parse dependency version '$Value'."
+    }
+
+    return [version]$match.Value
+}
+
+function Test-VersionLessThan {
+    param(
+        [string]$Current,
+        [string]$Minimum
+    )
+
+    return ((Convert-ToComparableVersion $Current) -lt (Convert-ToComparableVersion $Minimum))
+}
+
+function Get-InstalledPackage {
+    param(
+        [object[]]$InstalledPackages,
+        [string]$Name
+    )
+
+    return $InstalledPackages | Where-Object { $_.Package -eq $Name } | Select-Object -First 1
+}
+
+function Get-PackageVersionText {
+    param([object]$Package)
+
+    if (-not $Package) {
+        return "missing"
+    }
+
+    $packageVersion = $Package.Version
+    if ($Package.'Port-Version') {
+        $packageVersion = "$packageVersion#$($Package.'Port-Version')"
+    }
+
+    return $packageVersion
+}
+
+function Add-KnownDependencyAdvisories {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [object[]]$InstalledPackages
+    )
+
+    $Lines.Add("## Known dependency advisory status")
+    $Lines.Add("Policy: warn on known HIGH/CRITICAL CVE exposure or security-hardening gaps; keep release packaging usable while dependency bumps are handled separately.")
+    $Lines.Add("")
+
+    $qtbase = Get-InstalledPackage $InstalledPackages "qtbase"
+    $qtVersion = Get-PackageVersionText $qtbase
+    if ($qtbase -and (Test-VersionLessThan $qtVersion "6.8.8")) {
+        $message = "Qt qtbase $qtVersion is below 6.8.8, the floor covering current Qt CVE fixes tracked for this release gate."
+        $Lines.Add("- Qt qtbase: $qtVersion - WARNING - below 6.8.8 floor for CVE-2026-6210, CVE-2025-14575, CVE-2025-14576, and CVE-2025-6338 tracking.")
+        Write-Warning $message
+    }
+    else {
+        $Lines.Add("- Qt qtbase: $qtVersion - OK - at or above 6.8.8 known-advisory floor.")
+    }
+    $Lines.Add("  Source: https://wiki.qt.io/List_of_known_vulnerabilities_in_Qt_products")
+
+    $openssl = Get-InstalledPackage $InstalledPackages "openssl"
+    $opensslVersion = Get-PackageVersionText $openssl
+    $opensslWarning = $false
+    if ($openssl) {
+        $currentOpenSSL = Convert-ToComparableVersion $opensslVersion
+        if (($currentOpenSSL -ge [version]"3.6.0") -and ($currentOpenSSL -lt [version]"3.6.3")) {
+            $opensslWarning = $true
+        }
+        if (($currentOpenSSL -ge [version]"3.5.0") -and ($currentOpenSSL -lt [version]"3.5.7")) {
+            $opensslWarning = $true
+        }
+        if (($currentOpenSSL -ge [version]"3.4.0") -and ($currentOpenSSL -lt [version]"3.4.3")) {
+            $opensslWarning = $true
+        }
+    }
+    if ($opensslWarning) {
+        $message = "OpenSSL $opensslVersion is in a branch range affected by CVE-2026-45447."
+        $Lines.Add("- OpenSSL: $opensslVersion - WARNING - CVE-2026-45447 affects 3.6.0 before 3.6.3, 3.5.0 before 3.5.7, and 3.4.0 before 3.4.3.")
+        Write-Warning $message
+    }
+    else {
+        $Lines.Add("- OpenSSL: $opensslVersion - OK - not in the tracked CVE-2026-45447 affected branch ranges.")
+    }
+    $Lines.Add("  Source: https://openssl-library.org/news/secadv/20260429.txt")
+
+    $libtorrent = Get-InstalledPackage $InstalledPackages "libtorrent"
+    $libtorrentVersion = Get-PackageVersionText $libtorrent
+    if ($libtorrent -and (Test-VersionLessThan $libtorrentVersion "2.0.13")) {
+        $message = "libtorrent $libtorrentVersion is below 2.0.13 web seed credential hardening."
+        $Lines.Add("- libtorrent: $libtorrentVersion - WARNING - below 2.0.13, which clears HTTP credentials on redirected web seeds.")
+        Write-Warning $message
+    }
+    else {
+        $Lines.Add("- libtorrent: $libtorrentVersion - OK - at or above 2.0.13 web seed credential hardening floor.")
+    }
+    $Lines.Add("  Source: https://github.com/arvidn/libtorrent/pull/8455")
+    $Lines.Add("")
+}
+
 function Write-AdvisoryCheck {
     param(
         [string]$OutputPath,
-        [string]$VcpkgRoot
+        [string]$VcpkgRoot,
+        [object[]]$InstalledPackages
     )
 
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("qBittorrent Vanced release advisory check")
     $lines.Add("Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')")
     $lines.Add("")
+    Add-KnownDependencyAdvisories -Lines $lines -InstalledPackages $InstalledPackages
 
     $vcpkgExe = $null
     if ($VcpkgRoot) {
@@ -270,7 +377,7 @@ $hashPath = Join-Path $outputPath "SHA256SUMS.txt"
 $hashLines | Out-File -FilePath $hashPath -Encoding ascii
 
 $advisoryPath = Join-Path $outputPath "ADVISORY-CHECK.txt"
-Write-AdvisoryCheck -OutputPath $advisoryPath -VcpkgRoot $vcpkgRoot
+Write-AdvisoryCheck -OutputPath $advisoryPath -VcpkgRoot $vcpkgRoot -InstalledPackages $installedPackages
 
 $provenance = @"
 qBittorrent Vanced v$Version Release Provenance

@@ -37,17 +37,90 @@
 #include <QStyleOptionViewItem>
 
 #include "base/global.h"
+#include "uithememanager.h"
 
 namespace
 {
-    const QColor FOCUS_RING_COLOR {0x89, 0xb4, 0xfa};
+    struct ProgressBarThemeColors
+    {
+        QColor selectedBackground;
+        QColor hoverBackground;
+        QColor groove;
+        QColor text;
+        QColor textDisabled;
+        QColor focus;
+        QColor shimmer;
+        QColor downloadingLight;
+        QColor downloadingBase;
+        QColor downloadingDark;
+        QColor downloadingShadow;
+        QColor completedLight;
+        QColor completedBase;
+        QColor completedDark;
+        QColor completedShadow;
+        QColor stoppedLight;
+        QColor stoppedBase;
+        QColor stoppedDark;
+        QColor stoppedShadow;
+    };
 
-    void drawFocusRing(QPainter *painter, const QRectF &rect, const qreal radius)
+    QColor themeColor(const QString &id, const QColor &fallback)
+    {
+        const UIThemeManager *themeManager = UIThemeManager::instance();
+        if (!themeManager)
+            return fallback;
+
+        const QColor color = themeManager->getColor(id);
+        return color.isValid() ? color : fallback;
+    }
+
+    ProgressBarThemeColors progressBarThemeColors()
+    {
+        return {
+            themeColor(u"ProgressBar.SelectedBackground"_s, QColor(0x89, 0xb4, 0xfa, 30)),
+            themeColor(u"ProgressBar.HoverBackground"_s, QColor(0x31, 0x32, 0x44, 100)),
+            themeColor(u"ProgressBar.Groove"_s, QColor(0x11, 0x11, 0x1b)),
+            themeColor(u"ProgressBar.Text"_s, QColor(0xcd, 0xd6, 0xf4)),
+            themeColor(u"ProgressBar.TextDisabled"_s, QColor(0x6c, 0x70, 0x86)),
+            themeColor(u"ProgressBar.Focus"_s, QColor(0x89, 0xb4, 0xfa)),
+            themeColor(u"ProgressBar.Shimmer"_s, QColor(0xcd, 0xd6, 0xf4)),
+            themeColor(u"ProgressBar.Downloading.Light"_s, QColor(0x7c, 0xd8, 0x76)),
+            themeColor(u"ProgressBar.Downloading.Base"_s, QColor(0x60, 0xc4, 0x5a)),
+            themeColor(u"ProgressBar.Downloading.Dark"_s, QColor(0x48, 0xb0, 0x42)),
+            themeColor(u"ProgressBar.Downloading.Shadow"_s, QColor(0x40, 0xa8, 0x3a)),
+            themeColor(u"ProgressBar.Completed.Light"_s, QColor(0xb8, 0xf0, 0xb0)),
+            themeColor(u"ProgressBar.Completed.Base"_s, QColor(0xa6, 0xe3, 0xa1)),
+            themeColor(u"ProgressBar.Completed.Dark"_s, QColor(0x80, 0xd0, 0x7a)),
+            themeColor(u"ProgressBar.Completed.Shadow"_s, QColor(0x7c, 0xc4, 0x78)),
+            themeColor(u"ProgressBar.Stopped.Light"_s, QColor(0x6c, 0x70, 0x86)),
+            themeColor(u"ProgressBar.Stopped.Base"_s, QColor(0x58, 0x5b, 0x70)),
+            themeColor(u"ProgressBar.Stopped.Dark"_s, QColor(0x45, 0x47, 0x5a)),
+            themeColor(u"ProgressBar.Stopped.Shadow"_s, QColor(0x58, 0x5b, 0x70))
+        };
+    }
+
+    QColor alphaColor(QColor color, const int alpha)
+    {
+        color.setAlpha(alpha);
+        return color;
+    }
+
+    void applyStateGradient(QLinearGradient &gradient, const QColor &light, const QColor &base
+            , const QColor &dark, const QColor &shadow)
+    {
+        gradient.setColorAt(0.0, light);
+        gradient.setColorAt(0.35, base);
+        gradient.setColorAt(0.5, dark);
+        gradient.setColorAt(0.65, base);
+        gradient.setColorAt(1.0, shadow);
+    }
+
+    void drawFocusRing(QPainter *painter, const QRectF &rect, const qreal radius, const QColor &color)
     {
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
         painter->setBrush(Qt::NoBrush);
-        painter->setPen(QPen(FOCUS_RING_COLOR, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         painter->drawRoundedRect(rect.adjusted(1, 1, -1, -1), radius, radius);
         painter->restore();
     }
@@ -81,11 +154,12 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
     const bool isSelected = option.state.testFlag(QStyle::State_Selected);
     const bool hasFocus = option.state.testFlag(QStyle::State_HasFocus);
     const qreal radius = 3.0;
+    const ProgressBarThemeColors colors = progressBarThemeColors();
 
     if (isSelected)
-        painter->fillRect(r, QColor(0x89, 0xb4, 0xfa, 30));
+        painter->fillRect(r, colors.selectedBackground);
     else if (option.state.testFlag(QStyle::State_MouseOver))
-        painter->fillRect(r, QColor(0x31, 0x32, 0x44, 100));
+        painter->fillRect(r, colors.hoverBackground);
 
     const int vPad = 4;
     const int hPad = 4;
@@ -93,7 +167,7 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
 
     QPainterPath groovePath;
     groovePath.addRoundedRect(grooveRect, radius, radius);
-    painter->fillPath(groovePath, QColor(0x11, 0x11, 0x1b));
+    painter->fillPath(groovePath, colors.groove);
 
     const int clampedProgress = qBound(0, progress, 100);
     if (clampedProgress > 0)
@@ -103,11 +177,11 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
 
         QColor fillColor;
         if (!isEnabled)
-            fillColor = QColor(0x58, 0x5b, 0x70);
+            fillColor = colors.stoppedBase;
         else if (clampedProgress >= 100)
-            fillColor = QColor(0xa6, 0xe3, 0xa1);
+            fillColor = colors.completedBase;
         else
-            fillColor = QColor(0x60, 0xc4, 0x5a);
+            fillColor = colors.downloadingBase;
 
         painter->setClipPath(groovePath);
         QPainterPath chunkPath;
@@ -126,12 +200,12 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
     font.setPixelSize(fontSize);
     painter->setFont(font);
 
-    const QColor textColor = isEnabled ? QColor(0xcd, 0xd6, 0xf4) : QColor(0x6c, 0x70, 0x86);
+    const QColor textColor = isEnabled ? colors.text : colors.textDisabled;
     painter->setPen(textColor);
     painter->drawText(grooveRect, Qt::AlignCenter, displayText);
 
     if (hasFocus)
-        drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0);
+        drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0, colors.focus);
 
     painter->restore();
 }
@@ -146,12 +220,13 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
     const bool isSelected = option.state.testFlag(QStyle::State_Selected);
     const bool hasFocus = option.state.testFlag(QStyle::State_HasFocus);
     const qreal radius = 3.0;
+    const ProgressBarThemeColors colors = progressBarThemeColors();
 
     // Row background
     if (isSelected)
-        painter->fillRect(r, QColor(0x89, 0xb4, 0xfa, 30));
+        painter->fillRect(r, colors.selectedBackground);
     else if (option.state.testFlag(QStyle::State_MouseOver))
-        painter->fillRect(r, QColor(0x31, 0x32, 0x44, 100));
+        painter->fillRect(r, colors.hoverBackground);
 
     // Groove
     const int vPad = 4;
@@ -160,7 +235,7 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
 
     QPainterPath groovePath;
     groovePath.addRoundedRect(grooveRect, radius, radius);
-    painter->fillPath(groovePath, QColor(0x11, 0x11, 0x1b));
+    painter->fillPath(groovePath, colors.groove);
 
     // Chunk
     const int clampedProgress = qBound(0, progress, 100);
@@ -175,28 +250,20 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
         if (!isEnabled)
         {
             // Stopped/error: muted gray
-            baseGrad.setColorAt(0.0, QColor(0x6c, 0x70, 0x86));
-            baseGrad.setColorAt(0.4, QColor(0x58, 0x5b, 0x70));
-            baseGrad.setColorAt(0.6, QColor(0x45, 0x47, 0x5a));
-            baseGrad.setColorAt(1.0, QColor(0x58, 0x5b, 0x70));
+            applyStateGradient(baseGrad, colors.stoppedLight, colors.stoppedBase
+                    , colors.stoppedDark, colors.stoppedShadow);
         }
         else if (clampedProgress >= 100)
         {
             // Complete: bright green with 3D banding
-            baseGrad.setColorAt(0.0, QColor(0xb8, 0xf0, 0xb0));
-            baseGrad.setColorAt(0.35, QColor(0xa6, 0xe3, 0xa1));
-            baseGrad.setColorAt(0.5, QColor(0x80, 0xd0, 0x7a));
-            baseGrad.setColorAt(0.65, QColor(0xa6, 0xe3, 0xa1));
-            baseGrad.setColorAt(1.0, QColor(0x7c, 0xc4, 0x78));
+            applyStateGradient(baseGrad, colors.completedLight, colors.completedBase
+                    , colors.completedDark, colors.completedShadow);
         }
         else
         {
             // Downloading: green with Windows Explorer-style 3D banding
-            baseGrad.setColorAt(0.0, QColor(0x7c, 0xd8, 0x76));
-            baseGrad.setColorAt(0.35, QColor(0x60, 0xc4, 0x5a));
-            baseGrad.setColorAt(0.5, QColor(0x48, 0xb0, 0x42));
-            baseGrad.setColorAt(0.65, QColor(0x60, 0xc4, 0x5a));
-            baseGrad.setColorAt(1.0, QColor(0x40, 0xa8, 0x3a));
+            applyStateGradient(baseGrad, colors.downloadingLight, colors.downloadingBase
+                    , colors.downloadingDark, colors.downloadingShadow);
         }
 
         // Clip to groove and draw base
@@ -218,11 +285,11 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
             const qreal shimmerX = chunkRect.x() + (phase * sweepRange) - shimmerWidth;
 
             QLinearGradient shimmerGrad(QPointF(shimmerX, 0), QPointF(shimmerX + shimmerWidth, 0));
-            shimmerGrad.setColorAt(0.0, QColor(205, 214, 244, 0));
-            shimmerGrad.setColorAt(0.3, QColor(205, 214, 244, 50));
-            shimmerGrad.setColorAt(0.5, QColor(205, 214, 244, 75));
-            shimmerGrad.setColorAt(0.7, QColor(205, 214, 244, 50));
-            shimmerGrad.setColorAt(1.0, QColor(205, 214, 244, 0));
+            shimmerGrad.setColorAt(0.0, alphaColor(colors.shimmer, 0));
+            shimmerGrad.setColorAt(0.3, alphaColor(colors.shimmer, 50));
+            shimmerGrad.setColorAt(0.5, alphaColor(colors.shimmer, 75));
+            shimmerGrad.setColorAt(0.7, alphaColor(colors.shimmer, 50));
+            shimmerGrad.setColorAt(1.0, alphaColor(colors.shimmer, 0));
 
             painter->fillPath(chunkPath, shimmerGrad);
         }
@@ -238,13 +305,13 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
         font.setPixelSize(fontSize);
         painter->setFont(font);
 
-        const QColor textColor = isEnabled ? QColor(0xcd, 0xd6, 0xf4) : QColor(0x6c, 0x70, 0x86);
+        const QColor textColor = isEnabled ? colors.text : colors.textDisabled;
         painter->setPen(textColor);
         painter->drawText(grooveRect, Qt::AlignCenter, text);
     }
 
     if (hasFocus)
-        drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0);
+        drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0, colors.focus);
 
     painter->restore();
 }

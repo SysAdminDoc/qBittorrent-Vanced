@@ -32,8 +32,12 @@
 #include <QComboBox>
 #include <QDebug>
 #include <QDialog>
+#include <QImage>
 #include <QLabel>
 #include <QLayout>
+#include <QPainter>
+#include <QStyle>
+#include <QStyleOptionViewItem>
 #include <QTabWidget>
 #include <QTemporaryDir>
 #include <QWidget>
@@ -44,6 +48,8 @@
 #include "base/preferences.h"
 #include "base/profile.h"
 #include "base/settingsstorage.h"
+#include "gui/progressbarpainter.h"
+#include "gui/uithemecommon.h"
 #include "gui/uithemedialog.h"
 #include "gui/uithememanager.h"
 
@@ -61,6 +67,49 @@ namespace
     QComboBox *flavorCombo(UIThemeDialog &dialog)
     {
         return dialog.findChild<QComboBox *>(u"builtInThemeFlavorComboBox"_s);
+    }
+
+    void verifyProgressBarThemeColors(int &failureCount)
+    {
+        const QStringList colorIDs =
+        {
+            u"ProgressBar.Groove"_s,
+            u"ProgressBar.Text"_s,
+            u"ProgressBar.Focus"_s,
+            u"ProgressBar.Downloading.Base"_s,
+            u"ProgressBar.Completed.Base"_s,
+            u"ProgressBar.Stopped.Base"_s
+        };
+
+        for (const QString &colorID : colorIDs)
+        {
+            verify(defaultUIThemeColors().contains(colorID)
+                    , u"Default theme colors should expose %1"_s.arg(colorID), failureCount);
+            verify(UIThemeManager::instance()->getColor(colorID).isValid()
+                    , u"UIThemeManager should resolve %1"_s.arg(colorID), failureCount);
+        }
+    }
+
+    void verifyProgressBarRender(const bool simpleMode, int &failureCount)
+    {
+        QImage image {180, 32, QImage::Format_ARGB32_Premultiplied};
+        image.fill(Qt::transparent);
+
+        QPainter painter {&image};
+        QStyleOptionViewItem option;
+        option.rect = image.rect();
+        option.state = QStyle::State_Enabled | QStyle::State_Selected | QStyle::State_HasFocus;
+
+        ProgressBarPainter progressBarPainter;
+        progressBarPainter.setSimpleMode(simpleMode);
+        progressBarPainter.paint(&painter, option, u"63%"_s, 63);
+        painter.end();
+
+        verify((image.pixelColor(12, 16).alpha() > 0)
+                , simpleMode
+                    ? u"Simple progress bar should render themed pixels"_s
+                    : u"Fancy progress bar should render themed pixels"_s
+                , failureCount);
     }
 }
 
@@ -85,6 +134,9 @@ int main(int argc, char **argv)
     UIThemeManager::initInstance();
 
     int failureCount = 0;
+    verifyProgressBarThemeColors(failureCount);
+    verifyProgressBarRender(false, failureCount);
+    verifyProgressBarRender(true, failureCount);
 
     {
         UIThemeDialog dialog;

@@ -296,7 +296,11 @@ private:
     {
         if (color.isValid())
         {
-            setStyleSheet(u"#colorWidget { background-color: %1; }"_s.arg(color.name()));
+            setStyleSheet(u"#colorWidget { background-color: rgba(%1, %2, %3, %4); }"_s
+                    .arg(color.red())
+                    .arg(color.green())
+                    .arg(color.blue())
+                    .arg(color.alphaF()));
             setText({});
         }
         else
@@ -309,6 +313,7 @@ private:
     void showColorDialog()
     {
         auto *dialog = new QColorDialog(m_currentColor, this);
+        dialog->setOption(QColorDialog::ShowAlphaChannel, true);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
         connect(dialog, &QDialog::accepted, this, [this, dialog]
         {
@@ -539,9 +544,13 @@ bool UIThemeDialog::storeColors()
 {
     QJsonObject userConfig;
     userConfig.insert(u"version", 2);
+    const auto colorName = [](const QColor &color)
+    {
+        return color.name((color.alpha() < 255) ? QColor::HexArgb : QColor::HexRgb);
+    };
 
     const QHash<QString, UIThemeColor> defaultColors = defaultUIThemeColors();
-    const auto addColorOverrides = [this, &defaultColors, &userConfig](const ColorMode colorMode)
+    const auto addColorOverrides = [this, &defaultColors, &userConfig, &colorName](const ColorMode colorMode)
     {
         const QHash<QString, ColorWidget *> &colorWidgets = (colorMode == ColorMode::Light)
                 ? m_lightColorWidgets : m_darkColorWidgets;
@@ -554,7 +563,7 @@ bool UIThemeDialog::storeColors()
                     ? defaultColors.value(colorID).light : defaultColors.value(colorID).dark;
             const QColor &color = it.value()->currentColor();
             if (color != defaultColor)
-                colors.insert(it.key(), color.name());
+                colors.insert(it.key(), colorName(color));
         }
 
         if (!colors.isEmpty())

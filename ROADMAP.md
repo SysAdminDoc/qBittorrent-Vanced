@@ -5,7 +5,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Planned Features
 
 ### Progress bars
-- Per-state color keys exposed to theme JSON so downstream forks can rebrand without recompiling
 - Optional glyph overlay for stalled / queued / checking states instead of inventing new colors
 
 ### UX

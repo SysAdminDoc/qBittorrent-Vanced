@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Restored discoverable Filters Sidebar access with a toolbar toggle and cleared hidden sidebar filters when the pane is turned off.
 - Added compact progress-bar glyph overlays for queued, checking, and stalled torrents without introducing additional state colors.
 - Added `ProgressBar.*` theme color keys so custom `config.json` themes can rebrand progress groove, text, shimmer, focus, and per-state bar colors without recompiling.
 - Documented the existing simple progress bar accessibility mode for users who prefer solid bars and percent text over shimmer animation.

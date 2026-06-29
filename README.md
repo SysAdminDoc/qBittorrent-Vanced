@@ -31,7 +31,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 
 - Removed the Dashboard tab
 - Removed the "Filter by" dropdown from the toolbar (search bar filters by name)
-- Removed the filters sidebar and status bar by default for a cleaner layout
+- Filters sidebar is hidden by default but available from the toolbar or View menu for Status, Category, Tag, and Tracker panes
 - Condensed vertical spacing throughout (tab bars, toolbars, table rows, headers, buttons)
 - Wider default column sizes so column titles aren't clipped
 - Cleaner batch operations, portable backup, torrent-card, toolbar, and dialog flows with clearer labels and feedback

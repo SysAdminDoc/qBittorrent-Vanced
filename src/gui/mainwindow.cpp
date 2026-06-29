@@ -61,6 +61,7 @@
 #include "base/net/downloadmanager.h"
 #include "base/path.h"
 #include "base/preferences.h"
+#include "base/torrentfilter.h"
 #include "base/utils/fs.h"
 #include "base/utils/misc.h"
 #include "base/utils/password.h"
@@ -142,6 +143,10 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_ui->actionDownloadFromURL->setIcon(UIThemeManager::instance()->getIcon(u"insert-link"_s));
     m_ui->actionSetGlobalSpeedLimits->setIcon(UIThemeManager::instance()->getIcon(u"speedometer"_s));
     m_ui->actionAbout->setIcon(UIThemeManager::instance()->getIcon(u"help-about"_s));
+    m_ui->actionShowFiltersSidebar->setIcon(UIThemeManager::instance()->getIcon(u"view-filter"_s));
+    m_ui->actionShowFiltersSidebar->setIconText(tr("Filters"));
+    m_ui->actionShowFiltersSidebar->setToolTip(tr("Show Status, Category, Tag, and Tracker filters"));
+    m_ui->actionShowFiltersSidebar->setStatusTip(tr("Show Status, Category, Tag, and Tracker filters"));
     m_ui->actionTopQueuePos->setIcon(UIThemeManager::instance()->getIcon(u"go-top"_s));
     m_ui->actionIncreaseQueuePos->setIcon(UIThemeManager::instance()->getIcon(u"go-up"_s));
     m_ui->actionDecreaseQueuePos->setIcon(UIThemeManager::instance()->getIcon(u"go-down"_s));
@@ -217,6 +222,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     auto *spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_ui->toolBar->insertWidget(m_columnFilterAction, spacer);
+    m_ui->toolBar->insertAction(m_columnFilterAction, m_ui->actionShowFiltersSidebar);
 
     // Transfer List tab
     m_transferListWidget = new TransferListWidget(app, this);
@@ -471,10 +477,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     }
     else
     {
-        m_transferListWidget->applyStatusFilter(pref->getTransSelFilter());
-        m_transferListWidget->applyCategoryFilter(QString());
-        m_transferListWidget->applyTagFilter(std::nullopt);
-        m_transferListWidget->applyTrackerFilterAll();
+        resetTransferListSidebarFilters();
     }
 
     // Start watching the executable for updates
@@ -1325,7 +1328,16 @@ void MainWindow::showFiltersSidebar(const bool show)
         saveSplitterSettings();
         delete m_transferListFiltersWidget;
         m_transferListFiltersWidget = nullptr;
+        resetTransferListSidebarFilters();
     }
+}
+
+void MainWindow::resetTransferListSidebarFilters()
+{
+    m_transferListWidget->applyStatusFilter(TorrentFilter::All);
+    m_transferListWidget->applyCategoryFilter(QString());
+    m_transferListWidget->applyTagFilter(std::nullopt);
+    m_transferListWidget->applyTrackerFilterAll();
 }
 
 void MainWindow::loadPreferences()

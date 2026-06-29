@@ -185,6 +185,7 @@ private:
     bool event(QEvent *e) override;
     void showStatusBar(bool show);
     void showFiltersSidebar(bool show);
+    void resetTransferListSidebarFilters();
     void applyTransferListFilter();
     void refreshWindowTitle();
     void refreshTrayIconTooltip();

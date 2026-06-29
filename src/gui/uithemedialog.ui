@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>451</width>
-    <height>348</height>
+    <width>640</width>
+    <height>520</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,6 +28,63 @@
      <property name="tabBarAutoHide">
       <bool>true</bool>
      </property>
+     <widget class="QWidget" name="builtInThemeTab">
+      <attribute name="title">
+       <string>Built-in</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <layout class="QFormLayout" name="builtInThemeFormLayout">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="builtInThemeFlavorLabel">
+           <property name="text">
+            <string>Catppuccin flavor:</string>
+           </property>
+           <property name="buddy">
+            <cstring>builtInThemeFlavorComboBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="builtInThemeFlavorComboBox"/>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="builtInThemePreviewLabel">
+         <property name="font">
+          <font>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Torrent list preview</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="builtInThemePreviewHost" native="true">
+         <layout class="QVBoxLayout" name="builtInThemePreviewLayout">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="colorsTab">
       <attribute name="title">
        <string>Colors</string>

@@ -14,10 +14,23 @@ add_executable(testwebapplicationsecurity testwebapplicationsecurity.cpp)
 target_link_libraries(testwebapplicationsecurity PRIVATE qbt_webui qbt_base)
 add_test(NAME testwebapplicationsecurity COMMAND testwebapplicationsecurity)
 
+if (TARGET qbt_gui)
+    add_executable(testuithemedialog testuithemedialog.cpp)
+    target_link_libraries(testuithemedialog PRIVATE qbt_gui qbt_webui qbt_base)
+    add_test(NAME testuithemedialog COMMAND testuithemedialog)
+    set_tests_properties(testuithemedialog PROPERTIES
+        ENVIRONMENT "QT_PLUGIN_PATH=$<TARGET_FILE_DIR:qbt_app>"
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:qbt_app>"
+    )
+endif()
+
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
 add_dependencies(check testdownloadhandlerimpl)
 add_dependencies(check testcmdoptions)
 add_dependencies(check testwebapplicationsecurity)
+if (TARGET testuithemedialog)
+    add_dependencies(check testuithemedialog)
+endif()
 
 find_package(Qt6 QUIET COMPONENTS Test)
 if (NOT TARGET Qt6::Test)

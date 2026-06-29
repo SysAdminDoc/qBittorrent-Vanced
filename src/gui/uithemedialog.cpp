@@ -28,14 +28,27 @@
 
 #include "uithemedialog.h"
 
+#include <array>
+#include <cstddef>
+
 #include <QColor>
 #include <QColorDialog>
+#include <QComboBox>
+#include <QCoreApplication>
+#include <QEvent>
 #include <QFileDialog>
+#include <QFontMetrics>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QSizePolicy>
+#include <QStyle>
+#include <QStyleOptionViewItem>
+#include <QTimer>
 
 #include "base/3rdparty/expected.hpp"
 #include "base/global.h"
@@ -44,7 +57,9 @@
 #include "base/profile.h"
 #include "base/utils/fs.h"
 #include "base/utils/io.h"
+#include "progressbarpainter.h"
 #include "uithemecommon.h"
+#include "uithememanager.h"
 #include "utils.h"
 
 #include "ui_uithemedialog.h"
@@ -62,7 +77,165 @@ namespace
     {
         return Path(u":icons"_s) / Path(iconID + u".svg");
     }
+
+    QString previewText(const char *text)
+    {
+        return QCoreApplication::translate("BuiltInThemePreviewWidget", text);
+    }
 }
+
+class BuiltInThemePreviewWidget final : public QWidget
+{
+    Q_DISABLE_COPY_MOVE(BuiltInThemePreviewWidget)
+
+public:
+    explicit BuiltInThemePreviewWidget(QWidget *parent = nullptr)
+        : QWidget(parent)
+    {
+        setMinimumHeight(210);
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+        auto *timer = new QTimer(this);
+        connect(timer, &QTimer::timeout, this, qOverload<>(&QWidget::update));
+        timer->start(125);
+    }
+
+    QSize sizeHint() const override
+    {
+        return {560, 240};
+    }
+
+protected:
+    void changeEvent(QEvent *event) override
+    {
+        QWidget::changeEvent(event);
+
+        if ((event->type() == QEvent::PaletteChange) || (event->type() == QEvent::StyleChange))
+            update();
+    }
+
+    void paintEvent([[maybe_unused]] QPaintEvent *event) override
+    {
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+
+        const QPalette palette = this->palette();
+        const QColor windowColor = palette.color(QPalette::Window);
+        const QColor baseColor = palette.color(QPalette::Base);
+        const QColor alternateColor = palette.color(QPalette::AlternateBase);
+        const QColor borderColor = palette.color(QPalette::Mid);
+        const QColor textColor = palette.color(QPalette::Text);
+        const QColor mutedColor = palette.color(QPalette::PlaceholderText);
+        const QColor highlightColor = palette.color(QPalette::Highlight);
+        const QColor highlightedTextColor = palette.color(QPalette::HighlightedText);
+
+        painter.fillRect(rect(), windowColor);
+
+        const QRect panelRect = rect().adjusted(1, 1, -1, -1);
+        painter.setPen(borderColor);
+        painter.setBrush(baseColor);
+        painter.drawRoundedRect(panelRect, 6, 6);
+
+        const int margin = 14;
+        const int headerHeight = 30;
+        const int rowHeight = 40;
+        const int gap = 8;
+        const QRect contentRect = panelRect.adjusted(margin, margin, -margin, -margin);
+        const int nameWidth = contentRect.width() * 38 / 100;
+        const int sizeWidth = contentRect.width() * 15 / 100;
+        const int progressWidth = contentRect.width() * 28 / 100;
+        const int statusWidth = contentRect.width() - nameWidth - sizeWidth - progressWidth;
+
+        const auto drawCellText = [&painter](const QRect &cellRect, const QString &text, const QColor &color, const int alignment = Qt::AlignVCenter | Qt::AlignLeft)
+        {
+            painter.setPen(color);
+            const QString elided = painter.fontMetrics().elidedText(text, Qt::ElideRight, cellRect.width());
+            painter.drawText(cellRect, alignment, elided);
+        };
+
+        QFont headerFont = font();
+        headerFont.setBold(true);
+        painter.setFont(headerFont);
+
+        QRect cellRect(contentRect.left(), contentRect.top(), nameWidth, headerHeight);
+        drawCellText(cellRect, previewText("Name"), mutedColor);
+        cellRect.translate(nameWidth, 0);
+        cellRect.setWidth(sizeWidth);
+        drawCellText(cellRect, previewText("Size"), mutedColor, Qt::AlignVCenter | Qt::AlignRight);
+        cellRect.translate(sizeWidth, 0);
+        cellRect.setWidth(progressWidth);
+        drawCellText(cellRect, previewText("Progress"), mutedColor, Qt::AlignVCenter | Qt::AlignHCenter);
+        cellRect.translate(progressWidth, 0);
+        cellRect.setWidth(statusWidth);
+        drawCellText(cellRect, previewText("Status"), mutedColor);
+
+        painter.setFont(font());
+
+        struct PreviewRow
+        {
+            QString name;
+            QString size;
+            QString status;
+            int progress;
+            bool selected;
+            bool enabled;
+        };
+
+        const std::array<PreviewRow, 4> rows =
+        {{
+            {previewText("Linux ISO Collection"), u"4.2 GiB"_s, previewText("Downloading"), 63, true, true},
+            {previewText("Studio Footage"), u"18.7 GiB"_s, previewText("Queued"), 12, false, true},
+            {previewText("Release Archive"), u"2.8 GiB"_s, previewText("Seeding"), 100, false, true},
+            {previewText("Backup Snapshot"), u"7.5 GiB"_s, previewText("Stalled"), 44, false, false}
+        }};
+
+        int rowTop = contentRect.top() + headerHeight + gap;
+        for (std::size_t row = 0; row < rows.size(); ++row)
+        {
+            const PreviewRow &sample = rows[row];
+            const QRect rowRect(contentRect.left(), rowTop, contentRect.width(), rowHeight);
+
+            if (sample.selected)
+            {
+                painter.setPen(Qt::NoPen);
+                painter.setBrush(highlightColor);
+                painter.drawRoundedRect(rowRect, 5, 5);
+            }
+            else
+            {
+                painter.fillRect(rowRect, ((row % 2) == 0) ? alternateColor : baseColor);
+            }
+
+            const QColor rowTextColor = sample.selected ? highlightedTextColor : (sample.enabled ? textColor : mutedColor);
+            QRect textRect = rowRect.adjusted(10, 0, -8, 0);
+            textRect.setWidth(nameWidth - 12);
+            drawCellText(textRect, sample.name, rowTextColor);
+
+            textRect.translate(nameWidth, 0);
+            textRect.setWidth(sizeWidth - 12);
+            drawCellText(textRect, sample.size, rowTextColor, Qt::AlignVCenter | Qt::AlignRight);
+
+            QStyleOptionViewItem option;
+            option.rect = QRect(rowRect.left() + nameWidth + sizeWidth + 6, rowRect.top() + 4, progressWidth - 12, rowRect.height() - 8);
+            option.state = QStyle::State_None;
+            if (sample.enabled)
+                option.state |= QStyle::State_Enabled;
+            if (sample.selected)
+                option.state |= QStyle::State_Selected;
+
+            m_progressBarPainter.paint(&painter, option, QString::number(sample.progress) + u'%', sample.progress);
+
+            textRect = QRect(rowRect.left() + nameWidth + sizeWidth + progressWidth + 10
+                    , rowRect.top(), statusWidth - 18, rowRect.height());
+            drawCellText(textRect, sample.status, rowTextColor);
+
+            rowTop += rowHeight;
+        }
+    }
+
+private:
+    ProgressBarPainter m_progressBarPainter;
+};
 
 class ColorWidget final : public QLabel
 {
@@ -230,12 +403,17 @@ UIThemeDialog::UIThemeDialog(QWidget *parent)
     : QDialog(parent)
     , m_ui {new Ui::UIThemeDialog}
     , m_storeDialogSize {SETTINGS_KEY(u"Size"_s)}
+    , m_initialBuiltInThemeFlavor {UIThemeManager::instance()->builtInThemeFlavor()}
 {
     m_ui->setupUi(this);
 
     connect(m_ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(m_ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    m_builtInThemePreview = new BuiltInThemePreviewWidget(this);
+    m_ui->builtInThemePreviewLayout->addWidget(m_builtInThemePreview);
+
+    loadBuiltInThemeFlavors();
     loadColors();
     loadIcons();
 
@@ -264,6 +442,50 @@ void UIThemeDialog::accept()
         QMessageBox::critical(this, tr("UI Theme Configuration.")
                 , tr("The UI Theme changes could not be fully applied. The details can be found in the Log."));
     }
+}
+
+void UIThemeDialog::done(const int result)
+{
+    if (result != QDialog::Accepted)
+        restoreBuiltInThemePreview();
+
+    QDialog::done(result);
+}
+
+void UIThemeDialog::loadBuiltInThemeFlavors()
+{
+    m_ui->builtInThemeFlavorComboBox->blockSignals(true);
+    m_ui->builtInThemeFlavorComboBox->clear();
+
+    for (const QString &flavor : UIThemeManager::builtInThemeFlavorIds())
+        m_ui->builtInThemeFlavorComboBox->addItem(UIThemeManager::builtInThemeFlavorDisplayName(flavor), flavor);
+
+    const int flavorIndex = m_ui->builtInThemeFlavorComboBox->findData(m_initialBuiltInThemeFlavor);
+    m_ui->builtInThemeFlavorComboBox->setCurrentIndex((flavorIndex >= 0) ? flavorIndex : 0);
+    m_ui->builtInThemeFlavorComboBox->blockSignals(false);
+
+    connect(m_ui->builtInThemeFlavorComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]
+    {
+        applyBuiltInThemePreview(m_ui->builtInThemeFlavorComboBox->currentData().toString());
+    });
+}
+
+void UIThemeDialog::applyBuiltInThemePreview(const QString &flavor)
+{
+    if (flavor.isEmpty())
+        return;
+
+    UIThemeManager::instance()->setBuiltInThemeFlavor(flavor);
+    m_builtInThemePreview->update();
+}
+
+void UIThemeDialog::restoreBuiltInThemePreview()
+{
+    if (m_initialBuiltInThemeFlavor.isEmpty())
+        return;
+
+    UIThemeManager::instance()->setBuiltInThemeFlavor(m_initialBuiltInThemeFlavor);
+    m_builtInThemePreview->update();
 }
 
 void UIThemeDialog::loadColors()

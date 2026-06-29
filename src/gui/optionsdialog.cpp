@@ -46,6 +46,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
+#include <QSignalBlocker>
 #include <QSystemTrayIcon>
 #include <QTranslator>
 
@@ -383,6 +384,15 @@ void OptionsDialog::loadBehaviorTabOptions()
     {
         auto *dialog = new UIThemeDialog(this);
         dialog->setAttribute(Qt::WA_DeleteOnClose);
+        connect(dialog, &QDialog::finished, this, [this]
+        {
+            const int flavorIndex = m_ui->comboBuiltInThemeFlavor->findData(UIThemeManager::instance()->builtInThemeFlavor());
+            if (flavorIndex < 0)
+                return;
+
+            const QSignalBlocker blocker {m_ui->comboBuiltInThemeFlavor};
+            m_ui->comboBuiltInThemeFlavor->setCurrentIndex(flavorIndex);
+        });
         dialog->open();
     });
 

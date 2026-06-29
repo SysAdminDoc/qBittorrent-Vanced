@@ -55,6 +55,12 @@ public:
     void accept() override;
 
 private:
+    void done(int result) override;
+
+    void loadBuiltInThemeFlavors();
+    void applyBuiltInThemePreview(const QString &flavor);
+    void restoreBuiltInThemePreview();
+
     void loadColors();
     void loadIcons();
     bool storeColors();
@@ -62,6 +68,8 @@ private:
 
     Ui::UIThemeDialog *m_ui = nullptr;
     SettingValue<QSize> m_storeDialogSize;
+    QWidget *m_builtInThemePreview = nullptr;
+    QString m_initialBuiltInThemeFlavor;
 
     DefaultThemeSource m_defaultThemeSource;
     QHash<QString, ColorWidget *> m_lightColorWidgets;

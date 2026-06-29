@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added TRaSH Guides-aligned hints when category save paths look like media-library roots.
 - Added `--portable` startup mode for zero-install ZIP runs that keep profile data beside the executable.
 - Added a configurable WebUI idle-session warning banner with Refresh and Logout actions.
 - Added a browser-driven WebUI JS heap regression check to the large-library smoke script.

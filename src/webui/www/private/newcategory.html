@@ -37,6 +37,20 @@
                 $("categoryError").textContent = message;
                 field?.focus();
             };
+            const mediaRootSegments = new Set(["anime", "audiobooks", "book", "books", "media", "movie", "movies", "music", "series", "show", "shows", "television", "tv"]);
+            const pathLooksLikeMediaLibraryRoot = (path) => {
+                const normalizedPath = path.trim().replaceAll("\\", "/").toLowerCase();
+                if (!normalizedPath)
+                    return false;
+
+                const isAbsolute = normalizedPath.startsWith("/")
+                    || normalizedPath.startsWith("//")
+                    || /^[a-z]:\//.test(normalizedPath);
+                return isAbsolute && normalizedPath.split("/").some((segment) => mediaRootSegments.has(segment));
+            };
+            const updateCategoryPathHint = () => {
+                $("categoryPathHint").hidden = !pathLooksLikeMediaLibraryRoot($("savePath").value);
+            };
 
             if (uriAction === "edit") {
                 if (!uriCategoryName)
@@ -54,6 +68,9 @@
             else {
                 $("categoryName").focus();
             }
+
+            $("savePath").addEventListener("input", updateCategoryPathHint);
+            updateCategoryPathHint();
 
             $("categoryNameButton").addEventListener("click", (e) => {
                 e.preventDefault();
@@ -167,6 +184,7 @@
         <input type="text" id="categoryName" style="width: 99%;">
         <label for="savePath" style="font-weight: bold;">QBT_TR(Save path:)QBT_TR[CONTEXT=TransferListWidget]</label>
         <input type="text" id="savePath" class="pathDirectory" style="width: 99%;">
+        <div id="categoryPathHint" class="mobileFormHint" role="note" hidden>QBT_TR(TRaSH Guides hint: use a subfolder-only category path such as "movies" or "tv", keep the default save path at the download root, and enable Automatic torrent management. Avoid pointing categories at the media library root.)QBT_TR[CONTEXT=Category]</div>
         <div id="categoryError" class="mobileFormError" role="alert" aria-live="polite"></div>
         <div class="mobileDialogActions" style="text-align: center; padding-top: 10px;">
             <input type="button" value="QBT_TR(OK)QBT_TR[CONTEXT=Category]" id="categoryNameButton">

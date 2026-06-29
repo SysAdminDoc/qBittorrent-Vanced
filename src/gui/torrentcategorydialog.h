@@ -70,5 +70,6 @@ private slots:
 private:
     Ui::TorrentCategoryDialog *m_ui = nullptr;
     QLabel *m_filesystemWarning = nullptr;
+    QLabel *m_categoryPathHint = nullptr;
     Path m_lastEnteredDownloadPath;
 };

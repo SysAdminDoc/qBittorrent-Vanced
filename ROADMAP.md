@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P2 — Add TRaSH Guides-aligned category validation hints
-  Why: TRaSH Guides are the de facto standard for *arr automation setup. Users following TRaSH recommendations expect subfolder-only category paths and Automatic torrent management mode. Vanced already warns on cross-filesystem paths but doesn't guide users toward the recommended setup.
-  Evidence: TRaSH Guides qBittorrent setup (trash-guides.info), existing cross-filesystem warning in torrentcategorydialog.cpp.
-  Touches: src/gui/torrentcategorydialog.cpp (add hint label when save path contains the media library root), src/webui/www/private/newcategory.html
-  Acceptance: category dialog shows an informational hint when the save path looks like a media library root (e.g., contains `/movies/` or `/tv/` in the path) suggesting subfolder-only paths per TRaSH guidelines.
-  Complexity: S
-
 - [ ] P2 — Add CSP nonce plumbing to WebUI response generator
   Why: Even before removing all 91 inline handlers, the WebUI can begin using nonce-based CSP for its `<script>` tags. This is the prerequisite for eventually removing `'unsafe-inline'` from `script-src`. OWASP CSP cheat sheet recommends nonce-based CSP for server-rendered pages.
   Evidence: OWASP CSP Cheat Sheet (cheatsheetseries.owasp.org); web.dev strict CSP guide; src/webui/webapplication.cpp:465 current CSP.

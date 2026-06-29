@@ -31,6 +31,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Wider default column sizes so column titles aren't clipped
 - Cleaner batch operations, portable backup, torrent-card, toolbar, and dialog flows with clearer labels and feedback
 - Mobile-first WebUI add/manage dialogs for torrent links, local torrent files, category/tag edits, save-location edits, and toolbar/filter controls
+- Category save-path hints flag media-library-root paths and steer *arr/TRaSH-style setups toward subfolder-only category paths with Automatic torrent management
 
 ### Inline Speed Controls
 

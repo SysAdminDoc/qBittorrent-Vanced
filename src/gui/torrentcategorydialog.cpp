@@ -28,13 +28,50 @@
 
 #include "torrentcategorydialog.h"
 
+#include <algorithm>
+
+#include <QDir>
 #include <QLabel>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QStringList>
 
 #include "base/bittorrent/session.h"
 #include "base/utils/fs.h"
 #include "ui_torrentcategorydialog.h"
+
+namespace
+{
+    bool pathLooksLikeMediaLibraryRoot(const Path &path)
+    {
+        if (path.isEmpty() || !path.isAbsolute())
+            return false;
+
+        const QStringList mediaRootSegments
+        {
+            u"anime"_s,
+            u"audiobooks"_s,
+            u"book"_s,
+            u"books"_s,
+            u"media"_s,
+            u"movie"_s,
+            u"movies"_s,
+            u"music"_s,
+            u"series"_s,
+            u"show"_s,
+            u"shows"_s,
+            u"television"_s,
+            u"tv"_s
+        };
+        const QString normalizedPath = QDir::fromNativeSeparators(path.toString()).toLower();
+        const QStringList pathSegments = normalizedPath.split(u'/', Qt::SkipEmptyParts);
+        return std::any_of(pathSegments.cbegin(), pathSegments.cend()
+                , [&mediaRootSegments](const QString &segment)
+        {
+            return mediaRootSegments.contains(segment);
+        });
+    }
+}
 
 TorrentCategoryDialog::TorrentCategoryDialog(QWidget *parent)
     : QDialog {parent}
@@ -60,6 +97,12 @@ TorrentCategoryDialog::TorrentCategoryDialog(QWidget *parent)
     m_filesystemWarning->setStyleSheet(u"QLabel { color: #fab387; padding: 4px; }"_s);
     m_filesystemWarning->hide();
     m_ui->verticalLayout->insertWidget(2, m_filesystemWarning);
+
+    m_categoryPathHint = new QLabel(this);
+    m_categoryPathHint->setWordWrap(true);
+    m_categoryPathHint->setStyleSheet(u"QLabel { color: #89b4fa; padding: 4px; }"_s);
+    m_categoryPathHint->hide();
+    m_ui->verticalLayout->insertWidget(3, m_categoryPathHint);
 
     connect(m_ui->textCategoryName, &QLineEdit::textChanged, this, &TorrentCategoryDialog::categoryNameChanged);
     connect(m_ui->comboUseDownloadPath, &QComboBox::currentIndexChanged, this, &TorrentCategoryDialog::useDownloadPathChanged);
@@ -173,6 +216,8 @@ void TorrentCategoryDialog::setCategoryOptions(const BitTorrent::CategoryOptions
         m_ui->comboUseDownloadPath->setCurrentIndex(0);
         m_ui->comboDownloadPath->setSelectedPath({});
     }
+
+    updateFilesystemWarning();
 }
 
 void TorrentCategoryDialog::categoryNameChanged(const QString &categoryName)
@@ -194,7 +239,18 @@ void TorrentCategoryDialog::updateFilesystemWarning()
     if (categoryPath.isEmpty())
     {
         m_filesystemWarning->hide();
+        m_categoryPathHint->hide();
         return;
+    }
+
+    if (pathLooksLikeMediaLibraryRoot(categoryPath))
+    {
+        m_categoryPathHint->setText(tr("TRaSH Guides hint: use a subfolder-only category path such as \"movies\" or \"tv\", keep the default save path at the download root, and enable Automatic torrent management. Avoid pointing categories at the media library root."));
+        m_categoryPathHint->show();
+    }
+    else
+    {
+        m_categoryPathHint->hide();
     }
 
     const Path defaultSavePath = BitTorrent::Session::instance()->savePath();

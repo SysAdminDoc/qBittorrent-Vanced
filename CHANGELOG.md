@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added multi-row drag reordering for queued torrents without adding new keyboard shortcuts.
 - Added Compact, Media Server, and Debug transfer-list column presets from the column header menu.
 - Restored discoverable Filters Sidebar access with a toolbar toggle and cleared hidden sidebar filters when the pane is turned off.
 - Added compact progress-bar glyph overlays for queued, checking, and stalled torrents without introducing additional state colors.

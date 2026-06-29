@@ -145,6 +145,7 @@ private:
     TagSet askTagsForSelection(const QString &dialogTitle);
     void applyToSelectedTorrents(const std::function<void (BitTorrent::Torrent *const)> &fn);
     void applyColumnPreset(ColumnPreset preset);
+    void moveSelectedTorrentsToQueueDrop(QDropEvent *event);
     QList<BitTorrent::Torrent *> getVisibleTorrents() const;
     int visibleColumnsCount() const;
     void updateEmptyState();

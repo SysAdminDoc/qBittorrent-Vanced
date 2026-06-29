@@ -185,9 +185,12 @@ Items moved here from ROADMAP.md because they depend on external resources, upst
 - Optional glyph overlay for stalled / queued / checking states instead of inventing new colors
 
 ### UX
-- Bring back filters sidebar behind a toggle; some users rely on the Status / Category / Tags panes
-- Column preset picker (Compact / Media Server / Debug) with a one-click switch
-- Multi-row drag queue reorder with Alt+Up/Down keyboard shortcut
+- Alt+Up/Down keyboard shortcut for queue reordering
+  Status: Blocked
+  Category: UX
+  Priority: P2
+  Blocker: Repository instructions prohibit adding new keyboard shortcuts. Multi-row drag queue reorder is implemented without adding a shortcut.
+  Original description: Multi-row drag queue reorder with Alt+Up/Down keyboard shortcut.
 - Inline editable category column (double-click) instead of right-click > set category
 - Search-bar scoped filter: `seeders>10 size<4gb category:movies` mini-DSL on the main list
 

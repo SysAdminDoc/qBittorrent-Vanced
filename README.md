@@ -35,6 +35,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Condensed vertical spacing throughout (tab bars, toolbars, table rows, headers, buttons)
 - Wider default column sizes so column titles aren't clipped
 - Transfer-list column header menu includes Compact, Media Server, and Debug presets for one-click layout switching
+- Selected queued torrents can be dragged together in the transfer list to reorder the queue
 - Cleaner batch operations, portable backup, torrent-card, toolbar, and dialog flows with clearer labels and feedback
 - Mobile-first WebUI add/manage dialogs for torrent links, local torrent files, category/tag edits, save-location edits, and toolbar/filter controls
 - Category save-path hints flag media-library-root paths and steer *arr/TRaSH-style setups toward subfolder-only category paths with Automatic torrent management

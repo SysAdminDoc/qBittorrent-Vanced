@@ -166,7 +166,10 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     setItemsExpandable(false);
     setAutoScroll(true);
     setAcceptDrops(true);
-    setDragDropMode(QAbstractItemView::DropOnly);
+    setDragEnabled(true);
+    setDragDropMode(QAbstractItemView::DragDrop);
+    setDragDropOverwriteMode(false);
+    setDefaultDropAction(Qt::MoveAction);
     setDropIndicatorShown(true);
     setAccessibleName(tr("Torrent list"));
 #if defined(Q_OS_MACOS)
@@ -1530,8 +1533,88 @@ bool TransferListWidget::loadSettings()
     return header()->restoreState(Preferences::instance()->getTransHeaderState());
 }
 
+void TransferListWidget::moveSelectedTorrentsToQueueDrop(QDropEvent *event)
+{
+    const QModelIndex targetIndex = indexAt(event->position().toPoint());
+    if (!targetIndex.isValid())
+    {
+        bottomQueuePosSelectedTorrents();
+        event->setDropAction(Qt::MoveAction);
+        event->accept();
+        return;
+    }
+
+    BitTorrent::Torrent *const targetTorrent = m_listModel->torrentHandle(mapToSource(targetIndex));
+    if (!targetTorrent || (targetTorrent->queuePosition() < 0))
+    {
+        event->ignore();
+        return;
+    }
+
+    QList<BitTorrent::Torrent *> queueTorrents;
+    bool targetIsSelected = false;
+    for (BitTorrent::Torrent *const torrent : getSelectedTorrents())
+    {
+        if (torrent == targetTorrent)
+            targetIsSelected = true;
+        if (torrent->queuePosition() >= 0)
+            queueTorrents << torrent;
+    }
+
+    if (queueTorrents.isEmpty() || targetIsSelected)
+    {
+        event->setDropAction(Qt::MoveAction);
+        event->accept();
+        return;
+    }
+
+    std::sort(queueTorrents.begin(), queueTorrents.end(), [](const BitTorrent::Torrent *left, const BitTorrent::Torrent *right)
+    {
+        return left->queuePosition() < right->queuePosition();
+    });
+
+    QList<BitTorrent::TorrentID> torrentIDs;
+    torrentIDs.reserve(queueTorrents.size());
+    for (const BitTorrent::Torrent *torrent : asConst(queueTorrents))
+        torrentIDs << torrent->id();
+
+    const QRect targetRect = visualRect(targetIndex);
+    const QAbstractItemView::DropIndicatorPosition dropPosition = dropIndicatorPosition();
+    const bool insertAfter = (dropPosition == QAbstractItemView::BelowItem)
+            || (dropPosition == QAbstractItemView::OnViewport)
+            || ((dropPosition == QAbstractItemView::OnItem) && (event->position().y() > targetRect.center().y()));
+
+    const int desiredBoundary = targetTorrent->queuePosition() + (insertAfter ? 1 : 0);
+    const int selectedMin = queueTorrents.constFirst()->queuePosition();
+    const int selectedMax = queueTorrents.constLast()->queuePosition();
+
+    BitTorrent::Session *const session = BitTorrent::Session::instance();
+    if (desiredBoundary <= selectedMin)
+    {
+        const int steps = selectedMin - desiredBoundary;
+        for (int i = 0; i < steps; ++i)
+            session->increaseTorrentsQueuePos(torrentIDs);
+    }
+    else if (desiredBoundary > (selectedMax + 1))
+    {
+        const int steps = desiredBoundary - selectedMax - 1;
+        for (int i = 0; i < steps; ++i)
+            session->decreaseTorrentsQueuePos(torrentIDs);
+    }
+
+    event->setDropAction(Qt::MoveAction);
+    event->accept();
+}
+
 void TransferListWidget::dragEnterEvent(QDragEnterEvent *event)
 {
+    if ((event->source() == this) && BitTorrent::Session::instance()->isQueueingSystemEnabled())
+    {
+        event->setDropAction(Qt::MoveAction);
+        event->accept();
+        return;
+    }
+
     if (const QMimeData *data = event->mimeData(); data->hasText() || data->hasUrls())
     {
         event->setDropAction(Qt::CopyAction);
@@ -1541,11 +1624,25 @@ void TransferListWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void TransferListWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-    event->acceptProposedAction();  // required, otherwise we won't get `dropEvent`
+    if ((event->source() == this) && BitTorrent::Session::instance()->isQueueingSystemEnabled())
+    {
+        event->setDropAction(Qt::MoveAction);
+        event->accept();
+        return;
+    }
+
+    if (const QMimeData *data = event->mimeData(); data->hasText() || data->hasUrls())
+        event->acceptProposedAction();  // required, otherwise we won't get `dropEvent`
 }
 
 void TransferListWidget::dropEvent(QDropEvent *event)
 {
+    if ((event->source() == this) && BitTorrent::Session::instance()->isQueueingSystemEnabled())
+    {
+        moveSelectedTorrentsToQueueDrop(event);
+        return;
+    }
+
     event->acceptProposedAction();
     // remove scheme
     QStringList files;

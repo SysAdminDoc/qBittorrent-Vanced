@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added WinGet and Scoop manifests for the v1.0.2 Windows setup and portable release artifacts.
 - Added scoped transfer-list search tokens for fields such as seeders, size, category, ratio, speed, status, tracker, and paths.
 - Added inline Category column editing via double-click with existing-category and Uncategorized choices.
 - Added multi-row drag reordering for queued torrents without adding new keyboard shortcuts.

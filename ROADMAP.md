@@ -5,7 +5,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Planned Features
 
 ### Platform
-- Winget + Scoop manifests
 - Self-update via AppCast XML on GitHub Releases with in-app toast on new release
 - Linux AppImage and Flatpak so the fork isn't Windows-only
 

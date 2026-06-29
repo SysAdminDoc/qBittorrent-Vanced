@@ -1,0 +1,30 @@
+{
+    "version": "1.0.2",
+    "description": "Customized qBittorrent Enhanced Edition build with Catppuccin theming and Vanced workflow polish.",
+    "homepage": "https://github.com/SysAdminDoc/qBittorrent-Vanced",
+    "license": "GPL-2.0-or-later",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/SysAdminDoc/qBittorrent-Vanced/releases/download/v1.0.2/qBittorrent-Vanced-v1.0.2-base5.1.3.10-x64-portable.zip",
+            "hash": "79d21d7a5305a8684d9609bc197e6dd88af5d907719a562b6493fc7082d9a315"
+        }
+    },
+    "bin": [
+        [
+            "qbittorrent.exe",
+            "qbittorrent-vanced",
+            "--portable"
+        ]
+    ],
+    "shortcuts": [
+        [
+            "qbittorrent.exe",
+            "qBittorrent Vanced",
+            "--portable"
+        ]
+    ],
+    "persist": "data",
+    "checkver": {
+        "github": "https://github.com/SysAdminDoc/qBittorrent-Vanced"
+    }
+}

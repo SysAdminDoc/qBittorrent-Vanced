@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+
+PackageIdentifier: SysAdminDoc.qBittorrentVanced
+PackageVersion: 1.0.2
+PackageLocale: en-US
+Publisher: SysAdminDoc
+PublisherUrl: https://github.com/SysAdminDoc
+PublisherSupportUrl: https://github.com/SysAdminDoc/qBittorrent-Vanced/issues
+Author: SysAdminDoc
+PackageName: qBittorrent Vanced
+PackageUrl: https://github.com/SysAdminDoc/qBittorrent-Vanced
+License: GPL-2.0-or-later
+LicenseUrl: https://github.com/SysAdminDoc/qBittorrent-Vanced/blob/main/COPYING
+Copyright: Copyright 2006-2026 The qBittorrent project
+ShortDescription: Customized qBittorrent Enhanced Edition build with Catppuccin theming and Vanced workflow polish.
+Description: qBittorrent Vanced is a Windows x64 build of qBittorrent Enhanced Edition with selectable Catppuccin desktop themes, custom progress bars, streamlined filtering, portable packaging, and Vanced defaults.
+Moniker: qbittorrent-vanced
+Tags:
+- bittorrent
+- catppuccin
+- p2p
+- torrent
+- vanced
+ReleaseNotesUrl: https://github.com/SysAdminDoc/qBittorrent-Vanced/releases/tag/v1.0.2
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0

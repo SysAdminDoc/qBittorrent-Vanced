@@ -96,6 +96,8 @@ powershell -ExecutionPolicy Bypass -File build.ps1 -ReleaseGate
 
 The gate checks version/license/dependency metadata, installs the pinned WebUI lint toolchain, runs WebUI lint, builds and verifies `qbittorrent.exe`, cleans stale release artifacts, builds the portable ZIP and NSIS installer, then writes `release\SHA256SUMS.txt`, `release\RELEASE-PROVENANCE.txt`, and `release\ADVISORY-CHECK.txt`. The advisory file includes resolved Qt, OpenSSL, and libtorrent versions with known-security status before the raw `vcpkg update` and `npm audit` output.
 
+Portable ZIP users can launch `qbittorrent.exe --portable` to keep configuration, cache, session data, and default downloads under a `data\qBittorrent\` folder beside the executable. `--portable` is mutually exclusive with `--profile=<dir>`.
+
 ### WebUI Checks
 
 ```powershell

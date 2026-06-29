@@ -7,7 +7,7 @@ qBittorrent - a Bittorrent client written in C++ / Qt
 
 
 # SYNOPSIS
-**qbittorrent** `[--no-splash] [--webui-port=x] [TORRENT_FILE | URL]...`
+**qbittorrent** `[--no-splash] [--portable] [--webui-port=x] [TORRENT_FILE | URL]...`
 
 **qbittorrent** `--help`
 
@@ -28,6 +28,8 @@ FAST extension (mainline) and PeX support (utorrent compatible).
 **`--version`** Prints qbittorrent program version number.
 
 **`--no-splash`** Disables splash screen on startup.
+
+**`--portable`** Stores configuration, cache, session data, and default downloads in a `data` directory next to the executable. Cannot be used with `--profile`.
 
 **`--webui-port=x`** Changes Web UI port to x (default: 8080).
 

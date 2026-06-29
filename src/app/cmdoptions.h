@@ -47,6 +47,7 @@ struct QBtCommandLineParameters
     bool showVersion = false;
     bool confirmLegalNotice = false;
     bool relativeFastresumePaths = false;
+    bool portableMode = false;
 #ifndef DISABLE_GUI
     bool noSplash = false;
 #elif !defined(Q_OS_WIN)

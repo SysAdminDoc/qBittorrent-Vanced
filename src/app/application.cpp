@@ -112,7 +112,8 @@ namespace
     const QString LOG_FOLDER = u"logs"_s;
     const QChar PARAMS_SEPARATOR = u'|';
 
-    const Path DEFAULT_PORTABLE_MODE_PROFILE_DIR {u"profile"_s};
+    const Path AUTO_DETECTED_PORTABLE_MODE_PROFILE_DIR {u"profile"_s};
+    const Path EXPLICIT_PORTABLE_MODE_PROFILE_DIR {u"data"_s};
 
     const int MIN_FILELOG_SIZE = 1024; // 1KiB
     const int MAX_FILELOG_SIZE = 1000 * 1024 * 1024; // 1000MiB
@@ -278,9 +279,16 @@ Application::Application(int &argc, char **argv)
 
     Logger::initInstance();
 
-    const auto portableProfilePath = Path(QCoreApplication::applicationDirPath()) / DEFAULT_PORTABLE_MODE_PROFILE_DIR;
-    const bool portableModeEnabled = m_commandLineArgs.profileDir.isEmpty() && Utils::Fs::isDir(portableProfilePath);
-    const Path profileDir = portableModeEnabled ? portableProfilePath : m_commandLineArgs.profileDir;
+    const Path applicationDir {QCoreApplication::applicationDirPath()};
+    const Path explicitPortableProfilePath = applicationDir / EXPLICIT_PORTABLE_MODE_PROFILE_DIR;
+    const Path autoDetectedPortableProfilePath = applicationDir / AUTO_DETECTED_PORTABLE_MODE_PROFILE_DIR;
+    const bool autoDetectedPortableModeEnabled = !m_commandLineArgs.portableMode
+        && m_commandLineArgs.profileDir.isEmpty()
+        && Utils::Fs::isDir(autoDetectedPortableProfilePath);
+    const bool portableModeEnabled = m_commandLineArgs.portableMode || autoDetectedPortableModeEnabled;
+    const Path profileDir = m_commandLineArgs.portableMode
+        ? explicitPortableProfilePath
+        : (autoDetectedPortableModeEnabled ? autoDetectedPortableProfilePath : m_commandLineArgs.profileDir);
     Profile::initInstance(profileDir, m_commandLineArgs.configurationName,
                         (m_commandLineArgs.relativeFastresumePaths || portableModeEnabled));
 
@@ -316,7 +324,11 @@ Application::Application(int &argc, char **argv)
         .arg(QStringLiteral(QBT_VANCED_VERSION), QStringLiteral(QBT_ENHANCED_EDITION_VERSION), QString::number(QCoreApplication::applicationPid())));
     if (portableModeEnabled)
     {
-        LogMsg(tr("Running in portable mode. Auto detected profile folder at: %1").arg(profileDir.toString()));
+        if (m_commandLineArgs.portableMode)
+            LogMsg(tr("Running in portable mode. Profile root: %1").arg(profileDir.toString()));
+        else
+            LogMsg(tr("Running in portable mode. Auto detected profile folder at: %1").arg(profileDir.toString()));
+
         if (m_commandLineArgs.relativeFastresumePaths)
             LogMsg(tr("Redundant command line flag detected: \"%1\". Portable mode implies relative fastresume.").arg(u"--relative-fastresume"_s), Log::WARNING); // to avoid translating the `--relative-fastresume` string
     }

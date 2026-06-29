@@ -5,7 +5,7 @@
 qBittorrent \- a Bittorrent client written in C++ / Qt
 .SH SYNOPSIS
 \f[B]qbittorrent\f[R]
-\f[CR][\-\-no\-splash] [\-\-webui\-port=x] [TORRENT_FILE | URL]...\f[R]
+\f[CR][\-\-no\-splash] [\-\-portable] [\-\-webui\-port=x] [TORRENT_FILE | URL]...\f[R]
 .PP
 \f[B]qbittorrent\f[R] \f[CR]\-\-help\f[R]
 .PP
@@ -26,6 +26,11 @@ compatible).
 number.
 .PP
 \f[B]\f[CB]\-\-no\-splash\f[B]\f[R] Disables splash screen on startup.
+.PP
+\f[B]\f[CB]\-\-portable\f[B]\f[R] Stores configuration, cache, session
+data, and default downloads in a \f[CR]data\f[R] directory next to the
+executable.
+Cannot be used with \f[CR]\-\-profile\f[R].
 .PP
 \f[B]\f[CB]\-\-webui\-port=x\f[B]\f[R] Changes Web UI port to x
 (default: 8080).

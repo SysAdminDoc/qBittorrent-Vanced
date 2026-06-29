@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P2 — Add `--portable` CLI flag for zero-install portable mode
-  Why: Portable ZIP users must manually set qBittorrent to use the local profile directory. A `--portable` flag would auto-configure the profile path relative to the executable, matching Transmission's portable mode.
-  Evidence: Transmission 4.x portable mode; existing portable backup dialog in portablebackupdialog.cpp; users extract the ZIP and expect it to work without registry/AppData writes.
-  Touches: src/app/application.cpp (CLI argument parsing), src/app/main.cpp (profile path override)
-  Acceptance: `qbittorrent.exe --portable` stores all config/data in a `data/` subdirectory next to the executable; no writes to %APPDATA% or registry.
-  Complexity: M
-
 - [ ] P2 — Add TRaSH Guides-aligned category validation hints
   Why: TRaSH Guides are the de facto standard for *arr automation setup. Users following TRaSH recommendations expect subfolder-only category paths and Automatic torrent management mode. Vanced already warns on cross-filesystem paths but doesn't guide users toward the recommended setup.
   Evidence: TRaSH Guides qBittorrent setup (trash-guides.info), existing cross-filesystem warning in torrentcategorydialog.cpp.

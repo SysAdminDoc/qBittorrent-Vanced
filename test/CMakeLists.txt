@@ -5,8 +5,14 @@ add_executable(testdownloadhandlerimpl testdownloadhandlerimpl.cpp)
 target_link_libraries(testdownloadhandlerimpl PRIVATE qbt_base)
 add_test(NAME testdownloadhandlerimpl COMMAND testdownloadhandlerimpl)
 
+add_executable(testcmdoptions testcmdoptions.cpp ../src/app/cmdoptions.cpp)
+target_compile_definitions(testcmdoptions PRIVATE DISABLE_GUI)
+target_link_libraries(testcmdoptions PRIVATE qbt_base)
+add_test(NAME testcmdoptions COMMAND testcmdoptions)
+
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
 add_dependencies(check testdownloadhandlerimpl)
+add_dependencies(check testcmdoptions)
 
 find_package(Qt6 QUIET COMPONENTS Test)
 if (NOT TARGET Qt6::Test)

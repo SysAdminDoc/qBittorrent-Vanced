@@ -7,7 +7,7 @@ qBittorrent-nox - a command line Bittorrent client written in C++ / Qt
 
 
 # SYNOPSIS
-**qbittorrent-nox** `[--d|--daemon] [--webui-port=x] [TORRENT_FILE | URL]...`
+**qbittorrent-nox** `[--d|--daemon] [--portable] [--webui-port=x] [TORRENT_FILE | URL]...`
 
 **qbittorrent-nox** `--help`
 
@@ -33,6 +33,8 @@ the default account user name is "admin" with "adminadmin" as a password.
 **`--help`** Prints the command line options.
 
 **`--version`** Prints qbittorrent program version number.
+
+**`--portable`** Stores configuration, cache, session data, and default downloads in a `data` directory next to the executable. Cannot be used with `--profile`.
 
 **`--webui-port=x`** Changes Web UI port to x (default: 8080).
 

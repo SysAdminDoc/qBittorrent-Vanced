@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added first-launch Catppuccin flavor selection that defaults to Latte for light system color schemes and Mocha otherwise.
 - Added selectable built-in Catppuccin Latte, Frappe, Macchiato, and Mocha desktop theme flavors backed by a centralized palette table.
 - Added a WebUI `prefers-color-scheme` fallback so the main UI uses Catppuccin Mocha tokens when system dark mode applies and no explicit light class is set.
 - Added alternate WebUI static-bundle validation to the WebAPI smoke script for VueTorrent compatibility checks.

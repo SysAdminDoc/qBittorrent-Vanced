@@ -11,6 +11,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 ### Catppuccin Theme
 
 - Complete Catppuccin styling across all widgets, menus, toolbars, dialogs, and the WebUI, with selectable Latte, Frappe, Macchiato, and Mocha desktop flavors
+- First launch chooses Latte on a light system color scheme and Mocha otherwise; saved flavor choices are preserved
 - Glassmorphism-inspired styling with subtle transparency and accent colors
 - Branded scrollbars, condensed spacing, and polished UI elements throughout
 - Refined focus, hover, selected, disabled, empty, and warning states across desktop widgets

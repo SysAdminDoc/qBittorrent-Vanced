@@ -136,7 +136,7 @@ void Preferences::setCustomUIThemePath(const Path &path)
 
 QString Preferences::builtInUIThemeFlavor() const
 {
-    return value(u"Preferences/General/BuiltInUIThemeFlavor"_s, u"mocha"_s);
+    return value<QString>(u"Preferences/General/BuiltInUIThemeFlavor"_s);
 }
 
 void Preferences::setBuiltInUIThemeFlavor(const QString &flavor)

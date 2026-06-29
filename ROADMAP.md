@@ -5,7 +5,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Planned Features
 
 ### Theme
-- Respect system dark/light preference on first launch
 - Theme picker dialog with live preview of the torrent list and progress bars
 
 ### Progress bars

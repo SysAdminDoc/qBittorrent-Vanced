@@ -106,10 +106,15 @@ namespace
         return catppuccinPalettes().back();
     }
 
-    QString normalizedCatppuccinFlavor(const QString &id)
+    QString normalizedCatppuccinFlavor(const QString &id, const QString &fallback = u"mocha"_s)
     {
-        const CatppuccinPalette &palette = catppuccinPalette(id);
+        const CatppuccinPalette &palette = id.isEmpty() ? catppuccinPalette(fallback) : catppuccinPalette(id);
         return palette.id.toString();
+    }
+
+    QString defaultCatppuccinFlavorForSystem()
+    {
+        return (qApp->styleHints()->colorScheme() == Qt::ColorScheme::Light) ? u"latte"_s : u"mocha"_s;
     }
 
     QString cssColor(const QColor &color)
@@ -219,7 +224,6 @@ UIThemeManager::UIThemeManager()
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MACOS))
     , m_useSystemIcons {Preferences::instance()->useSystemIcons()}
 #endif
-    , m_builtInThemeFlavor {normalizedCatppuccinFlavor(Preferences::instance()->builtInUIThemeFlavor())}
 {
 #ifdef Q_OS_WIN
     if (const QString styleName = Preferences::instance()->getStyle(); styleName.compare(u"system", Qt::CaseInsensitive) != 0)
@@ -232,6 +236,9 @@ UIThemeManager::UIThemeManager()
 #ifdef QBT_HAS_COLORSCHEME_OPTION
     applyColorScheme();
 #endif
+
+    m_builtInThemeFlavor = normalizedCatppuccinFlavor(
+            Preferences::instance()->builtInUIThemeFlavor(), defaultCatppuccinFlavorForSystem());
 
     // NOTE: Qt::QueuedConnection can be omitted as soon as support for Qt 6.5 is dropped
     connect(QApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, &UIThemeManager::onColorSchemeChanged, Qt::QueuedConnection);

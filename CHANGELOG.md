@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Documented the existing simple progress bar accessibility mode for users who prefer solid bars and percent text over shimmer animation.
 - Added a built-in theme picker tab with live Catppuccin flavor preview, sample torrent rows, and shimmer progress bars.
 - Added first-launch Catppuccin flavor selection that defaults to Latte for light system color schemes and Mocha otherwise.
 - Added selectable built-in Catppuccin Latte, Frappe, Macchiato, and Mocha desktop theme flavors backed by a centralized palette table.

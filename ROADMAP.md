@@ -5,7 +5,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Planned Features
 
 ### Progress bars
-- Accessibility: add an alt-style mode (solid color + text percent) for users who find the shimmer distracting
 - Per-state color keys exposed to theme JSON so downstream forks can rebrand without recompiling
 - Optional glyph overlay for stalled / queued / checking states instead of inventing new colors
 

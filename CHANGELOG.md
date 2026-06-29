@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added scoped transfer-list search tokens for fields such as seeders, size, category, ratio, speed, status, tracker, and paths.
 - Added inline Category column editing via double-click with existing-category and Uncategorized choices.
 - Added multi-row drag reordering for queued torrents without adding new keyboard shortcuts.
 - Added Compact, Media Server, and Debug transfer-list column presets from the column header menu.

@@ -33,6 +33,7 @@
 #include "base/settingvalue.h"
 #include "base/torrentfilter.h"
 #include "base/utils/compare.h"
+#include "transferlistsearchquery.h"
 
 namespace BitTorrent
 {
@@ -56,6 +57,7 @@ public:
     void disableTagFilter();
     void setTrackerFilter(const QSet<BitTorrent::TorrentID> &torrentIDs);
     void disableTrackerFilter();
+    void setSearchQuery(const QString &query, int filterColumn, bool useRegex);
 
 private:
     int compare(const QModelIndex &left, const QModelIndex &right) const;
@@ -63,8 +65,11 @@ private:
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
     bool matchFilter(int sourceRow, const QModelIndex &sourceParent) const;
+    bool matchSearchQuery(int sourceRow, const QModelIndex &sourceParent) const;
+    bool matchSearchCondition(const TransferListSearchQuery::Condition &condition, int sourceRow, const QModelIndex &sourceParent) const;
 
     TorrentFilter m_filter;
+    TransferListSearchQuery m_searchQuery;
     CachedSettingValue<int> m_subSortColumn;
     CachedSettingValue<int> m_subSortOrder;
     int m_lastSortColumn = -1;

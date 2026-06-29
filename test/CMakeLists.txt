@@ -22,6 +22,10 @@ if (TARGET qbt_gui)
         ENVIRONMENT "QT_PLUGIN_PATH=$<TARGET_FILE_DIR:qbt_app>"
         WORKING_DIRECTORY "$<TARGET_FILE_DIR:qbt_app>"
     )
+
+    add_executable(testtransferlistsearchquery testtransferlistsearchquery.cpp)
+    target_link_libraries(testtransferlistsearchquery PRIVATE qbt_gui qbt_base)
+    add_test(NAME testtransferlistsearchquery COMMAND testtransferlistsearchquery)
 endif()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
@@ -30,6 +34,9 @@ add_dependencies(check testcmdoptions)
 add_dependencies(check testwebapplicationsecurity)
 if (TARGET testuithemedialog)
     add_dependencies(check testuithemedialog)
+endif()
+if (TARGET testtransferlistsearchquery)
+    add_dependencies(check testtransferlistsearchquery)
 endif()
 
 find_package(Qt6 QUIET COMPONENTS Test)

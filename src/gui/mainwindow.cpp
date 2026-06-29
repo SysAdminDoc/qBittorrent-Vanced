@@ -204,6 +204,8 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     // Torrent filter
     m_columnFilterEdit = new LineEdit;
     m_columnFilterEdit->setPlaceholderText(tr("Filter torrents..."));
+    m_columnFilterEdit->setToolTip(tr("Filter by name or use tokens like seeders>10, size<4gb, category:movies"));
+    m_columnFilterEdit->setAccessibleDescription(tr("Filter by name or use scoped tokens such as seeders greater than 10, size under 4 GiB, or category movies."));
     m_columnFilterEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_columnFilterEdit->setFixedWidth(200);
     m_columnFilterEdit->setContextMenuPolicy(Qt::CustomContextMenu);

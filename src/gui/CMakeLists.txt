@@ -114,6 +114,7 @@ add_library(qbt_gui STATIC
     transferlistfilters/trackersfilterwidget.h
     transferlistfilterswidget.h
     transferlistmodel.h
+    transferlistsearchquery.h
     transferlistsortmodel.h
     transferlistwidget.h
     tristateaction.h
@@ -205,6 +206,7 @@ add_library(qbt_gui STATIC
     transferlistfilters/trackersfilterwidget.cpp
     transferlistfilterswidget.cpp
     transferlistmodel.cpp
+    transferlistsearchquery.cpp
     transferlistsortmodel.cpp
     transferlistwidget.cpp
     tristateaction.cpp

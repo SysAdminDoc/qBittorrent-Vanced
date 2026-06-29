@@ -32,6 +32,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Removed the Dashboard tab
 - Removed the "Filter by" dropdown from the toolbar (search bar filters by name)
 - Filters sidebar is hidden by default but available from the toolbar or View menu for Status, Category, Tag, and Tracker panes
+- Search bar supports scoped filters such as `seeders>10`, `size<4gb`, and `category:movies` while preserving plain name search
 - Condensed vertical spacing throughout (tab bars, toolbars, table rows, headers, buttons)
 - Wider default column sizes so column titles aren't clipped
 - Transfer-list column header menu includes Compact, Media Server, and Debug presets for one-click layout switching

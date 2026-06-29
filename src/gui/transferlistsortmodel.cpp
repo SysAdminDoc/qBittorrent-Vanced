@@ -28,12 +28,15 @@
 
 #include "transferlistsortmodel.h"
 
+#include <cmath>
 #include <type_traits>
 
 #include <QDateTime>
+#include <QRegularExpression>
 
 #include "base/bittorrent/infohash.h"
 #include "base/bittorrent/torrent.h"
+#include "base/utils/string.h"
 #include "transferlistmodel.h"
 
 namespace
@@ -100,6 +103,95 @@ namespace
         return ((column >= 0) && (column < TransferListModel::NB_COLUMNS))
                    ? column : TransferListModel::TR_NAME;
     }
+
+    int columnForSearchField(const TransferListSearchQuery::Field field)
+    {
+        switch (field)
+        {
+        case TransferListSearchQuery::Field::Name:
+            return TransferListModel::TR_NAME;
+        case TransferListSearchQuery::Field::Category:
+            return TransferListModel::TR_CATEGORY;
+        case TransferListSearchQuery::Field::Tags:
+            return TransferListModel::TR_TAGS;
+        case TransferListSearchQuery::Field::Tracker:
+            return TransferListModel::TR_TRACKER;
+        case TransferListSearchQuery::Field::Status:
+            return TransferListModel::TR_STATUS;
+        case TransferListSearchQuery::Field::SavePath:
+            return TransferListModel::TR_SAVE_PATH;
+        case TransferListSearchQuery::Field::DownloadPath:
+            return TransferListModel::TR_DOWNLOAD_PATH;
+        case TransferListSearchQuery::Field::Size:
+            return TransferListModel::TR_SIZE;
+        case TransferListSearchQuery::Field::TotalSize:
+            return TransferListModel::TR_TOTAL_SIZE;
+        case TransferListSearchQuery::Field::Progress:
+            return TransferListModel::TR_PROGRESS;
+        case TransferListSearchQuery::Field::Seeds:
+            return TransferListModel::TR_SEEDS;
+        case TransferListSearchQuery::Field::Peers:
+            return TransferListModel::TR_PEERS;
+        case TransferListSearchQuery::Field::DownloadSpeed:
+            return TransferListModel::TR_DLSPEED;
+        case TransferListSearchQuery::Field::UploadSpeed:
+            return TransferListModel::TR_UPSPEED;
+        case TransferListSearchQuery::Field::Ratio:
+            return TransferListModel::TR_RATIO;
+        case TransferListSearchQuery::Field::ETA:
+            return TransferListModel::TR_ETA;
+        case TransferListSearchQuery::Field::Remaining:
+            return TransferListModel::TR_AMOUNT_LEFT;
+        case TransferListSearchQuery::Field::Downloaded:
+            return TransferListModel::TR_AMOUNT_DOWNLOADED;
+        case TransferListSearchQuery::Field::Uploaded:
+            return TransferListModel::TR_AMOUNT_UPLOADED;
+        }
+
+        Q_UNREACHABLE();
+    }
+
+    bool matchTextCondition(const QString &actual, const TransferListSearchQuery::Operator op, const QString &expected)
+    {
+        switch (op)
+        {
+        case TransferListSearchQuery::Operator::Contains:
+            return actual.contains(expected, Qt::CaseInsensitive);
+        case TransferListSearchQuery::Operator::Equal:
+            return actual.compare(expected, Qt::CaseInsensitive) == 0;
+        case TransferListSearchQuery::Operator::NotEqual:
+            return actual.compare(expected, Qt::CaseInsensitive) != 0;
+        case TransferListSearchQuery::Operator::GreaterThan:
+        case TransferListSearchQuery::Operator::GreaterOrEqual:
+        case TransferListSearchQuery::Operator::LessThan:
+        case TransferListSearchQuery::Operator::LessOrEqual:
+            return false;
+        }
+
+        Q_UNREACHABLE();
+    }
+
+    bool matchNumericCondition(const double actual, const TransferListSearchQuery::Operator op, const double expected)
+    {
+        switch (op)
+        {
+        case TransferListSearchQuery::Operator::Contains:
+        case TransferListSearchQuery::Operator::Equal:
+            return std::abs(actual - expected) <= 0.000001;
+        case TransferListSearchQuery::Operator::NotEqual:
+            return std::abs(actual - expected) > 0.000001;
+        case TransferListSearchQuery::Operator::GreaterThan:
+            return actual > expected;
+        case TransferListSearchQuery::Operator::GreaterOrEqual:
+            return actual >= expected;
+        case TransferListSearchQuery::Operator::LessThan:
+            return actual < expected;
+        case TransferListSearchQuery::Operator::LessOrEqual:
+            return actual <= expected;
+        }
+
+        Q_UNREACHABLE();
+    }
 }
 
 TransferListSortModel::TransferListSortModel(QObject *parent)
@@ -163,6 +255,17 @@ void TransferListSortModel::disableTrackerFilter()
 {
     if (m_filter.setTorrentIDSet(TorrentFilter::AnyID))
         invalidateRowsFilter();
+}
+
+void TransferListSortModel::setSearchQuery(const QString &query, const int filterColumn, const bool useRegex)
+{
+    m_searchQuery = TransferListSearchQuery::parse(query);
+    setFilterKeyColumn(filterColumn);
+
+    const QString plainText = m_searchQuery.plainText();
+    const QString pattern = (useRegex ? plainText : Utils::String::wildcardToRegexPattern(plainText));
+    setFilterRegularExpression(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+    invalidateRowsFilter();
 }
 
 int TransferListSortModel::compare(const QModelIndex &left, const QModelIndex &right) const
@@ -271,6 +374,7 @@ bool TransferListSortModel::lessThan(const QModelIndex &left, const QModelIndex 
 bool TransferListSortModel::filterAcceptsRow(const int sourceRow, const QModelIndex &sourceParent) const
 {
     return matchFilter(sourceRow, sourceParent)
+           && matchSearchQuery(sourceRow, sourceParent)
            && QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 }
 
@@ -283,4 +387,27 @@ bool TransferListSortModel::matchFilter(const int sourceRow, const QModelIndex &
     if (!torrent) return false;
 
     return m_filter.match(torrent);
+}
+
+bool TransferListSortModel::matchSearchQuery(const int sourceRow, const QModelIndex &sourceParent) const
+{
+    for (const TransferListSearchQuery::Condition &condition : m_searchQuery.conditions())
+    {
+        if (!matchSearchCondition(condition, sourceRow, sourceParent))
+            return false;
+    }
+
+    return true;
+}
+
+bool TransferListSortModel::matchSearchCondition(const TransferListSearchQuery::Condition &condition, const int sourceRow, const QModelIndex &sourceParent) const
+{
+    const QModelIndex sourceIndex = sourceModel()->index(sourceRow, columnForSearchField(condition.field), sourceParent);
+    if (!sourceIndex.isValid())
+        return false;
+
+    if (condition.valueType == TransferListSearchQuery::ValueType::Text)
+        return matchTextCondition(sourceIndex.data(Qt::DisplayRole).toString(), condition.op, condition.text);
+
+    return matchNumericCondition(sourceIndex.data(TransferListModel::UnderlyingDataRole).toDouble(), condition.op, condition.number);
 }

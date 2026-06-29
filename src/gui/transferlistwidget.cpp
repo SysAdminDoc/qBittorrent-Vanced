@@ -58,7 +58,6 @@
 #include "base/utils/compare.h"
 #include "base/utils/fs.h"
 #include "base/utils/misc.h"
-#include "base/utils/string.h"
 #include "autoexpandabledialog.h"
 #include "batchoperationsdialog.h"
 #include "deletionconfirmationdialog.h"
@@ -1516,10 +1515,7 @@ void TransferListWidget::applyTrackerFilter(const QSet<BitTorrent::TorrentID> &t
 
 void TransferListWidget::applyFilter(const QString &name, const TransferListModel::Column &type)
 {
-    m_sortFilterModel->setFilterKeyColumn(type);
-    const QString pattern = (Preferences::instance()->getRegexAsFilteringPatternForTransferList()
-                ? name : Utils::String::wildcardToRegexPattern(name));
-    m_sortFilterModel->setFilterRegularExpression(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+    m_sortFilterModel->setSearchQuery(name, type, Preferences::instance()->getRegexAsFilteringPatternForTransferList());
 }
 
 void TransferListWidget::applyStatusFilter(const int filterIndex)

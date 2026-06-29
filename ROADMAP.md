@@ -4,9 +4,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 
 ## Planned Features
 
-### UX
-- Search-bar scoped filter: `seeders>10 size<4gb category:movies` mini-DSL on the main list
-
 ### Platform
 - Winget + Scoop manifests
 - Self-update via AppCast XML on GitHub Releases with in-app toast on new release

@@ -71,3 +71,70 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Research Expansion — 2026-06-19
 
 Note: existing research wording that says `.qbttheme` is stale; qBittorrent's current documented bundle extension and this repo's loader use `.qbtheme`.
+
+## Research-Driven Additions — 2026-06-29
+
+Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
+
+- [ ] P1 — Add dependency security scanning to release gate
+  Why: vcpkg baseline pins specific dependency versions but the release gate doesn't check for known vulnerabilities. Qt 6.8.8 fixes 6 CVEs (CVE-2026-6210 SVG heap overflow, CVE-2025-14575 Windows cert path, CVE-2025-6338 Schannel TLS); OpenSSL 3.5.7 fixes CVE-2026-45447 (HIGH: heap UAF in PKCS7_verify).
+  Evidence: Qt vulnerability list (wiki.qt.io), OpenSSL advisory page, libtorrent PR #8455 credential leak fix, existing ADVISORY-CHECK.txt only runs `vcpkg update` and `npm audit`.
+  Touches: package.ps1 Write-AdvisoryCheck function, possibly add `grype` or manual known-CVE checklist
+  Acceptance: release gate fails or warns if the vcpkg baseline contains packages with known HIGH/CRITICAL CVEs; advisory output lists Qt, OpenSSL, and libtorrent versions with advisory status.
+  Complexity: M
+
+- [ ] P1 — Add WCAG 2.2 focus-appearance compliance for custom-painted controls
+  Why: Custom-painted progress bars in `progressbarpainter.cpp` and torrent cards in `torrentcardswidget.cpp` must draw visible focus rings per WCAG 2.2 criterion 2.4.11 (Focus Appearance). Currently, progress bar cells have no visible focus indicator when navigated via keyboard. Torrent cards have StrongFocus policy but no drawn focus ring.
+  Evidence: WCAG 2.2 criterion 2.4.11 requires >= 2px focus indicator with 3:1 contrast; Qt accessibility docs (doc.qt.io/qt-6/accessible-qwidget.html); `torrentcardswidget.cpp:41` sets `setFocusPolicy(Qt::StrongFocus)` but `paintEvent` does not draw a focus rectangle.
+  Touches: src/gui/progressbarpainter.cpp (paintSimple/paintFancy), src/gui/torrentcardswidget.cpp (paintEvent)
+  Acceptance: keyboard-navigated progress bar cells and torrent cards show a visible 2px focus ring in the Catppuccin blue (#89b4fa) with 3:1 contrast against the background.
+  Complexity: S
+
+- [ ] P2 — Add WebUI memory-leak regression check to large-library smoke
+  Why: Upstream qBittorrent issues #20675, #21502, #23806 report unbounded WebUI RAM growth with tabs open. Vanced's largelibrary-smoke.ps1 measures sync timing but doesn't monitor browser memory.
+  Evidence: qBittorrent issues #20675, #21502; VueTorrent exists partly because the stock WebUI leaks memory at scale.
+  Touches: test/largelibrary-smoke.ps1, possibly add a Playwright-based memory snapshot step
+  Acceptance: smoke script reports peak JS heap size after loading 10k torrents and 5 minutes of polling; fails if heap exceeds a documented ceiling (e.g., 500MB).
+  Complexity: M
+
+- [ ] P2 — Add WebUI session idle timeout warning
+  Why: WebUI sessions persist until explicit logout or cookie expiration. Users behind reverse proxies may leave sessions open indefinitely. qBittorrent 5.2.0 added SameSite cookie enforcement but no idle timeout warning.
+  Evidence: src/webui/webapplication.cpp session handling; authcontroller.cpp ban logic; no idle warning exists in any qBittorrent version.
+  Touches: src/webui/www/private/scripts/client.js (add idle timer), src/webui/www/private/css/style.css (warning banner style)
+  Acceptance: WebUI shows a non-blocking warning banner after N minutes of inactivity (configurable, default 30min); banner includes "Refresh" and "Logout" buttons.
+  Complexity: S
+
+- [ ] P2 — Add `--portable` CLI flag for zero-install portable mode
+  Why: Portable ZIP users must manually set qBittorrent to use the local profile directory. A `--portable` flag would auto-configure the profile path relative to the executable, matching Transmission's portable mode.
+  Evidence: Transmission 4.x portable mode; existing portable backup dialog in portablebackupdialog.cpp; users extract the ZIP and expect it to work without registry/AppData writes.
+  Touches: src/app/application.cpp (CLI argument parsing), src/app/main.cpp (profile path override)
+  Acceptance: `qbittorrent.exe --portable` stores all config/data in a `data/` subdirectory next to the executable; no writes to %APPDATA% or registry.
+  Complexity: M
+
+- [ ] P2 — Add TRaSH Guides-aligned category validation hints
+  Why: TRaSH Guides are the de facto standard for *arr automation setup. Users following TRaSH recommendations expect subfolder-only category paths and Automatic torrent management mode. Vanced already warns on cross-filesystem paths but doesn't guide users toward the recommended setup.
+  Evidence: TRaSH Guides qBittorrent setup (trash-guides.info), existing cross-filesystem warning in torrentcategorydialog.cpp.
+  Touches: src/gui/torrentcategorydialog.cpp (add hint label when save path contains the media library root), src/webui/www/private/newcategory.html
+  Acceptance: category dialog shows an informational hint when the save path looks like a media library root (e.g., contains `/movies/` or `/tv/` in the path) suggesting subfolder-only paths per TRaSH guidelines.
+  Complexity: S
+
+- [ ] P2 — Add CSP nonce plumbing to WebUI response generator
+  Why: Even before removing all 91 inline handlers, the WebUI can begin using nonce-based CSP for its `<script>` tags. This is the prerequisite for eventually removing `'unsafe-inline'` from `script-src`. OWASP CSP cheat sheet recommends nonce-based CSP for server-rendered pages.
+  Evidence: OWASP CSP Cheat Sheet (cheatsheetseries.owasp.org); web.dev strict CSP guide; src/webui/webapplication.cpp:465 current CSP.
+  Touches: src/webui/webapplication.cpp (generate nonce per response, inject into script tags), src/base/utils/random.h (nonce generation)
+  Acceptance: all `<script>` tags in WebUI responses include a `nonce` attribute; CSP header includes `'nonce-...'` alongside existing `'unsafe-inline'` (additive first, removal later); WebUI continues to function identically.
+  Complexity: M
+
+- [ ] P3 — Add VueTorrent alternate WebUI compatibility smoke
+  Why: VueTorrent (v2.34.0) is the most popular alternate WebUI for qBittorrent. Users may install it alongside Vanced's built-in WebUI. Compatibility has never been validated.
+  Evidence: VueTorrent GitHub (4.5k+ stars), qBittorrent alternate WebUI wiki; existing webapi-smoke.ps1 only tests the built-in WebUI.
+  Touches: test/webapi-smoke.ps1 (add a `--alt-webui` parameter that validates API-only compatibility without the built-in HTML), documentation in README.md
+  Acceptance: smoke script confirms VueTorrent can authenticate, list torrents, add/remove magnets, and read sync data against a running Vanced instance.
+  Complexity: S
+
+- [ ] P3 — Add `prefers-color-scheme` media query to WebUI for non-`.dark` class fallback
+  Why: The WebUI hard-codes `class="dark"` on the HTML element. Users who override this or use the WebUI in a non-dark system preference context get no fallback. The login page already has `@media (prefers-color-scheme: light)` but the main UI does not.
+  Evidence: src/webui/www/private/index.html:3 hardcodes `class="dark"`; src/webui/www/public/css/login.css:24 has prefers-color-scheme; style.css has `.dark` block but no `@media (prefers-color-scheme: dark)` fallback.
+  Touches: src/webui/www/private/css/style.css, src/webui/www/private/scripts/color-scheme.js
+  Acceptance: WebUI respects system dark/light preference when no explicit theme class is set; dark class remains the default but can be overridden.
+  Complexity: S

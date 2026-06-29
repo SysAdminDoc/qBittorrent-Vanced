@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2017-2024  Mike Tzou (Chocobo1)
+ * Copyright (C) 2026  SysAdminDoc
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -12,9 +12,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * You should have received a copy of the GNU General Public
+ * License along with this program; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA  02110-1301, USA.
  *
  * In addition, as a special exception, the copyright holders give permission to
  * link this program with the OpenSSL project's "OpenSSL" library (or with
@@ -28,13 +29,17 @@
 
 #pragma once
 
-#include <cstdint>
-#include <limits>
-
 #include <QByteArray>
+#include <QString>
 
-namespace Utils::Random
+#include "base/global.h"
+#include "base/path.h"
+
+namespace WebApplicationSecurity
 {
-    uint32_t rand(uint32_t min = 0, uint32_t max = std::numeric_limits<uint32_t>::max());
-    QByteArray bytes(qsizetype size);
+    inline const QString CSP_NONCE_PLACEHOLDER = u"${CSP_NONCE}"_s;
+
+    QString generateContentSecurityPolicyNonce();
+    bool isHtmlResponse(const Path &path, const QString &mimeTypeName);
+    QByteArray addNonceToScriptTags(const QByteArray &data, const QString &nonce);
 }

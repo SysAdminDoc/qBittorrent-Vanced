@@ -30,6 +30,7 @@
 
 #include <random>
 
+#include <QByteArray>
 #include <QtSystemDetection>
 
 #if defined(Q_OS_LINUX)
@@ -48,4 +49,25 @@ uint32_t Utils::Random::rand(const uint32_t min, const uint32_t max)
     std::uniform_int_distribution<uint32_t> uniform(min, max);
 
     return uniform(layer);
+}
+
+QByteArray Utils::Random::bytes(const qsizetype size)
+{
+    Q_ASSERT(size >= 0);
+
+    QByteArray result;
+    result.resize(size);
+
+    qsizetype offset = 0;
+    while (offset < size)
+    {
+        const uint32_t value = rand();
+        for (int byteIndex = 0; (byteIndex < 4) && (offset < size); ++byteIndex)
+        {
+            result[offset] = static_cast<char>((value >> (byteIndex * 8)) & 0xff);
+            ++offset;
+        }
+    }
+
+    return result;
 }

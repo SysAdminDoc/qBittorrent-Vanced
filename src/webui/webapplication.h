@@ -142,6 +142,8 @@ private:
     Http::Environment m_env;
     QHash<QString, QString> m_params;
     const QString m_cacheID;
+    QString m_contentSecurityPolicy;
+    QString m_contentSecurityPolicyNonce;
 
     const QRegularExpression m_apiPathPattern {u"^/api/v2/(?<scope>[A-Za-z_][A-Za-z_0-9]*)/(?<action>[A-Za-z_][A-Za-z_0-9]*)$"_s};
 

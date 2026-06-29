@@ -64,6 +64,7 @@
 #include "api/torrentscontroller.h"
 #include "api/transfercontroller.h"
 #include "freediskspacechecker.h"
+#include "webapplicationsecurity.h"
 
 const int MAX_ALLOWED_FILESIZE = 10 * 1024 * 1024;
 const QString DEFAULT_SESSION_COOKIE_NAME = u"SID"_s;
@@ -459,14 +460,14 @@ void WebApplication::configure()
     if (isClickjackingProtectionEnabled)
         m_prebuiltHeaders.push_back({Http::HEADER_X_FRAME_OPTIONS, u"SAMEORIGIN"_s});
 
-    const QString contentSecurityPolicy =
+    m_contentSecurityPolicy =
         (m_isAltUIUsed
             ? QString()
-            : u"default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; object-src 'none'; form-action 'self'; frame-src 'self' blob:;"_s)
+            : (u"default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' 'unsafe-inline' 'nonce-"_s + WebApplicationSecurity::CSP_NONCE_PLACEHOLDER + u"'; object-src 'none'; form-action 'self'; frame-src 'self' blob:;"_s))
         + (isClickjackingProtectionEnabled ? u" frame-ancestors 'self';"_s : QString())
         + (m_isHttpsEnabled ? u" upgrade-insecure-requests;"_s : QString());
-    if (!contentSecurityPolicy.isEmpty())
-        m_prebuiltHeaders.push_back({Http::HEADER_CONTENT_SECURITY_POLICY, contentSecurityPolicy});
+    if (!m_contentSecurityPolicy.isEmpty() && !m_contentSecurityPolicy.contains(WebApplicationSecurity::CSP_NONCE_PLACEHOLDER))
+        m_prebuiltHeaders.push_back({Http::HEADER_CONTENT_SECURITY_POLICY, m_contentSecurityPolicy});
 
     if (pref->isWebUICustomHTTPHeadersEnabled())
     {
@@ -485,6 +486,8 @@ void WebApplication::configure()
 
             const QString header = line.left(idx).trimmed().toString();
             const QString value = line.mid(idx + 1).trimmed().toString();
+            if (header.compare(Http::HEADER_CONTENT_SECURITY_POLICY, Qt::CaseInsensitive) == 0)
+                m_contentSecurityPolicy.clear();
             m_prebuiltHeaders.push_back({header, value});
         }
     }
@@ -531,12 +534,21 @@ void WebApplication::sendFile(const Path &path)
 {
     const QDateTime lastModified = Utils::Fs::lastModified(path);
 
+    const auto printFile = [this, path](const QByteArray &fileData, const QString &mimeTypeName)
+    {
+        const QByteArray responseData = (!m_contentSecurityPolicyNonce.isEmpty() && WebApplicationSecurity::isHtmlResponse(path, mimeTypeName))
+            ? WebApplicationSecurity::addNonceToScriptTags(fileData, m_contentSecurityPolicyNonce)
+            : fileData;
+
+        print(responseData, mimeTypeName);
+        setHeader({Http::HEADER_CACHE_CONTROL, getCachingInterval(mimeTypeName)});
+    };
+
     // find translated file in cache
     if (const auto it = m_translatedFiles.constFind(path);
         (it != m_translatedFiles.constEnd()) && (lastModified <= it->lastModified))
     {
-        print(it->data, it->mimeType);
-        setHeader({Http::HEADER_CACHE_CONTROL, getCachingInterval(it->mimeType)});
+        printFile(it->data, it->mimeType);
         return;
     }
 
@@ -584,8 +596,7 @@ void WebApplication::sendFile(const Path &path)
         m_translatedFiles[path] = {data, mimeType.name(), lastModified}; // caching translated file
     }
 
-    print(data, mimeType.name());
-    setHeader({Http::HEADER_CACHE_CONTROL, getCachingInterval(mimeType.name())});
+    printFile(data, mimeType.name());
 }
 
 Http::Response WebApplication::processRequest(const Http::Request &request, const Http::Environment &env)
@@ -607,6 +618,9 @@ Http::Response WebApplication::processRequest(const Http::Request &request, cons
 
     // clear response
     clear();
+    m_contentSecurityPolicyNonce = m_contentSecurityPolicy.contains(WebApplicationSecurity::CSP_NONCE_PLACEHOLDER)
+        ? WebApplicationSecurity::generateContentSecurityPolicyNonce()
+        : QString();
 
     try
     {
@@ -631,6 +645,13 @@ Http::Response WebApplication::processRequest(const Http::Request &request, cons
 
     for (const Http::Header &prebuiltHeader : asConst(m_prebuiltHeaders))
         setHeader(prebuiltHeader);
+
+    if (!m_contentSecurityPolicyNonce.isEmpty())
+    {
+        QString contentSecurityPolicy = m_contentSecurityPolicy;
+        contentSecurityPolicy.replace(WebApplicationSecurity::CSP_NONCE_PLACEHOLDER, m_contentSecurityPolicyNonce);
+        setHeader({Http::HEADER_CONTENT_SECURITY_POLICY, contentSecurityPolicy});
+    }
 
     return response();
 }

@@ -12,6 +12,7 @@ add_library(qbt_webui STATIC
     api/serialize/serialize_torrent.h
     freediskspacechecker.h
     webapplication.h
+    webapplicationsecurity.h
     webui.h
 
     # sources
@@ -26,6 +27,7 @@ add_library(qbt_webui STATIC
     api/serialize/serialize_torrent.cpp
     freediskspacechecker.cpp
     webapplication.cpp
+    webapplicationsecurity.cpp
     webui.cpp
 )
 

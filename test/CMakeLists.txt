@@ -10,9 +10,14 @@ target_compile_definitions(testcmdoptions PRIVATE DISABLE_GUI)
 target_link_libraries(testcmdoptions PRIVATE qbt_base)
 add_test(NAME testcmdoptions COMMAND testcmdoptions)
 
+add_executable(testwebapplicationsecurity testwebapplicationsecurity.cpp)
+target_link_libraries(testwebapplicationsecurity PRIVATE qbt_webui qbt_base)
+add_test(NAME testwebapplicationsecurity COMMAND testwebapplicationsecurity)
+
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
 add_dependencies(check testdownloadhandlerimpl)
 add_dependencies(check testcmdoptions)
+add_dependencies(check testwebapplicationsecurity)
 
 find_package(Qt6 QUIET COMPONENTS Test)
 if (NOT TARGET Qt6::Test)

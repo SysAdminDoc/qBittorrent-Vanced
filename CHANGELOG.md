@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added WebUI CSP nonce plumbing for built-in HTML responses while keeping the existing inline-script policy during migration.
 - Added TRaSH Guides-aligned hints when category save paths look like media-library roots.
 - Added `--portable` startup mode for zero-install ZIP runs that keep profile data beside the executable.
 - Added a configurable WebUI idle-session warning banner with Refresh and Logout actions.

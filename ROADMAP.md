@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P2 — Add CSP nonce plumbing to WebUI response generator
-  Why: Even before removing all 91 inline handlers, the WebUI can begin using nonce-based CSP for its `<script>` tags. This is the prerequisite for eventually removing `'unsafe-inline'` from `script-src`. OWASP CSP cheat sheet recommends nonce-based CSP for server-rendered pages.
-  Evidence: OWASP CSP Cheat Sheet (cheatsheetseries.owasp.org); web.dev strict CSP guide; src/webui/webapplication.cpp:465 current CSP.
-  Touches: src/webui/webapplication.cpp (generate nonce per response, inject into script tags), src/base/utils/random.h (nonce generation)
-  Acceptance: all `<script>` tags in WebUI responses include a `nonce` attribute; CSP header includes `'nonce-...'` alongside existing `'unsafe-inline'` (additive first, removal later); WebUI continues to function identically.
-  Complexity: M
-
 - [ ] P3 — Add VueTorrent alternate WebUI compatibility smoke
   Why: VueTorrent (v2.34.0) is the most popular alternate WebUI for qBittorrent. Users may install it alongside Vanced's built-in WebUI. Compatibility has never been validated.
   Evidence: VueTorrent GitHub (4.5k+ stars), qBittorrent alternate WebUI wiki; existing webapi-smoke.ps1 only tests the built-in WebUI.

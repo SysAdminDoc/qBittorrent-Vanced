@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added compact progress-bar glyph overlays for queued, checking, and stalled torrents without introducing additional state colors.
 - Added `ProgressBar.*` theme color keys so custom `config.json` themes can rebrand progress groove, text, shimmer, focus, and per-state bar colors without recompiling.
 - Documented the existing simple progress bar accessibility mode for users who prefer solid bars and percent text over shimmer animation.
 - Added a built-in theme picker tab with live Catppuccin flavor preview, sample torrent rows, and shimmer progress bars.

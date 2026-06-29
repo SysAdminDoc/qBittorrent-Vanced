@@ -24,6 +24,7 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Animated shimmer highlight sweeps across active downloads
 - Optional simple mode uses solid bars with percent text for users who prefer less motion
 - Distinct colors for downloading (green), completed (bright green), and stopped/error (muted gray)
+- Queued, checking, and stalled torrents show compact glyph overlays without adding extra state colors
 - Custom `config.json` themes can override `ProgressBar.*` keys for groove, text, shimmer, focus, and per-state bar colors
 
 ### Streamlined Interface

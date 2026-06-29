@@ -33,6 +33,28 @@
 #include "base/preferences.h"
 #include "transferlistmodel.h"
 
+namespace
+{
+    ProgressBarStateGlyph glyphForTorrentState(const BitTorrent::TorrentState state)
+    {
+        switch (state)
+        {
+        case BitTorrent::TorrentState::StalledDownloading:
+        case BitTorrent::TorrentState::StalledUploading:
+            return ProgressBarStateGlyph::Stalled;
+        case BitTorrent::TorrentState::QueuedDownloading:
+        case BitTorrent::TorrentState::QueuedUploading:
+            return ProgressBarStateGlyph::Queued;
+        case BitTorrent::TorrentState::CheckingDownloading:
+        case BitTorrent::TorrentState::CheckingUploading:
+        case BitTorrent::TorrentState::CheckingResumeData:
+            return ProgressBarStateGlyph::Checking;
+        default:
+            return ProgressBarStateGlyph::None;
+        }
+    }
+}
+
 TransferListDelegate::TransferListDelegate(QObject *parent)
     : QStyledItemDelegate {parent}
 {
@@ -96,7 +118,8 @@ void TransferListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
             QStyleOptionViewItem customOption {option};
             customOption.state.setFlag(QStyle::State_Enabled, isEnableState(torrentState));
 
-            m_progressBarPainter.paint(painter, customOption, index.data().toString(), progress);
+            m_progressBarPainter.paint(painter, customOption, index.data().toString(), progress
+                    , glyphForTorrentState(torrentState));
         }
         break;
     default:

@@ -124,6 +124,81 @@ namespace
         painter->drawRoundedRect(rect.adjusted(1, 1, -1, -1), radius, radius);
         painter->restore();
     }
+
+    QRectF glyphOverlayRect(const QRectF &grooveRect, const ProgressBarStateGlyph glyph)
+    {
+        if ((glyph == ProgressBarStateGlyph::None) || (grooveRect.width() < 46) || (grooveRect.height() < 12))
+            return {};
+
+        const qreal glyphSize = qBound<qreal>(12.0, (grooveRect.height() - 4.0), 18.0);
+        return {grooveRect.right() - glyphSize - 3.0, grooveRect.center().y() - (glyphSize / 2.0), glyphSize, glyphSize};
+    }
+
+    QRectF textRectForGlyph(const QRectF &grooveRect, const ProgressBarStateGlyph glyph)
+    {
+        const QRectF glyphRect = glyphOverlayRect(grooveRect, glyph);
+        if (glyphRect.isEmpty())
+            return grooveRect;
+
+        const qreal reservedWidth = qMin<qreal>((glyphRect.width() + 6.0), (grooveRect.width() / 3.0));
+        return grooveRect.adjusted(0, 0, -reservedWidth, 0);
+    }
+
+    void drawStateGlyph(QPainter *painter, const QRectF &grooveRect, const ProgressBarStateGlyph glyph
+            , const ProgressBarThemeColors &colors, const bool isEnabled)
+    {
+        const QRectF glyphRect = glyphOverlayRect(grooveRect, glyph);
+        if (glyphRect.isEmpty())
+            return;
+
+        const QColor glyphColor = isEnabled ? colors.text : colors.textDisabled;
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(alphaColor(colors.groove, 220));
+        painter->drawRoundedRect(glyphRect, 3.0, 3.0);
+
+        QPen glyphPen {glyphColor, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin};
+        painter->setPen(glyphPen);
+        painter->setBrush(Qt::NoBrush);
+
+        const QRectF markRect = glyphRect.adjusted(4.0, 3.0, -4.0, -3.0);
+        switch (glyph)
+        {
+        case ProgressBarStateGlyph::Stalled:
+            {
+                const qreal x = markRect.center().x();
+                painter->drawLine(QPointF(x, markRect.top() + 1.0), QPointF(x, markRect.bottom() - 3.0));
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(glyphColor);
+                painter->drawEllipse(QPointF(x, markRect.bottom() - 0.5), 1.4, 1.4);
+            }
+            break;
+        case ProgressBarStateGlyph::Queued:
+            {
+                const qreal left = markRect.left();
+                const qreal right = markRect.right();
+                painter->drawLine(QPointF(left, markRect.top() + 2.0), QPointF(right, markRect.top() + 2.0));
+                painter->drawLine(QPointF(left, markRect.center().y()), QPointF(right, markRect.center().y()));
+                painter->drawLine(QPointF(left, markRect.bottom() - 2.0), QPointF(right, markRect.bottom() - 2.0));
+            }
+            break;
+        case ProgressBarStateGlyph::Checking:
+            {
+                const qreal radius = qMin(markRect.width(), markRect.height()) * 0.28;
+                const QPointF center {markRect.center().x() - 1.0, markRect.center().y() - 1.0};
+                painter->drawEllipse(center, radius, radius);
+                painter->drawLine(QPointF(center.x() + (radius * 0.65), center.y() + (radius * 0.65))
+                        , QPointF(markRect.right(), markRect.bottom()));
+            }
+            break;
+        case ProgressBarStateGlyph::None:
+            break;
+        }
+
+        painter->restore();
+    }
 }
 
 ProgressBarPainter::ProgressBarPainter()
@@ -136,15 +211,17 @@ void ProgressBarPainter::setSimpleMode(const bool simple)
     m_simpleMode = simple;
 }
 
-void ProgressBarPainter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, const int progress) const
+void ProgressBarPainter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QString &text
+        , const int progress, const ProgressBarStateGlyph glyph) const
 {
     if (m_simpleMode)
-        paintSimple(painter, option, text, progress);
+        paintSimple(painter, option, text, progress, glyph);
     else
-        paintFancy(painter, option, text, progress);
+        paintFancy(painter, option, text, progress, glyph);
 }
 
-void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, const int progress) const
+void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewItem &option, const QString &text
+        , const int progress, const ProgressBarStateGlyph glyph) const
 {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
@@ -202,7 +279,9 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
 
     const QColor textColor = isEnabled ? colors.text : colors.textDisabled;
     painter->setPen(textColor);
-    painter->drawText(grooveRect, Qt::AlignCenter, displayText);
+    painter->drawText(textRectForGlyph(grooveRect, glyph), Qt::AlignCenter, displayText);
+
+    drawStateGlyph(painter, grooveRect, glyph, colors, isEnabled);
 
     if (hasFocus)
         drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0, colors.focus);
@@ -210,7 +289,8 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
     painter->restore();
 }
 
-void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, const int progress) const
+void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewItem &option, const QString &text
+        , const int progress, const ProgressBarStateGlyph glyph) const
 {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
@@ -307,8 +387,10 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
 
         const QColor textColor = isEnabled ? colors.text : colors.textDisabled;
         painter->setPen(textColor);
-        painter->drawText(grooveRect, Qt::AlignCenter, text);
+        painter->drawText(textRectForGlyph(grooveRect, glyph), Qt::AlignCenter, text);
     }
+
+    drawStateGlyph(painter, grooveRect, glyph, colors, isEnabled);
 
     if (hasFocus)
         drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0, colors.focus);

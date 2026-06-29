@@ -92,7 +92,7 @@ public:
     explicit BuiltInThemePreviewWidget(QWidget *parent = nullptr)
         : QWidget(parent)
     {
-        setMinimumHeight(210);
+        setMinimumHeight(260);
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
         auto *timer = new QTimer(this);
@@ -102,7 +102,7 @@ public:
 
     QSize sizeHint() const override
     {
-        return {560, 240};
+        return {560, 280};
     }
 
 protected:
@@ -138,7 +138,7 @@ protected:
 
         const int margin = 14;
         const int headerHeight = 30;
-        const int rowHeight = 40;
+        const int rowHeight = 36;
         const int gap = 8;
         const QRect contentRect = panelRect.adjusted(margin, margin, -margin, -margin);
         const int nameWidth = contentRect.width() * 38 / 100;
@@ -179,14 +179,21 @@ protected:
             int progress;
             bool selected;
             bool enabled;
+            ProgressBarStateGlyph glyph;
         };
 
-        const std::array<PreviewRow, 4> rows =
+        const std::array<PreviewRow, 5> rows =
         {{
-            {previewText("Linux ISO Collection"), u"4.2 GiB"_s, previewText("Downloading"), 63, true, true},
-            {previewText("Studio Footage"), u"18.7 GiB"_s, previewText("Queued"), 12, false, true},
-            {previewText("Release Archive"), u"2.8 GiB"_s, previewText("Seeding"), 100, false, true},
-            {previewText("Backup Snapshot"), u"7.5 GiB"_s, previewText("Stalled"), 44, false, false}
+            {previewText("Linux ISO Collection"), u"4.2 GiB"_s, previewText("Downloading"), 63, true, true
+                    , ProgressBarStateGlyph::None},
+            {previewText("Studio Footage"), u"18.7 GiB"_s, previewText("Queued"), 12, false, true
+                    , ProgressBarStateGlyph::Queued},
+            {previewText("Media Verify"), u"9.1 GiB"_s, previewText("Checking"), 88, false, true
+                    , ProgressBarStateGlyph::Checking},
+            {previewText("Release Archive"), u"2.8 GiB"_s, previewText("Seeding"), 100, false, true
+                    , ProgressBarStateGlyph::None},
+            {previewText("Backup Snapshot"), u"7.5 GiB"_s, previewText("Stalled"), 44, false, true
+                    , ProgressBarStateGlyph::Stalled}
         }};
 
         int rowTop = contentRect.top() + headerHeight + gap;
@@ -223,7 +230,8 @@ protected:
             if (sample.selected)
                 option.state |= QStyle::State_Selected;
 
-            m_progressBarPainter.paint(&painter, option, QString::number(sample.progress) + u'%', sample.progress);
+            m_progressBarPainter.paint(&painter, option, QString::number(sample.progress) + u'%', sample.progress
+                    , sample.glyph);
 
             textRect = QRect(rowRect.left() + nameWidth + sizeWidth + progressWidth + 10
                     , rowRect.top(), statusWidth - 18, rowRect.height());

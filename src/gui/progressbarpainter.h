@@ -34,18 +34,29 @@ class QPainter;
 class QStyleOptionViewItem;
 class QString;
 
+enum class ProgressBarStateGlyph
+{
+    None,
+    Stalled,
+    Queued,
+    Checking
+};
+
 class ProgressBarPainter
 {
 public:
     ProgressBarPainter();
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress) const;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress
+            , ProgressBarStateGlyph glyph = ProgressBarStateGlyph::None) const;
 
     void setSimpleMode(bool simple);
 
 private:
-    void paintFancy(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress) const;
-    void paintSimple(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress) const;
+    void paintFancy(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress
+            , ProgressBarStateGlyph glyph) const;
+    void paintSimple(QPainter *painter, const QStyleOptionViewItem &option, const QString &text, int progress
+            , ProgressBarStateGlyph glyph) const;
 
     QElapsedTimer m_shimmerTimer;
     bool m_simpleMode = false;

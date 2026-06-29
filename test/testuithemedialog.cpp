@@ -69,6 +69,39 @@ namespace
         return dialog.findChild<QComboBox *>(u"builtInThemeFlavorComboBox"_s);
     }
 
+    QImage renderProgressBar(const bool simpleMode
+            , const ProgressBarStateGlyph glyph = ProgressBarStateGlyph::None)
+    {
+        QImage image {180, 32, QImage::Format_ARGB32_Premultiplied};
+        image.fill(Qt::transparent);
+
+        QPainter painter {&image};
+        QStyleOptionViewItem option;
+        option.rect = image.rect();
+        option.state = QStyle::State_Enabled | QStyle::State_Selected | QStyle::State_HasFocus;
+
+        ProgressBarPainter progressBarPainter;
+        progressBarPainter.setSimpleMode(simpleMode);
+        progressBarPainter.paint(&painter, option, u"63%"_s, 63, glyph);
+        painter.end();
+
+        return image;
+    }
+
+    bool imageRegionDiffers(const QImage &left, const QImage &right, const QRect &region)
+    {
+        for (int y = region.top(); y <= region.bottom(); ++y)
+        {
+            for (int x = region.left(); x <= region.right(); ++x)
+            {
+                if (left.pixelColor(x, y) != right.pixelColor(x, y))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     void verifyProgressBarThemeColors(int &failureCount)
     {
         const QStringList colorIDs =
@@ -92,24 +125,25 @@ namespace
 
     void verifyProgressBarRender(const bool simpleMode, int &failureCount)
     {
-        QImage image {180, 32, QImage::Format_ARGB32_Premultiplied};
-        image.fill(Qt::transparent);
-
-        QPainter painter {&image};
-        QStyleOptionViewItem option;
-        option.rect = image.rect();
-        option.state = QStyle::State_Enabled | QStyle::State_Selected | QStyle::State_HasFocus;
-
-        ProgressBarPainter progressBarPainter;
-        progressBarPainter.setSimpleMode(simpleMode);
-        progressBarPainter.paint(&painter, option, u"63%"_s, 63);
-        painter.end();
+        const QImage image = renderProgressBar(simpleMode);
 
         verify((image.pixelColor(12, 16).alpha() > 0)
                 , simpleMode
                     ? u"Simple progress bar should render themed pixels"_s
                     : u"Fancy progress bar should render themed pixels"_s
                 , failureCount);
+    }
+
+    void verifyProgressBarGlyphRender(const ProgressBarStateGlyph glyph, const QString &name, int &failureCount)
+    {
+        const QImage withoutGlyph = renderProgressBar(true);
+        const QImage withGlyph = renderProgressBar(true, glyph);
+        verify(imageRegionDiffers(withoutGlyph, withGlyph, QRect(154, 8, 22, 16))
+                , u"%1 progress bar glyph should alter the overlay region"_s.arg(name), failureCount);
+
+        const QImage fancyGlyph = renderProgressBar(false, glyph);
+        verify((fancyGlyph.pixelColor(12, 16).alpha() > 0)
+                , u"%1 progress bar glyph should render in fancy mode"_s.arg(name), failureCount);
     }
 }
 
@@ -137,6 +171,9 @@ int main(int argc, char **argv)
     verifyProgressBarThemeColors(failureCount);
     verifyProgressBarRender(false, failureCount);
     verifyProgressBarRender(true, failureCount);
+    verifyProgressBarGlyphRender(ProgressBarStateGlyph::Queued, u"Queued"_s, failureCount);
+    verifyProgressBarGlyphRender(ProgressBarStateGlyph::Checking, u"Checking"_s, failureCount);
+    verifyProgressBarGlyphRender(ProgressBarStateGlyph::Stalled, u"Stalled"_s, failureCount);
 
     {
         UIThemeDialog dialog;

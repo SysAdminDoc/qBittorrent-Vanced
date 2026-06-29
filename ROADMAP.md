@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P2 — Add WebUI memory-leak regression check to large-library smoke
-  Why: Upstream qBittorrent issues #20675, #21502, #23806 report unbounded WebUI RAM growth with tabs open. Vanced's largelibrary-smoke.ps1 measures sync timing but doesn't monitor browser memory.
-  Evidence: qBittorrent issues #20675, #21502; VueTorrent exists partly because the stock WebUI leaks memory at scale.
-  Touches: test/largelibrary-smoke.ps1, possibly add a Playwright-based memory snapshot step
-  Acceptance: smoke script reports peak JS heap size after loading 10k torrents and 5 minutes of polling; fails if heap exceeds a documented ceiling (e.g., 500MB).
-  Complexity: M
-
 - [ ] P2 — Add WebUI session idle timeout warning
   Why: WebUI sessions persist until explicit logout or cookie expiration. Users behind reverse proxies may leave sessions open indefinitely. qBittorrent 5.2.0 added SameSite cookie enforcement but no idle timeout warning.
   Evidence: src/webui/webapplication.cpp session handling; authcontroller.cpp ban logic; no idle warning exists in any qBittorrent version.

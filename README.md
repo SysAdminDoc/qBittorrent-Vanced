@@ -106,6 +106,7 @@ npm run lint
 
 The WebUI toolchain is pinned in `package.json` and `package-lock.json` so `npm ci` installs the same lint stack on each machine.
 Mobile WebUI smoke checks should include a 375px viewport for `download.html`, `upload.html`, `newcategory.html`, `newtag.html`, `setlocation.html`, and the main `index.html` toolbar/filter shell.
+The large-library smoke (`test\largelibrary-smoke.ps1`) includes a dependency-free Edge/Chrome DevTools heap check that loads the WebUI after seeding 10k torrents and fails if peak used JS heap exceeds the documented ceiling (`-HeapCeilingMB`, default 500 MB).
 
 ## License
 

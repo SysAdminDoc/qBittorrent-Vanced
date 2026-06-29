@@ -242,6 +242,55 @@ body:not(:has(#desktop)) {
     display: none;
 }
 
+#sessionIdleWarning {
+    align-items: center;
+    background-color: var(--color-background-popup);
+    border: 1px solid var(--color-text-orange);
+    border-left-width: 4px;
+    border-radius: 6px;
+    box-shadow: 0 12px 36px rgb(0 0 0 / 35%);
+    color: var(--color-text-default);
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    left: 50%;
+    max-width: min(720px, calc(100vw - 24px));
+    padding: 10px 12px;
+    position: fixed;
+    top: 10px;
+    transform: translateX(-50%);
+    z-index: 10000;
+}
+
+#sessionIdleWarning.invisible {
+    display: none;
+}
+
+.sessionIdleWarningText {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.sessionIdleWarningActions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+    max-width: 40%;
+}
+
+#sessionIdleWarning button {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#sessionIdleWarning button:last-child {
+    border-color: var(--color-text-orange);
+}
+
 /* Typography */
 
 h2,
@@ -1158,6 +1207,24 @@ td.statusBarSeparator {
 }
 
 @media (width <= 600px) {
+    #sessionIdleWarning {
+        align-items: stretch;
+        flex-direction: column;
+        inset: auto 8px 8px;
+        max-width: none;
+        transform: none;
+    }
+
+    .sessionIdleWarningActions {
+        flex-direction: column;
+        max-width: none;
+        width: 100%;
+    }
+
+    .sessionIdleWarningActions button {
+        width: 100%;
+    }
+
     #mochaToolbar {
         align-items: center;
         display: flex;

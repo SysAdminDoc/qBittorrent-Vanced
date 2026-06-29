@@ -138,6 +138,8 @@ let customSyncMainDataInterval = null;
 let useSubcategories = true;
 const useAutoHideZeroStatusFilters = LocalPreferences.get("hide_zero_status_filters", "false") === "true";
 const displayFullURLTrackerColumn = LocalPreferences.get("full_url_tracker_column", "false") === "true";
+const SESSION_IDLE_WARNING_MINUTES_KEY = "session_idle_warning_minutes";
+const SESSION_IDLE_WARNING_DEFAULT_MINUTES = 30;
 
 /* Categories filter */
 const CATEGORIES_ALL = "b4af0e4c-e76d-4bac-a392-46cbc18d9655";
@@ -188,6 +190,96 @@ window.addEventListener("DOMContentLoaded", (event) => {
         LocalPreferences.set("properties_height_rel", properties_height_rel);
     };
 
+    const readSessionIdleWarningMinutes = () => {
+        const urlValue = new URLSearchParams(window.location.search).get(SESSION_IDLE_WARNING_MINUTES_KEY);
+        const configuredMinutes = Number(urlValue ?? LocalPreferences.get(SESSION_IDLE_WARNING_MINUTES_KEY, SESSION_IDLE_WARNING_DEFAULT_MINUTES.toString()));
+        return (Number.isFinite(configuredMinutes) && (configuredMinutes > 0))
+            ? configuredMinutes
+            : SESSION_IDLE_WARNING_DEFAULT_MINUTES;
+    };
+
+    const setupSessionIdleWarning = () => {
+        const idleWarningMinutes = readSessionIdleWarningMinutes();
+        const idleWarningDelayMs = idleWarningMinutes * 60 * 1000;
+        let lastSessionActivity = Date.now();
+        let idleWarningTimeoutID = -1;
+
+        const sessionIdleWarning = document.createElement("section");
+        sessionIdleWarning.id = "sessionIdleWarning";
+        sessionIdleWarning.className = "invisible";
+        sessionIdleWarning.setAttribute("aria-live", "polite");
+        sessionIdleWarning.setAttribute("role", "status");
+
+        const message = document.createElement("span");
+        message.className = "sessionIdleWarningText";
+        message.textContent = "QBT_TR(WebUI session has been idle for %1 minutes. Refresh to keep working or log out if this browser is unattended.)QBT_TR[CONTEXT=HttpServer]"
+            .replace("%1", idleWarningMinutes.toString());
+
+        const actions = document.createElement("span");
+        actions.className = "sessionIdleWarningActions";
+
+        const refreshButton = document.createElement("button");
+        refreshButton.type = "button";
+        refreshButton.textContent = "QBT_TR(Refresh)QBT_TR[CONTEXT=MainWindow]";
+        refreshButton.addEventListener("click", () => {
+            window.location.reload();
+        });
+
+        const logoutButton = document.createElement("button");
+        logoutButton.type = "button";
+        logoutButton.textContent = "QBT_TR(Logout)QBT_TR[CONTEXT=HttpServer]";
+        logoutButton.addEventListener("click", () => {
+            fetch("api/v2/auth/logout", {
+                    method: "POST"
+                })
+                .then((response) => {
+                    if (response.ok)
+                        window.location.reload(true);
+                });
+        });
+
+        actions.append(refreshButton, logoutButton);
+        sessionIdleWarning.append(message, actions);
+        document.body.append(sessionIdleWarning);
+
+        const hideWarning = () => {
+            sessionIdleWarning.classList.add("invisible");
+            sessionIdleWarning.setAttribute("aria-hidden", "true");
+        };
+
+        const showWarning = () => {
+            sessionIdleWarning.classList.remove("invisible");
+            sessionIdleWarning.setAttribute("aria-hidden", "false");
+        };
+
+        const scheduleWarning = () => {
+            clearTimeout(idleWarningTimeoutID);
+            const elapsedMs = Date.now() - lastSessionActivity;
+            const remainingMs = Math.max(idleWarningDelayMs - elapsedMs, 0);
+            idleWarningTimeoutID = setTimeout(showWarning, remainingMs);
+        };
+
+        const registerActivity = (event) => {
+            if (event?.target && sessionIdleWarning.contains(event.target))
+                return;
+
+            lastSessionActivity = Date.now();
+            hideWarning();
+            scheduleWarning();
+        };
+
+        for (const eventName of ["pointerdown", "keydown", "wheel", "touchstart"])
+            window.addEventListener(eventName, registerActivity, { capture: true, passive: true });
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible")
+                scheduleWarning();
+        });
+
+        hideWarning();
+        scheduleWarning();
+    };
+
     window.addEventListener("resize", window.qBittorrent.Misc.createDebounceHandler(500, (e) => {
         // only save sizes if the columns are visible
         if (!$("mainColumn").classList.contains("invisible"))
@@ -198,6 +290,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
     MochaUI.Desktop.desktop.style.background = "#fff";
     MochaUI.Desktop.desktop.style.visibility = "visible"; */
     MochaUI.Desktop.initialize();
+    setupSessionIdleWarning();
 
     const buildTransfersTab = () => {
         new MochaUI.Column({

@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P2 — Add WebUI session idle timeout warning
-  Why: WebUI sessions persist until explicit logout or cookie expiration. Users behind reverse proxies may leave sessions open indefinitely. qBittorrent 5.2.0 added SameSite cookie enforcement but no idle timeout warning.
-  Evidence: src/webui/webapplication.cpp session handling; authcontroller.cpp ban logic; no idle warning exists in any qBittorrent version.
-  Touches: src/webui/www/private/scripts/client.js (add idle timer), src/webui/www/private/css/style.css (warning banner style)
-  Acceptance: WebUI shows a non-blocking warning banner after N minutes of inactivity (configurable, default 30min); banner includes "Refresh" and "Logout" buttons.
-  Complexity: S
-
 - [ ] P2 — Add `--portable` CLI flag for zero-install portable mode
   Why: Portable ZIP users must manually set qBittorrent to use the local profile directory. A `--portable` flag would auto-configure the profile path relative to the executable, matching Transmission's portable mode.
   Evidence: Transmission 4.x portable mode; existing portable backup dialog in portablebackupdialog.cpp; users extract the ZIP and expect it to work without registry/AppData writes.

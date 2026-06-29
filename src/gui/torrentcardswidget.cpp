@@ -20,6 +20,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
+#include <QPen>
 #include <QScrollArea>
 #include <QStackedLayout>
 
@@ -29,6 +30,11 @@
 #include "flowlayout.h"
 
 using namespace std::chrono_literals;
+
+namespace
+{
+    const QColor FOCUS_RING_COLOR {0x89, 0xb4, 0xfa};
+}
 
 // --- TorrentCard ---
 
@@ -76,8 +82,9 @@ void TorrentCard::paintEvent(QPaintEvent *)
     p.setRenderHint(QPainter::Antialiasing);
 
     const QRect r = rect().adjusted(2, 2, -2, -2);
+    const bool focused = hasFocus();
     const QColor bgColor = m_selected ? QColor(0x18, 0x18, 0x25) : (m_hovered ? QColor(0x31, 0x32, 0x44) : QColor(0x1e, 0x1e, 0x2e));
-    const QColor borderColor = (m_selected || hasFocus()) ? QColor(0x89, 0xb4, 0xfa) : QColor(0x31, 0x32, 0x44);
+    const QColor borderColor = m_selected ? FOCUS_RING_COLOR : QColor(0x31, 0x32, 0x44);
     const QColor textColor(0xcd, 0xd6, 0xf4);
     const QColor dimColor(0xa6, 0xad, 0xc8);
     const QColor state = stateColor();
@@ -86,8 +93,17 @@ void TorrentCard::paintEvent(QPaintEvent *)
     QPainterPath path;
     path.addRoundedRect(QRectF(r), 8, 8);
     p.fillPath(path, bgColor);
-    p.setPen(QPen(borderColor, (m_selected || hasFocus()) ? 2 : 1));
+    p.setPen(QPen(borderColor, m_selected ? 2 : 1));
     p.drawPath(path);
+
+    if (focused)
+    {
+        QPainterPath focusPath;
+        focusPath.addRoundedRect(QRectF(r).adjusted(3, 3, -3, -3), 6, 6);
+        p.setBrush(Qt::NoBrush);
+        p.setPen(QPen(FOCUS_RING_COLOR, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p.drawPath(focusPath);
+    }
 
     // State indicator dot
     p.setPen(Qt::NoPen);

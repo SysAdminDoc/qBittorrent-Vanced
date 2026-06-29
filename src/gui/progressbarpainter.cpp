@@ -33,9 +33,25 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
+#include <QPen>
 #include <QStyleOptionViewItem>
 
 #include "base/global.h"
+
+namespace
+{
+    const QColor FOCUS_RING_COLOR {0x89, 0xb4, 0xfa};
+
+    void drawFocusRing(QPainter *painter, const QRectF &rect, const qreal radius)
+    {
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setBrush(Qt::NoBrush);
+        painter->setPen(QPen(FOCUS_RING_COLOR, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter->drawRoundedRect(rect.adjusted(1, 1, -1, -1), radius, radius);
+        painter->restore();
+    }
+}
 
 ProgressBarPainter::ProgressBarPainter()
 {
@@ -63,6 +79,7 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
     const QRect r = option.rect;
     const bool isEnabled = option.state.testFlag(QStyle::State_Enabled);
     const bool isSelected = option.state.testFlag(QStyle::State_Selected);
+    const bool hasFocus = option.state.testFlag(QStyle::State_HasFocus);
     const qreal radius = 3.0;
 
     if (isSelected)
@@ -113,6 +130,9 @@ void ProgressBarPainter::paintSimple(QPainter *painter, const QStyleOptionViewIt
     painter->setPen(textColor);
     painter->drawText(grooveRect, Qt::AlignCenter, displayText);
 
+    if (hasFocus)
+        drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0);
+
     painter->restore();
 }
 
@@ -124,6 +144,7 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
     const QRect r = option.rect;
     const bool isEnabled = option.state.testFlag(QStyle::State_Enabled);
     const bool isSelected = option.state.testFlag(QStyle::State_Selected);
+    const bool hasFocus = option.state.testFlag(QStyle::State_HasFocus);
     const qreal radius = 3.0;
 
     // Row background
@@ -221,6 +242,9 @@ void ProgressBarPainter::paintFancy(QPainter *painter, const QStyleOptionViewIte
         painter->setPen(textColor);
         painter->drawText(grooveRect, Qt::AlignCenter, text);
     }
+
+    if (hasFocus)
+        drawFocusRing(painter, QRectF(r).adjusted(2, 2, -2, -2), 4.0);
 
     painter->restore();
 }

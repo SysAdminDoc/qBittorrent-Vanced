@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P1 — Add WCAG 2.2 focus-appearance compliance for custom-painted controls
-  Why: Custom-painted progress bars in `progressbarpainter.cpp` and torrent cards in `torrentcardswidget.cpp` must draw visible focus rings per WCAG 2.2 criterion 2.4.11 (Focus Appearance). Currently, progress bar cells have no visible focus indicator when navigated via keyboard. Torrent cards have StrongFocus policy but no drawn focus ring.
-  Evidence: WCAG 2.2 criterion 2.4.11 requires >= 2px focus indicator with 3:1 contrast; Qt accessibility docs (doc.qt.io/qt-6/accessible-qwidget.html); `torrentcardswidget.cpp:41` sets `setFocusPolicy(Qt::StrongFocus)` but `paintEvent` does not draw a focus rectangle.
-  Touches: src/gui/progressbarpainter.cpp (paintSimple/paintFancy), src/gui/torrentcardswidget.cpp (paintEvent)
-  Acceptance: keyboard-navigated progress bar cells and torrent cards show a visible 2px focus ring in the Catppuccin blue (#89b4fa) with 3:1 contrast against the background.
-  Complexity: S
-
 - [ ] P2 — Add WebUI memory-leak regression check to large-library smoke
   Why: Upstream qBittorrent issues #20675, #21502, #23806 report unbounded WebUI RAM growth with tabs open. Vanced's largelibrary-smoke.ps1 measures sync timing but doesn't monitor browser memory.
   Evidence: qBittorrent issues #20675, #21502; VueTorrent exists partly because the stock WebUI leaks memory at scale.

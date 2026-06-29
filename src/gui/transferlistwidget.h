@@ -109,6 +109,7 @@ signals:
     void currentTorrentChanged(BitTorrent::Torrent *torrent);
 
 private slots:
+    void handleTransferListDoubleClicked(const QModelIndex &index);
     void torrentDoubleClicked();
     void displayListMenu();
     void displayColumnHeaderMenu();

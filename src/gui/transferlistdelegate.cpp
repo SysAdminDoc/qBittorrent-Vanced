@@ -28,8 +28,11 @@
 
 #include "transferlistdelegate.h"
 
+#include <QComboBox>
 #include <QModelIndex>
 
+#include "base/bittorrent/session.h"
+#include "base/global.h"
 #include "base/preferences.h"
 #include "transferlistmodel.h"
 
@@ -65,10 +68,47 @@ TransferListDelegate::TransferListDelegate(QObject *parent)
     });
 }
 
-QWidget *TransferListDelegate::createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const
+QWidget *TransferListDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &index) const
 {
-    // No editor here
+    if (index.column() == TransferListModel::TR_CATEGORY)
+    {
+        auto *comboBox = new QComboBox(parent);
+        comboBox->setFrame(false);
+        comboBox->addItem(tr("Uncategorized"), QString());
+
+        QStringList categories = BitTorrent::Session::instance()->categories();
+        categories.sort(Qt::CaseInsensitive);
+        for (const QString &category : asConst(categories))
+            comboBox->addItem(category, category);
+
+        return comboBox;
+    }
+
     return nullptr;
+}
+
+void TransferListDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    if (auto *comboBox = qobject_cast<QComboBox *>(editor))
+    {
+        const QString category = index.data(Qt::EditRole).toString();
+        const int categoryIndex = comboBox->findData(category);
+        comboBox->setCurrentIndex(categoryIndex >= 0 ? categoryIndex : 0);
+        return;
+    }
+
+    QStyledItemDelegate::setEditorData(editor, index);
+}
+
+void TransferListDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    if (auto *comboBox = qobject_cast<QComboBox *>(editor))
+    {
+        model->setData(index, comboBox->currentData().toString(), Qt::EditRole);
+        return;
+    }
+
+    QStyledItemDelegate::setModelData(editor, model, index);
 }
 
 QSize TransferListDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const

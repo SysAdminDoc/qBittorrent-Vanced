@@ -235,7 +235,7 @@ TransferListWidget::TransferListWidget(IGUIApplication *app, QWidget *parent)
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     // Listen for list events
-    connect(this, &QAbstractItemView::doubleClicked, this, &TransferListWidget::torrentDoubleClicked);
+    connect(this, &QAbstractItemView::doubleClicked, this, &TransferListWidget::handleTransferListDoubleClicked);
     connect(this, &QWidget::customContextMenuRequested, this, &TransferListWidget::displayListMenu);
     header()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(header(), &QWidget::customContextMenuRequested, this, &TransferListWidget::displayColumnHeaderMenu);
@@ -348,6 +348,17 @@ void TransferListWidget::torrentDoubleClicked()
         setTorrentOptions();
         break;
     }
+}
+
+void TransferListWidget::handleTransferListDoubleClicked(const QModelIndex &index)
+{
+    if (index.column() == TransferListModel::TR_CATEGORY)
+    {
+        edit(index);
+        return;
+    }
+
+    torrentDoubleClicked();
 }
 
 QList<BitTorrent::Torrent *> TransferListWidget::getSelectedTorrents() const

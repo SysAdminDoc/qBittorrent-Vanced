@@ -544,6 +544,17 @@ QVariant TransferListModel::data(const QModelIndex &index, const int role) const
         return m_stateThemeColors.value(torrent->state());
     case Qt::DisplayRole:
         return displayValue(torrent, index.column());
+    case Qt::EditRole:
+        switch (index.column())
+        {
+        case TR_NAME:
+            return torrent->name();
+        case TR_CATEGORY:
+            return torrent->category();
+        default:
+            break;
+        }
+        break;
     case UnderlyingDataRole:
         return internalValue(torrent, index.column(), false);
     case AdditionalUnderlyingDataRole:
@@ -604,7 +615,7 @@ QVariant TransferListModel::data(const QModelIndex &index, const int role) const
 
 bool TransferListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (!index.isValid() || (role != Qt::DisplayRole)) return false;
+    if (!index.isValid() || ((role != Qt::DisplayRole) && (role != Qt::EditRole))) return false;
 
     BitTorrent::Torrent *const torrent = m_torrentList.value(index.row());
     if (!torrent) return false;
@@ -614,15 +625,12 @@ bool TransferListModel::setData(const QModelIndex &index, const QVariant &value,
     {
     case TR_NAME:
         torrent->setName(value.toString());
-        break;
+        return true;
     case TR_CATEGORY:
-        torrent->setCategory(value.toString());
-        break;
+        return torrent->setCategory(value.toString());
     default:
         return false;
     }
-
-    return true;
 }
 
 void TransferListModel::addTorrents(const QList<BitTorrent::Torrent *> &torrents)
@@ -648,8 +656,11 @@ Qt::ItemFlags TransferListModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid()) return Qt::NoItemFlags;
 
-    // Explicitly mark as editable
-    return QAbstractListModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsDragEnabled;
+    Qt::ItemFlags flags = QAbstractListModel::flags(index) | Qt::ItemIsDragEnabled;
+    if ((index.column() == TR_NAME) || (index.column() == TR_CATEGORY))
+        flags |= Qt::ItemIsEditable;
+
+    return flags;
 }
 
 BitTorrent::Torrent *TransferListModel::torrentHandle(const QModelIndex &index) const

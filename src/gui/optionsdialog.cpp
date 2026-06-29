@@ -301,8 +301,10 @@ void OptionsDialog::loadBehaviorTabOptions()
 
 #if !(defined(Q_OS_WIN) || defined(Q_OS_MACOS))
     m_ui->groupFileAssociation->setVisible(false);
-#endif
     m_ui->checkProgramUpdates->setVisible(false);
+#else
+    m_ui->checkProgramUpdates->setChecked(pref->isUpdateCheckEnabled());
+#endif
 
 #ifndef Q_OS_MACOS
     // Disable systray integration if it is not supported by the system
@@ -411,6 +413,9 @@ void OptionsDialog::loadBehaviorTabOptions()
     connect(m_ui->checkShowSplash, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkProgramExitConfirm, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkProgramAutoExitConfirm, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+    connect(m_ui->checkProgramUpdates, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
+#endif
     connect(m_ui->checkShowSystray, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkMinimizeToSysTray, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkCloseToSystray, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
@@ -501,6 +506,9 @@ void OptionsDialog::saveBehaviorTabOptions() const
     pref->setSplashScreenDisabled(isSplashScreenDisabled());
     pref->setConfirmOnExit(m_ui->checkProgramExitConfirm->isChecked());
     pref->setDontConfirmAutoExit(!m_ui->checkProgramAutoExitConfirm->isChecked());
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+    pref->setUpdateCheckEnabled(m_ui->checkProgramUpdates->isChecked());
+#endif
 
 #ifdef Q_OS_WIN
     pref->setWinStartup(WinStartup());

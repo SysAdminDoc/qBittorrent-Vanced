@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>qBittorrent Vanced AppCast</title>
+    <link>https://github.com/SysAdminDoc/qBittorrent-Vanced/releases</link>
+    <description>Release feed for qBittorrent Vanced Windows builds.</description>
+    <item>
+      <title>qBittorrent Vanced v1.0.2</title>
+      <sparkle:version>1.0.2</sparkle:version>
+      <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
+      <pubDate>Mon, 29 Jun 2026 18:50:05 +0000</pubDate>
+      <link>https://github.com/SysAdminDoc/qBittorrent-Vanced/releases/tag/v1.0.2</link>
+      <enclosure url="https://github.com/SysAdminDoc/qBittorrent-Vanced/releases/download/v1.0.2/qBittorrent-Vanced-v1.0.2-base5.1.3.10-x64-setup.exe" sparkle:version="1.0.2" sparkle:shortVersionString="1.0.2" length="38269530" type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>

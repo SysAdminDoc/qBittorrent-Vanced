@@ -112,12 +112,6 @@ Items moved here from ROADMAP.md because they depend on external resources, upst
 
 ## Blocked on prerequisite roadmap items
 
-- [ ] P2 — Add Winget and Scoop manifests
-  Status: Proposed
-  Category: Packaging
-  Priority: P2
-  Blocker: Requires GitHub Releases with downloadable artifacts to exist first. Winget YAML manifests and Scoop JSON manifests need URLs pointing to release assets.
-  Original description: The installer supports silent install (/S), packaging script generates SHA256 checksums. qBittorrent Enhanced Edition already has a Scoop manifest in the extras bucket. Add manifests once GitHub Releases pipeline is operational.
 
 - [ ] P3 — Add SBOM generation to release pipeline
   Status: Proposed
@@ -195,8 +189,6 @@ Items moved here from ROADMAP.md because they depend on external resources, upst
 - Search-bar scoped filter: `seeders>10 size<4gb category:movies` mini-DSL on the main list
 
 ### Platform
-- Winget + Scoop manifests
-- Self-update via AppCast XML on GitHub Releases with in-app toast on new release
 - Linux AppImage and Flatpak so the fork isn't Windows-only
 
 ### Upstream hygiene

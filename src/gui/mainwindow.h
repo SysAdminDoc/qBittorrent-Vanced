@@ -40,8 +40,10 @@
 
 class QCloseEvent;
 class QFileSystemWatcher;
+class QFrame;
 class QLabel;
 class QPushButton;
+class QResizeEvent;
 class QSplitter;
 class QString;
 class QTabWidget;
@@ -118,6 +120,9 @@ private slots:
     void clearUILockPassword();
     bool unlockUI();
     void notifyOfUpdate(const QString &);
+    void checkForProgramUpdate();
+    void handleProgramUpdateCheckFinished(const Net::DownloadResult &result);
+    void openPendingProgramUpdateRelease();
     void showConnectionSettings();
     void minimizeWindow();
     // Keyboard shortcuts
@@ -181,12 +186,16 @@ private:
 
     void closeEvent(QCloseEvent *) override;
     void showEvent(QShowEvent *) override;
+    void resizeEvent(QResizeEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     bool event(QEvent *e) override;
     void showStatusBar(bool show);
     void showFiltersSidebar(bool show);
     void resetTransferListSidebarFilters();
     void applyTransferListFilter();
+    void showProgramUpdateToast(const QString &version, const QString &releaseUrl);
+    void hideProgramUpdateToast();
+    void updateProgramUpdateToastGeometry();
     void refreshWindowTitle();
     void refreshTrayIconTooltip();
 
@@ -218,6 +227,9 @@ private:
     QWidget *m_columnFilterWidget = nullptr;
     LineEdit *m_columnFilterEdit = nullptr;
     QAction *m_columnFilterAction = nullptr;
+    QFrame *m_programUpdateToast = nullptr;
+    QLabel *m_programUpdateToastLabel = nullptr;
+    QString m_pendingProgramUpdateReleaseUrl;
     // Widgets
     QAction *m_queueSeparator = nullptr;
     QAction *m_queueSeparatorMenu = nullptr;

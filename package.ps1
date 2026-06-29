@@ -353,6 +353,17 @@ if ($BuildInstaller) {
     })
 }
 
+$appcastSource = Join-Path $projectRoot "dist\windows\appcast.xml"
+if (Test-Path $appcastSource) {
+    $appcastRelease = Join-Path $outputPath "appcast.xml"
+    Copy-Item $appcastSource -Destination $appcastRelease -Force
+    $releaseArtifacts.Add([pscustomobject]@{
+        Path = $appcastRelease
+        Name = "appcast.xml"
+        Hash = (Get-Sha256 $appcastRelease)
+    })
+}
+
 $vcpkgJson = Get-Content (Join-Path $projectRoot "vcpkg.json") -Raw | ConvertFrom-Json
 $vcpkgBaseline = $vcpkgJson.'builtin-baseline'
 $statusPath = Join-Path $buildPath "vcpkg_installed\vcpkg\status"

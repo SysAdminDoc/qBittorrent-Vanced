@@ -34,6 +34,7 @@ add_library(qbt_gui STATIC
     # headers
     aboutdialog.h
     addnewtorrentdialog.h
+    appcastparser.h
     batchoperationsdialog.h
     addtorrentparamswidget.h
     advancedsettings.h
@@ -131,6 +132,7 @@ add_library(qbt_gui STATIC
     # sources
     aboutdialog.cpp
     addnewtorrentdialog.cpp
+    appcastparser.cpp
     batchoperationsdialog.cpp
     addtorrentparamswidget.cpp
     advancedsettings.cpp

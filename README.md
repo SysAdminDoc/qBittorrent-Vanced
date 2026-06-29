@@ -53,6 +53,11 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Upload speed limited to 20 KiB/s by default (instead of unlimited)
 - Torrents stop on completion by default
 
+### Release Checks
+
+- Optional program update checks fetch the GitHub Releases AppCast and show a non-modal in-app toast when a newer Vanced release is available
+- The release gate packages `appcast.xml` beside the installer, portable ZIP, checksums, provenance, and advisory report
+
 ### Inherited from Enhanced Edition
 
 - Auto ban BitTorrent leechers and unwanted peers (Xunlei, QQDownload, etc.)
@@ -108,8 +113,9 @@ Windows package-manager manifests are kept with the distribution metadata:
 
 - WinGet: `dist/windows/winget/SysAdminDoc.qBittorrentVanced/1.0.2/`
 - Scoop: `dist/windows/scoop/qbittorrent-vanced.json`
+- AppCast: `dist/windows/appcast.xml`
 
-The gate checks version/license/dependency metadata, installs the pinned WebUI lint toolchain, runs WebUI lint, builds and verifies `qbittorrent.exe`, cleans stale release artifacts, builds the portable ZIP and NSIS installer, then writes `release\SHA256SUMS.txt`, `release\RELEASE-PROVENANCE.txt`, and `release\ADVISORY-CHECK.txt`. The advisory file includes resolved Qt, OpenSSL, and libtorrent versions with known-security status before the raw `vcpkg update` and `npm audit` output.
+The gate checks version/license/dependency metadata, installs the pinned WebUI lint toolchain, runs WebUI lint, builds and verifies `qbittorrent.exe`, cleans stale release artifacts, builds the portable ZIP and NSIS installer, copies `appcast.xml`, then writes `release\SHA256SUMS.txt`, `release\RELEASE-PROVENANCE.txt`, and `release\ADVISORY-CHECK.txt`. The advisory file includes resolved Qt, OpenSSL, and libtorrent versions with known-security status before the raw `vcpkg update` and `npm audit` output.
 
 Portable ZIP users can launch `qbittorrent.exe --portable` to keep configuration, cache, session data, and default downloads under a `data\qBittorrent\` folder beside the executable. `--portable` is mutually exclusive with `--profile=<dir>`.
 

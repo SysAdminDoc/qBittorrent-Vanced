@@ -33,6 +33,8 @@
 
 #include <algorithm>
 #include <chrono>
+#include <algorithm>
+#include <optional>
 
 #include <QAction>
 #include <QActionGroup>
@@ -42,6 +44,8 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
+#include <QFrame>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
@@ -54,6 +58,7 @@
 #include <QStatusBar>
 #include <QString>
 #include <QTimer>
+#include <QUrl>
 
 #include "base/bittorrent/session.h"
 #include "base/bittorrent/sessionstatus.h"
@@ -65,8 +70,10 @@
 #include "base/utils/fs.h"
 #include "base/utils/misc.h"
 #include "base/utils/password.h"
+#include "base/utils/version.h"
 #include "base/version.h"
 #include "aboutdialog.h"
+#include "appcastparser.h"
 #include "autoexpandabledialog.h"
 #include "batchoperationsdialog.h"
 #include "cookiesdialog.h"
@@ -106,6 +113,8 @@ namespace
 #define EXECUTIONLOG_SETTINGS_KEY(name) (SETTINGS_KEY(u"Log/"_s) name)
 
     const std::chrono::seconds PREVENT_SUSPEND_INTERVAL {60};
+    const QString VANCED_APPCAST_URL = u"https://github.com/SysAdminDoc/qBittorrent-Vanced/releases/latest/download/appcast.xml"_s;
+    const qint64 VANCED_APPCAST_SIZE_LIMIT = 256 * 1024;
 
 }
 
@@ -486,6 +495,11 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_executableWatcher = new QFileSystemWatcher(this);
     connect(m_executableWatcher, &QFileSystemWatcher::fileChanged, this, &MainWindow::notifyOfUpdate);
     m_executableWatcher->addPath(qApp->applicationFilePath());
+
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+    if (pref->isUpdateCheckEnabled())
+        QTimer::singleShot(30s, this, &MainWindow::checkForProgramUpdate);
+#endif
 
     m_transferListWidget->setFocus();
 
@@ -1029,12 +1043,113 @@ bool MainWindow::unlockUI()
 void MainWindow::notifyOfUpdate(const QString &)
 {
     // Show restart message
-    m_statusBar->showRestartRequired();
+    if (m_statusBar)
+        m_statusBar->showRestartRequired();
     LogMsg(tr("qBittorrent was just updated and needs to be restarted for the changes to be effective.")
                                    , Log::CRITICAL);
     // Delete the executable watcher
     delete m_executableWatcher;
     m_executableWatcher = nullptr;
+}
+
+void MainWindow::checkForProgramUpdate()
+{
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+    if (!Preferences::instance()->isUpdateCheckEnabled())
+        return;
+
+    Net::DownloadRequest request {VANCED_APPCAST_URL};
+    request.limit(VANCED_APPCAST_SIZE_LIMIT);
+    Net::DownloadManager::instance()->download(request, Preferences::instance()->useProxyForGeneralPurposes()
+            , this, &MainWindow::handleProgramUpdateCheckFinished);
+#endif
+}
+
+void MainWindow::handleProgramUpdateCheckFinished(const Net::DownloadResult &result)
+{
+    if (result.status != Net::DownloadStatus::Success)
+    {
+        LogMsg(tr("Program update check failed: %1").arg(result.errorString), Log::WARNING);
+        return;
+    }
+
+    const std::optional<AppCast::Release> release = AppCast::parseLatestRelease(result.data);
+    if (!release)
+    {
+        LogMsg(tr("Program update check failed: the AppCast feed did not contain a valid release."), Log::WARNING);
+        return;
+    }
+
+    using VancedVersion = Utils::Version<3>;
+    const VancedVersion currentVersion = VancedVersion::fromString(QStringLiteral(QBT_VANCED_VERSION_2));
+    const VancedVersion releaseVersion = VancedVersion::fromString(release->version);
+    if (!releaseVersion.isValid() || (releaseVersion <= currentVersion))
+        return;
+
+    showProgramUpdateToast(release->version, release->releaseUrl);
+}
+
+void MainWindow::showProgramUpdateToast(const QString &version, const QString &releaseUrl)
+{
+    m_pendingProgramUpdateReleaseUrl = releaseUrl;
+    if (!m_programUpdateToast)
+    {
+        m_programUpdateToast = new QFrame(m_tabs);
+        m_programUpdateToast->setObjectName(u"programUpdateToast"_s);
+        m_programUpdateToast->setFrameShape(QFrame::StyledPanel);
+        m_programUpdateToast->setStyleSheet(u"QFrame#programUpdateToast { background: rgba(30, 30, 46, 235); border: 1px solid #89b4fa; border-radius: 8px; }"_s
+                u"QFrame#programUpdateToast QLabel { color: #cdd6f4; }"_s
+                u"QFrame#programUpdateToast QPushButton { padding: 4px 10px; }"_s);
+
+        auto *layout = new QHBoxLayout(m_programUpdateToast);
+        layout->setContentsMargins(12, 8, 10, 8);
+        layout->setSpacing(8);
+
+        m_programUpdateToastLabel = new QLabel(m_programUpdateToast);
+        m_programUpdateToastLabel->setWordWrap(true);
+        layout->addWidget(m_programUpdateToastLabel, 1);
+
+        auto *openButton = new QPushButton(tr("Open release"), m_programUpdateToast);
+        connect(openButton, &QAbstractButton::clicked, this, &MainWindow::openPendingProgramUpdateRelease);
+        layout->addWidget(openButton);
+
+        auto *dismissButton = new QPushButton(tr("Dismiss"), m_programUpdateToast);
+        connect(dismissButton, &QAbstractButton::clicked, this, &MainWindow::hideProgramUpdateToast);
+        layout->addWidget(dismissButton);
+    }
+
+    m_programUpdateToastLabel->setText(tr("qBittorrent Vanced %1 is available.").arg(version));
+    m_programUpdateToast->show();
+    updateProgramUpdateToastGeometry();
+    m_programUpdateToast->raise();
+    app()->desktopIntegration()->showNotification(tr("qBittorrent Vanced update available"), tr("Version %1 is available.").arg(version));
+}
+
+void MainWindow::hideProgramUpdateToast()
+{
+    if (m_programUpdateToast)
+        m_programUpdateToast->hide();
+}
+
+void MainWindow::openPendingProgramUpdateRelease()
+{
+    if (!m_pendingProgramUpdateReleaseUrl.isEmpty())
+        QDesktopServices::openUrl(QUrl {m_pendingProgramUpdateReleaseUrl});
+    hideProgramUpdateToast();
+}
+
+void MainWindow::updateProgramUpdateToastGeometry()
+{
+    if (!m_programUpdateToast || !m_programUpdateToast->isVisible() || !m_tabs)
+        return;
+
+    const int margin = 16;
+    const int availableWidth = std::max(120, (m_tabs->width() - (2 * margin)));
+    m_programUpdateToast->setMaximumWidth(std::min(560, availableWidth));
+    m_programUpdateToast->adjustSize();
+    const QSize toastSize = m_programUpdateToast->sizeHint();
+    const int toastX = std::max(margin, (m_tabs->width() - toastSize.width() - margin));
+    m_programUpdateToast->setGeometry(toastX, margin, toastSize.width(), toastSize.height());
 }
 
 #ifndef Q_OS_MACOS
@@ -1108,6 +1223,12 @@ void MainWindow::showEvent(QShowEvent *e)
         // to avoid blank screen when restoring from tray icon
         show();
     }
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    updateProgramUpdateToastGeometry();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)

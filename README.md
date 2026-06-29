@@ -78,7 +78,15 @@ The batch wrapper exposes the same release smoke:
 build.bat --verify
 ```
 
-Optional C++ tests use `build.ps1 -Test` or `build.bat --test`. They require the Qt6 Test component (`qtbase[testlib]`) to be installed in the local vcpkg tree; without it the `check` target fails with setup guidance.
+To bump Vanced release metadata before packaging, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File bump-version.ps1 -Vanced 1.0.3
+```
+
+The version bump updates the C++ version header, vcpkg manifest, README badge/smoke text, NSIS metadata, Windows manifest, package defaults, and local working notes. Run the release gate immediately after a bump.
+
+Optional C++ tests use `build.ps1 -Test` or `build.bat --test`. Standalone tests run without Qt6 Test; older QtTest-based cases run only when the local vcpkg tree includes the Qt6 Test component (`qtbase[testlib]`).
 
 For a local release verification gate, run:
 

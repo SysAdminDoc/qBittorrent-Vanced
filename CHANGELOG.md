@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added alternate WebUI static-bundle validation to the WebAPI smoke script for VueTorrent compatibility checks.
 - Added WebUI CSP nonce plumbing for built-in HTML responses while keeping the existing inline-script policy during migration.
 - Added TRaSH Guides-aligned hints when category save paths look like media-library roots.
 - Added `--portable` startup mode for zero-install ZIP runs that keep profile data beside the executable.

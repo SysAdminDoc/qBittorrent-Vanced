@@ -76,13 +76,6 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
-- [ ] P3 — Add VueTorrent alternate WebUI compatibility smoke
-  Why: VueTorrent (v2.34.0) is the most popular alternate WebUI for qBittorrent. Users may install it alongside Vanced's built-in WebUI. Compatibility has never been validated.
-  Evidence: VueTorrent GitHub (4.5k+ stars), qBittorrent alternate WebUI wiki; existing webapi-smoke.ps1 only tests the built-in WebUI.
-  Touches: test/webapi-smoke.ps1 (add a `--alt-webui` parameter that validates API-only compatibility without the built-in HTML), documentation in README.md
-  Acceptance: smoke script confirms VueTorrent can authenticate, list torrents, add/remove magnets, and read sync data against a running Vanced instance.
-  Complexity: S
-
 - [ ] P3 — Add `prefers-color-scheme` media query to WebUI for non-`.dark` class fallback
   Why: The WebUI hard-codes `class="dark"` on the HTML element. Users who override this or use the WebUI in a non-dark system preference context get no fallback. The login page already has `@media (prefers-color-scheme: light)` but the main UI does not.
   Evidence: src/webui/www/private/index.html:3 hardcodes `class="dark"`; src/webui/www/public/css/login.css:24 has prefers-color-scheme; style.css has `.dark` block but no `@media (prefers-color-scheme: dark)` fallback.

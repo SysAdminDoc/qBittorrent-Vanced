@@ -111,6 +111,7 @@ The WebUI toolchain is pinned in `package.json` and `package-lock.json` so `npm 
 Mobile WebUI smoke checks should include a 375px viewport for `download.html`, `upload.html`, `newcategory.html`, `newtag.html`, `setlocation.html`, and the main `index.html` toolbar/filter shell.
 The WebUI shows a non-blocking idle-session warning after 30 minutes of inactivity by default; override the local preference or URL query key `session_idle_warning_minutes` for shorter or longer browser-side warning windows.
 Built-in WebUI HTML responses emit per-response CSP script nonces and apply the matching `nonce` attribute to script tags as additive hardening before the later unsafe-inline cleanup.
+Run `test\webapi-smoke.ps1 -AltWebUIPath <VueTorrent-dist>` against a running instance configured for that alternate WebUI to verify the supplied bundle is served and the API paths used by VueTorrent still pass.
 The large-library smoke (`test\largelibrary-smoke.ps1`) includes a dependency-free Edge/Chrome DevTools heap check that loads the WebUI after seeding 10k torrents and fails if peak used JS heap exceeds the documented ceiling (`-HeapCeilingMB`, default 500 MB).
 
 ## License

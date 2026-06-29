@@ -11,14 +11,23 @@
     WebUI username (default: admin)
 .PARAMETER Password
     WebUI password (default: adminadmin)
+.PARAMETER AltWebUIPath
+    Optional path to a built alternate WebUI bundle, such as VueTorrent's dist folder.
+    When set, the smoke verifies the running instance is serving that bundle at /.
+.PARAMETER TimeoutSec
+    Per-request timeout in seconds (default: 15).
 #>
 param(
     [string]$BaseUrl = "http://localhost:8080",
     [string]$Username = "admin",
-    [string]$Password = "adminadmin"
+    [string]$Password = "adminadmin",
+    [Alias("AltWebUI", "alt-webui")]
+    [string]$AltWebUIPath = "",
+    [int]$TimeoutSec = 15
 )
 
 $ErrorActionPreference = "Stop"
+$BaseUrl = $BaseUrl.TrimEnd("/")
 $passed = 0
 $failed = 0
 $session = $null
@@ -35,25 +44,110 @@ function Write-Result($name, $ok, $detail = "") {
 
 function Invoke-Api($method, $path, $body = $null) {
     $uri = "$BaseUrl/api/v2/$path"
-    $params = @{ Method = $method; Uri = $uri; WebSession = $script:session }
+    $params = @{ Method = $method; Uri = $uri; WebSession = $script:session; TimeoutSec = $TimeoutSec }
     if ($body) { $params.Body = $body }
     return Invoke-WebRequest @params -UseBasicParsing
 }
 
+function Get-AltWebUIAssetRefs($html) {
+    $assetPattern = "(?i)(?:src|href)=['`"](?<path>[^'`"]+\.(?:js|css)(?:\?[^'`"]*)?)['`"]"
+    $refs = New-Object System.Collections.Generic.List[string]
+
+    foreach ($match in [regex]::Matches($html, $assetPattern)) {
+        $ref = $match.Groups["path"].Value.Trim()
+        if (($ref -match "^(https?:|data:|//|#)") -or [string]::IsNullOrWhiteSpace($ref)) {
+            continue
+        }
+        if (-not $refs.Contains($ref)) {
+            $refs.Add($ref)
+        }
+    }
+
+    return @($refs)
+}
+
+function ConvertTo-WebUIAssetUrl($baseUrl, $assetRef) {
+    $clean = $assetRef.Trim()
+    $clean = $clean.Split("?")[0]
+    $clean = $clean -replace "^[./\\]+", ""
+    if ([string]::IsNullOrWhiteSpace($clean)) { return $null }
+    return "$($baseUrl.TrimEnd('/'))/$clean"
+}
+
+function Test-AlternateWebUI($path) {
+    if ([string]::IsNullOrWhiteSpace($path)) { return }
+
+    try {
+        $resolvedPath = (Resolve-Path -LiteralPath $path -ErrorAction Stop).Path
+        if (-not (Test-Path -LiteralPath $resolvedPath -PathType Container)) {
+            Write-Result "alt-webui/path" $false "not a directory: $resolvedPath"
+            return
+        }
+
+        $indexPath = Join-Path $resolvedPath "index.html"
+        if (-not (Test-Path -LiteralPath $indexPath -PathType Leaf)) {
+            Write-Result "alt-webui/index.html" $false "missing index.html in $resolvedPath"
+            return
+        }
+
+        $localIndex = Get-Content -LiteralPath $indexPath -Raw -Encoding UTF8
+        $assetRefs = Get-AltWebUIAssetRefs $localIndex
+        $rootResp = Invoke-WebRequest -Method GET -Uri "$BaseUrl/" -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+        $rootHtml = [string]$rootResp.Content
+
+        $fingerprints = New-Object System.Collections.Generic.List[string]
+        $titleMatch = [regex]::Match($localIndex, "(?is)<title>\s*(?<title>.*?)\s*</title>")
+        if ($titleMatch.Success -and -not [string]::IsNullOrWhiteSpace($titleMatch.Groups["title"].Value)) {
+            $fingerprints.Add($titleMatch.Groups["title"].Value.Trim())
+        }
+        foreach ($assetRef in ($assetRefs | Select-Object -First 5)) {
+            $fingerprints.Add($assetRef)
+        }
+
+        $matchedFingerprints = 0
+        foreach ($fingerprint in $fingerprints) {
+            if ($rootHtml.Contains($fingerprint)) { $matchedFingerprints++ }
+        }
+
+        Write-Result "alt-webui/root serves supplied bundle" `
+            (($rootResp.StatusCode -eq 200) -and ($matchedFingerprints -gt 0)) `
+            "matched=$matchedFingerprints fingerprints=$($fingerprints.Count)"
+
+        if ($assetRefs.Count -gt 0) {
+            $assetUrl = ConvertTo-WebUIAssetUrl $BaseUrl $assetRefs[0]
+            if ($assetUrl) {
+                $assetResp = Invoke-WebRequest -Method GET -Uri $assetUrl -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+                $assetLength = if ($null -ne $assetResp.RawContentLength) { $assetResp.RawContentLength } else { 0 }
+                if (($assetLength -le 0) -and ($null -ne $assetResp.Content)) { $assetLength = $assetResp.Content.Length }
+                Write-Result "alt-webui/asset fetch" `
+                    (($assetResp.StatusCode -eq 200) -and ($assetLength -gt 0)) `
+                    $assetRefs[0]
+            }
+        } else {
+            Write-Result "alt-webui/asset fetch" $false "no local JS/CSS asset references found"
+        }
+    } catch {
+        Write-Result "alt-webui/static serving" $false $_.Exception.Message
+    }
+}
+
 # --- Auth ---
-Write-Host "`nWebAPI Smoke Test — $BaseUrl`n" -ForegroundColor Cyan
+Write-Host "`nWebAPI Smoke Test - $BaseUrl`n" -ForegroundColor Cyan
 
 try {
     $loginResp = Invoke-WebRequest -Method POST -Uri "$BaseUrl/api/v2/auth/login" `
         -Body @{ username = $Username; password = $Password } `
-        -SessionVariable session -UseBasicParsing
+        -SessionVariable session -UseBasicParsing -TimeoutSec $TimeoutSec
     $script:session = $session
     Write-Result "auth/login" ($loginResp.Content -match "Ok\.")
 } catch {
-    Write-Host "  FAIL  auth/login — cannot connect to $BaseUrl" -ForegroundColor Red
+    Write-Host "  FAIL  auth/login - cannot connect to $BaseUrl" -ForegroundColor Red
     Write-Host "        Start qBittorrent Vanced with WebUI enabled before running this test." -ForegroundColor Yellow
     exit 1
 }
+
+# --- Alternate WebUI static bundle ---
+Test-AlternateWebUI $AltWebUIPath
 
 # --- App info ---
 try {
@@ -124,7 +218,7 @@ try {
     Write-Result "setLocation (empty)" $false "expected error"
 } catch {
     $ok = $_.Exception.Response.StatusCode.value__ -eq 400
-    Write-Result "setLocation (empty → 400)" $ok
+    Write-Result "setLocation (empty -> 400)" $ok
 }
 
 # --- Path validation: invalid setLocation ---
@@ -134,7 +228,7 @@ try {
 } catch {
     $code = $_.Exception.Response.StatusCode.value__
     $ok = ($code -eq 409) -or ($code -eq 403)
-    Write-Result "setLocation (invalid → 409/403)" $ok "status=$code"
+    Write-Result "setLocation (invalid -> 409/403)" $ok "status=$code"
 }
 
 # --- Path validation: empty setSavePath ---
@@ -143,7 +237,7 @@ try {
     Write-Result "setSavePath (empty)" $false "expected error"
 } catch {
     $ok = $_.Exception.Response.StatusCode.value__ -eq 400
-    Write-Result "setSavePath (empty → 400)" $ok
+    Write-Result "setSavePath (empty -> 400)" $ok
 }
 
 # --- Sync maindata ---

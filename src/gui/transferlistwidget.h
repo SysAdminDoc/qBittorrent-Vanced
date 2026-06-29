@@ -121,6 +121,13 @@ private slots:
     void saveSettings();
 
 private:
+    enum class ColumnPreset
+    {
+        Compact,
+        MediaServer,
+        Debug
+    };
+
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
@@ -137,6 +144,7 @@ private:
     void confirmRemoveAllTagsForSelection();
     TagSet askTagsForSelection(const QString &dialogTitle);
     void applyToSelectedTorrents(const std::function<void (BitTorrent::Torrent *const)> &fn);
+    void applyColumnPreset(ColumnPreset preset);
     QList<BitTorrent::Torrent *> getVisibleTorrents() const;
     int visibleColumnsCount() const;
     void updateEmptyState();

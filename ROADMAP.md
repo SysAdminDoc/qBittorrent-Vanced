@@ -5,7 +5,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Planned Features
 
 ### UX
-- Column preset picker (Compact / Media Server / Debug) with a one-click switch
 - Multi-row drag queue reorder with Alt+Up/Down keyboard shortcut
 - Inline editable category column (double-click) instead of right-click > set category
 - Search-bar scoped filter: `seeders>10 size<4gb category:movies` mini-DSL on the main list

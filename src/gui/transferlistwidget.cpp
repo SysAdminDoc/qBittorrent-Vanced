@@ -34,6 +34,7 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QFileDialog>
+#include <QHash>
 #include <QHeaderView>
 #include <QLabel>
 #include <QList>
@@ -43,6 +44,7 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QShortcut>
+#include <QSignalBlocker>
 #include <QWheelEvent>
 
 #include "base/bittorrent/session.h"
@@ -681,6 +683,117 @@ int TransferListWidget::visibleColumnsCount() const
     return count;
 }
 
+void TransferListWidget::applyColumnPreset(const ColumnPreset preset)
+{
+    const QSignalBlocker headerSignalBlocker {header()};
+
+    QList<int> columns;
+    QHash<int, int> widths;
+
+    const auto addWidth = [&widths](const int column, const int width)
+    {
+        widths.insert(column, width);
+    };
+
+    switch (preset)
+    {
+    case ColumnPreset::Compact:
+        columns = {
+            TransferListModel::TR_QUEUE_POSITION,
+            TransferListModel::TR_NAME,
+            TransferListModel::TR_SIZE,
+            TransferListModel::TR_PROGRESS,
+            TransferListModel::TR_STATUS,
+            TransferListModel::TR_DLSPEED,
+            TransferListModel::TR_UPSPEED,
+            TransferListModel::TR_ETA,
+            TransferListModel::TR_RATIO,
+            TransferListModel::TR_CATEGORY
+        };
+        addWidth(TransferListModel::TR_QUEUE_POSITION, 72);
+        addWidth(TransferListModel::TR_NAME, 320);
+        addWidth(TransferListModel::TR_SIZE, 90);
+        addWidth(TransferListModel::TR_PROGRESS, 130);
+        addWidth(TransferListModel::TR_STATUS, 118);
+        addWidth(TransferListModel::TR_DLSPEED, 96);
+        addWidth(TransferListModel::TR_UPSPEED, 96);
+        addWidth(TransferListModel::TR_ETA, 92);
+        addWidth(TransferListModel::TR_RATIO, 80);
+        addWidth(TransferListModel::TR_CATEGORY, 130);
+        break;
+    case ColumnPreset::MediaServer:
+        columns = {
+            TransferListModel::TR_NAME,
+            TransferListModel::TR_SIZE,
+            TransferListModel::TR_PROGRESS,
+            TransferListModel::TR_STATUS,
+            TransferListModel::TR_CATEGORY,
+            TransferListModel::TR_TAGS,
+            TransferListModel::TR_SAVE_PATH,
+            TransferListModel::TR_DOWNLOAD_PATH,
+            TransferListModel::TR_TRACKER,
+            TransferListModel::TR_COMPLETED,
+            TransferListModel::TR_RATIO,
+            TransferListModel::TR_LAST_ACTIVITY
+        };
+        addWidth(TransferListModel::TR_NAME, 300);
+        addWidth(TransferListModel::TR_SIZE, 92);
+        addWidth(TransferListModel::TR_PROGRESS, 128);
+        addWidth(TransferListModel::TR_STATUS, 116);
+        addWidth(TransferListModel::TR_CATEGORY, 150);
+        addWidth(TransferListModel::TR_TAGS, 160);
+        addWidth(TransferListModel::TR_SAVE_PATH, 260);
+        addWidth(TransferListModel::TR_DOWNLOAD_PATH, 260);
+        addWidth(TransferListModel::TR_TRACKER, 180);
+        addWidth(TransferListModel::TR_COMPLETED, 120);
+        addWidth(TransferListModel::TR_RATIO, 80);
+        addWidth(TransferListModel::TR_LAST_ACTIVITY, 150);
+        break;
+    case ColumnPreset::Debug:
+        for (int i = 0; i < TransferListModel::NB_COLUMNS; ++i)
+            columns << i;
+        addWidth(TransferListModel::TR_NAME, 320);
+        addWidth(TransferListModel::TR_PROGRESS, 130);
+        addWidth(TransferListModel::TR_STATUS, 130);
+        addWidth(TransferListModel::TR_SAVE_PATH, 260);
+        addWidth(TransferListModel::TR_DOWNLOAD_PATH, 260);
+        addWidth(TransferListModel::TR_INFOHASH_V1, 270);
+        addWidth(TransferListModel::TR_INFOHASH_V2, 270);
+        addWidth(TransferListModel::TR_TRACKER, 200);
+        break;
+    }
+
+    QSet<int> visibleColumns;
+    for (const int column : asConst(columns))
+        visibleColumns.insert(column);
+
+    const bool isQueueingEnabled = BitTorrent::Session::instance()->isQueueingSystemEnabled();
+    for (int i = 0; i < TransferListModel::NB_COLUMNS; ++i)
+    {
+        const bool isAllowed = (isQueueingEnabled || (i != TransferListModel::TR_QUEUE_POSITION));
+        setColumnHidden(i, !(isAllowed && visibleColumns.contains(i)));
+    }
+
+    if (visibleColumnsCount() == 0)
+        setColumnHidden(TransferListModel::TR_NAME, false);
+
+    int targetVisualIndex = 0;
+    for (const int column : asConst(columns))
+    {
+        if (isColumnHidden(column))
+            continue;
+
+        const int visualIndex = header()->visualIndex(column);
+        if ((visualIndex >= 0) && (visualIndex != targetVisualIndex))
+            header()->moveSection(visualIndex, targetVisualIndex);
+
+        header()->resizeSection(column, widths.value(column, 120));
+        ++targetVisualIndex;
+    }
+
+    saveSettings();
+}
+
 // hide/show columns menu
 void TransferListWidget::displayColumnHeaderMenu()
 {
@@ -688,6 +801,21 @@ void TransferListWidget::displayColumnHeaderMenu()
     menu->setAttribute(Qt::WA_DeleteOnClose);
     menu->setTitle(tr("Column visibility"));
     menu->setToolTipsVisible(true);
+
+    QMenu *presetMenu = menu->addMenu(tr("Column presets"));
+    presetMenu->setToolTipsVisible(true);
+    const auto addPresetAction = [this, presetMenu](const QString &text, const QString &toolTip, const ColumnPreset preset)
+    {
+        QAction *action = presetMenu->addAction(text, this, [this, preset]()
+        {
+            applyColumnPreset(preset);
+        });
+        action->setToolTip(toolTip);
+    };
+    addPresetAction(tr("Compact"), tr("Show essential transfer columns for narrow windows"), ColumnPreset::Compact);
+    addPresetAction(tr("Media Server"), tr("Show category, tag, path, tracker, and completion columns"), ColumnPreset::MediaServer);
+    addPresetAction(tr("Debug"), tr("Show every transfer-list column for troubleshooting"), ColumnPreset::Debug);
+    menu->addSeparator();
 
     for (int i = 0; i < TransferListModel::NB_COLUMNS; ++i)
     {

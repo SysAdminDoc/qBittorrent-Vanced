@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QPixmap>
 #include <QString>
+#include <QStringList>
 
 #include "uithemesource.h"
 
@@ -62,6 +63,12 @@ public:
     static void initInstance();
     static void freeInstance();
     static UIThemeManager *instance();
+
+    static QStringList builtInThemeFlavorIds();
+    static QString builtInThemeFlavorDisplayName(const QString &flavor);
+
+    QString builtInThemeFlavor() const;
+    void setBuiltInThemeFlavor(const QString &flavor);
 
 #ifdef QBT_HAS_COLORSCHEME_OPTION
     ColorScheme colorScheme() const;
@@ -103,6 +110,7 @@ private:
     const bool m_useSystemIcons;
 #endif
     std::unique_ptr<UIThemeSource> m_themeSource;
+    QString m_builtInThemeFlavor;
     mutable QHash<QString, QIcon> m_icons;
     mutable QHash<QString, QIcon> m_darkModeIcons;
     mutable QHash<QString, QIcon> m_flags;

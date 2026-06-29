@@ -105,6 +105,8 @@ public:
     void setUseCustomUITheme(bool use);
     Path customUIThemePath() const;
     void setCustomUIThemePath(const Path &path);
+    QString builtInUIThemeFlavor() const;
+    void setBuiltInUIThemeFlavor(const QString &flavor);
     bool removeTorrentContent() const;
     void setRemoveTorrentContent(bool remove);
     bool confirmOnExit() const;

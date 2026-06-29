@@ -5,7 +5,6 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 ## Planned Features
 
 ### Theme
-- Centralize the palette in a `Palette` struct; swap Catppuccin Latte/Frappe/Macchiato/Mocha at runtime
 - Respect system dark/light preference on first launch
 - Theme picker dialog with live preview of the torrent list and progress bars
 

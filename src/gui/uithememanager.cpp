@@ -30,6 +30,8 @@
 
 #include "uithememanager.h"
 
+#include <array>
+
 #include <QApplication>
 #include <QEvent>
 #include <QPalette>
@@ -51,6 +53,122 @@
 
 namespace
 {
+    struct CatppuccinPalette
+    {
+        QStringView id;
+        QStringView name;
+        bool isDark;
+        QColor base;
+        QColor mantle;
+        QColor crust;
+        QColor surface0;
+        QColor surface1;
+        QColor surface2;
+        QColor overlay0;
+        QColor overlay1;
+        QColor text;
+        QColor subtext1;
+        QColor subtext0;
+        QColor blue;
+        QColor lavender;
+        QColor sapphire;
+        QColor mauve;
+        QColor red;
+        QColor green;
+    };
+
+    QColor rgb(const int value)
+    {
+        return QColor::fromRgb((value >> 16) & 0xff, (value >> 8) & 0xff, value & 0xff);
+    }
+
+    const std::array<CatppuccinPalette, 4> &catppuccinPalettes()
+    {
+        static const std::array<CatppuccinPalette, 4> palettes =
+        {{
+            {u"latte", u"Latte", false, rgb(0xeff1f5), rgb(0xe6e9ef), rgb(0xdce0e8), rgb(0xccd0da), rgb(0xbcc0cc), rgb(0xacb0be), rgb(0x9ca0b0), rgb(0x8c8fa1), rgb(0x4c4f69), rgb(0x5c5f77), rgb(0x6c6f85), rgb(0x1e66f5), rgb(0x7287fd), rgb(0x209fb5), rgb(0x8839ef), rgb(0xd20f39), rgb(0x40a02b)},
+            {u"frappe", u"Frappe", true, rgb(0x303446), rgb(0x292c3c), rgb(0x232634), rgb(0x414559), rgb(0x51576d), rgb(0x626880), rgb(0x737994), rgb(0x838ba7), rgb(0xc6d0f5), rgb(0xb5bfe2), rgb(0xa5adce), rgb(0x8caaee), rgb(0xbabbf1), rgb(0x85c1dc), rgb(0xca9ee6), rgb(0xe78284), rgb(0xa6d189)},
+            {u"macchiato", u"Macchiato", true, rgb(0x24273a), rgb(0x1e2030), rgb(0x181926), rgb(0x363a4f), rgb(0x494d64), rgb(0x5b6078), rgb(0x6e738d), rgb(0x8087a2), rgb(0xcad3f5), rgb(0xb8c0e0), rgb(0xa5adcb), rgb(0x8aadf4), rgb(0xb7bdf8), rgb(0x7dc4e4), rgb(0xc6a0f6), rgb(0xed8796), rgb(0xa6da95)},
+            {u"mocha", u"Mocha", true, rgb(0x1e1e2e), rgb(0x181825), rgb(0x11111b), rgb(0x313244), rgb(0x45475a), rgb(0x585b70), rgb(0x6c7086), rgb(0x7f849c), rgb(0xcdd6f4), rgb(0xbac2de), rgb(0xa6adc8), rgb(0x89b4fa), rgb(0xb4befe), rgb(0x74c7ec), rgb(0xcba6f7), rgb(0xf38ba8), rgb(0xa6e3a1)}
+        }};
+        return palettes;
+    }
+
+    const CatppuccinPalette &catppuccinPalette(const QString &id)
+    {
+        const QString normalized = id.toLower();
+        for (const CatppuccinPalette &palette : catppuccinPalettes())
+        {
+            if (palette.id.toString() == normalized)
+                return palette;
+        }
+
+        return catppuccinPalettes().back();
+    }
+
+    QString normalizedCatppuccinFlavor(const QString &id)
+    {
+        const CatppuccinPalette &palette = catppuccinPalette(id);
+        return palette.id.toString();
+    }
+
+    QString cssColor(const QColor &color)
+    {
+        return color.name(QColor::HexRgb);
+    }
+
+    QString rgbaColor(const QColor &color, const QString &alpha)
+    {
+        return u"rgba(%1, %2, %3, %4)"_s
+                .arg(color.red())
+                .arg(color.green())
+                .arg(color.blue())
+                .arg(alpha);
+    }
+
+    void replaceColor(QString &qss, const QString &mochaColor, const QColor &replacement)
+    {
+        qss.replace(mochaColor, cssColor(replacement), Qt::CaseInsensitive);
+    }
+
+    void applyCatppuccinPalette(QString &qss, const CatppuccinPalette &palette)
+    {
+        replaceColor(qss, u"#1e1e2e"_s, palette.base);
+        replaceColor(qss, u"#181825"_s, palette.mantle);
+        replaceColor(qss, u"#11111b"_s, palette.crust);
+        replaceColor(qss, u"#313244"_s, palette.surface0);
+        replaceColor(qss, u"#45475a"_s, palette.surface1);
+        replaceColor(qss, u"#585b70"_s, palette.surface2);
+        replaceColor(qss, u"#6c7086"_s, palette.overlay0);
+        replaceColor(qss, u"#7f849c"_s, palette.overlay1);
+        replaceColor(qss, u"#cdd6f4"_s, palette.text);
+        replaceColor(qss, u"#bac2de"_s, palette.subtext1);
+        replaceColor(qss, u"#a6adc8"_s, palette.subtext0);
+        replaceColor(qss, u"#89b4fa"_s, palette.blue);
+        replaceColor(qss, u"#b4befe"_s, palette.lavender);
+        replaceColor(qss, u"#74c7ec"_s, palette.sapphire);
+        replaceColor(qss, u"#cba6f7"_s, palette.mauve);
+        replaceColor(qss, u"#f38ba8"_s, palette.red);
+        replaceColor(qss, u"#a6e3a1"_s, palette.green);
+
+        qss.replace(u"rgba(137, 180, 250, 0.10)"_s, rgbaColor(palette.blue, u"0.10"_s));
+        qss.replace(u"rgba(137, 180, 250, 0.12)"_s, rgbaColor(palette.blue, u"0.12"_s));
+        qss.replace(u"rgba(137, 180, 250, 0.16)"_s, rgbaColor(palette.blue, u"0.16"_s));
+        qss.replace(u"rgba(137, 180, 250, 0.18)"_s, rgbaColor(palette.blue, u"0.18"_s));
+        qss.replace(u"rgba(137, 180, 250, 0.25)"_s, rgbaColor(palette.blue, u"0.25"_s));
+        qss.replace(u"rgba(24, 24, 37, 0.42)"_s, rgbaColor(palette.mantle, u"0.42"_s));
+        qss.replace(u"rgba(49, 50, 68, 0.4)"_s, rgbaColor(palette.surface0, u"0.4"_s));
+        qss.replace(u"rgba(49, 50, 68, 0.5)"_s, rgbaColor(palette.surface0, u"0.5"_s));
+        qss.replace(u"rgba(49, 50, 68, 0.55)"_s, rgbaColor(palette.surface0, u"0.55"_s));
+    }
+
+#ifdef Q_OS_WIN
+    COLORREF toColorRef(const QColor &color)
+    {
+        return RGB(color.red(), color.green(), color.blue());
+    }
+#endif
+
     bool isDarkTheme()
     {
         const QPalette palette = qApp->palette();
@@ -101,6 +219,7 @@ UIThemeManager::UIThemeManager()
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MACOS))
     , m_useSystemIcons {Preferences::instance()->useSystemIcons()}
 #endif
+    , m_builtInThemeFlavor {normalizedCatppuccinFlavor(Preferences::instance()->builtInUIThemeFlavor())}
 {
 #ifdef Q_OS_WIN
     if (const QString styleName = Preferences::instance()->getStyle(); styleName.compare(u"system", Qt::CaseInsensitive) != 0)
@@ -157,6 +276,46 @@ UIThemeManager::UIThemeManager()
 UIThemeManager *UIThemeManager::instance()
 {
     return m_instance;
+}
+
+QStringList UIThemeManager::builtInThemeFlavorIds()
+{
+    QStringList ids;
+    for (const CatppuccinPalette &palette : catppuccinPalettes())
+        ids.append(palette.id.toString());
+    return ids;
+}
+
+QString UIThemeManager::builtInThemeFlavorDisplayName(const QString &flavor)
+{
+    return tr("Catppuccin %1").arg(catppuccinPalette(flavor).name.toString());
+}
+
+QString UIThemeManager::builtInThemeFlavor() const
+{
+    return m_builtInThemeFlavor;
+}
+
+void UIThemeManager::setBuiltInThemeFlavor(const QString &flavor)
+{
+    const QString normalizedFlavor = normalizedCatppuccinFlavor(flavor);
+    if (normalizedFlavor == m_builtInThemeFlavor)
+        return;
+
+    m_builtInThemeFlavor = normalizedFlavor;
+    Preferences::instance()->setBuiltInUIThemeFlavor(normalizedFlavor);
+
+    if (m_useCustomTheme)
+        return;
+
+    applyBuiltInDarkTheme();
+
+#ifdef Q_OS_WIN
+    for (QWidget *widget : QApplication::topLevelWidgets())
+        applyNativeDarkTitleBar(widget);
+#endif
+
+    emit themeChanged();
 }
 
 #ifdef QBT_HAS_COLORSCHEME_OPTION
@@ -227,15 +386,17 @@ void UIThemeManager::applyNativeDarkTitleBar(QWidget *widget) const
     if (!dwmSetWindowAttribute)
         return;
 
+    const CatppuccinPalette &palette = catppuccinPalette(m_builtInThemeFlavor);
+
     const HWND hwnd = reinterpret_cast<HWND>(widget->winId());
-    const BOOL darkModeEnabled = TRUE;
+    const BOOL darkModeEnabled = palette.isDark ? TRUE : FALSE;
     // 20 is current DWMWA_USE_IMMERSIVE_DARK_MODE; 19 covers older Windows 10 builds.
     (void)dwmSetWindowAttribute(hwnd, 20, &darkModeEnabled, sizeof(darkModeEnabled));
     (void)dwmSetWindowAttribute(hwnd, 19, &darkModeEnabled, sizeof(darkModeEnabled));
 
-    const COLORREF captionColor = RGB(17, 17, 27);
-    const COLORREF borderColor = RGB(49, 50, 68);
-    const COLORREF textColor = RGB(205, 214, 244);
+    const COLORREF captionColor = toColorRef(palette.crust);
+    const COLORREF borderColor = toColorRef(palette.surface0);
+    const COLORREF textColor = toColorRef(palette.text);
     (void)dwmSetWindowAttribute(hwnd, 35, &captionColor, sizeof(captionColor));
     (void)dwmSetWindowAttribute(hwnd, 34, &borderColor, sizeof(borderColor));
     (void)dwmSetWindowAttribute(hwnd, 36, &textColor, sizeof(textColor));
@@ -309,62 +470,49 @@ QColor UIThemeManager::getColor(const QString &id) const
 
 void UIThemeManager::applyBuiltInDarkTheme() const
 {
-    // Catppuccin Mocha palette
+    const CatppuccinPalette &theme = catppuccinPalette(m_builtInThemeFlavor);
+
+    // Catppuccin palette
     // https://github.com/catppuccin/catppuccin
-    const QColor base(0x1e, 0x1e, 0x2e);       // #1e1e2e
-    const QColor mantle(0x18, 0x18, 0x25);      // #181825
-    const QColor crust(0x11, 0x11, 0x1b);       // #11111b
-    const QColor surface0(0x31, 0x32, 0x44);    // #313244
-    const QColor surface1(0x45, 0x47, 0x5a);    // #45475a
-    const QColor surface2(0x58, 0x5b, 0x70);    // #585b70
-    const QColor overlay0(0x6c, 0x70, 0x86);    // #6c7086
-    const QColor overlay1(0x7f, 0x84, 0x9c);    // #7f849c
-    const QColor text(0xcd, 0xd6, 0xf4);        // #cdd6f4
-    const QColor subtext1(0xba, 0xc2, 0xde);    // #bac2de
-    const QColor subtext0(0xa6, 0xad, 0xc8);    // #a6adc8
-    const QColor blue(0x89, 0xb4, 0xfa);        // #89b4fa
-    const QColor lavender(0xb4, 0xbe, 0xfe);    // #b4befe
-    const QColor sapphire(0x74, 0xc7, 0xec);    // #74c7ec
-    const QColor mauve(0xcb, 0xa6, 0xf7);       // #cba6f7
-    const QColor red(0xf3, 0x8b, 0xa8);         // #f38ba8
+    const QColor highlightedText = theme.isDark ? theme.crust : theme.base;
 
     // Ensure Fusion style for consistent cross-platform theming
     QApplication::setStyle(u"Fusion"_s);
 
     QPalette palette;
-    palette.setColor(QPalette::Window, base);
-    palette.setColor(QPalette::WindowText, text);
-    palette.setColor(QPalette::Base, mantle);
-    palette.setColor(QPalette::AlternateBase, surface0);
-    palette.setColor(QPalette::Text, text);
-    palette.setColor(QPalette::ToolTipBase, surface0);
-    palette.setColor(QPalette::ToolTipText, text);
-    palette.setColor(QPalette::BrightText, red);
-    palette.setColor(QPalette::Highlight, blue);
-    palette.setColor(QPalette::HighlightedText, crust);
-    palette.setColor(QPalette::Button, surface0);
-    palette.setColor(QPalette::ButtonText, text);
-    palette.setColor(QPalette::Link, sapphire);
-    palette.setColor(QPalette::LinkVisited, mauve);
-    palette.setColor(QPalette::Light, surface1);
-    palette.setColor(QPalette::Midlight, surface0);
-    palette.setColor(QPalette::Mid, surface1);
-    palette.setColor(QPalette::Dark, crust);
-    palette.setColor(QPalette::Shadow, crust);
-    palette.setColor(QPalette::Disabled, QPalette::WindowText, overlay0);
-    palette.setColor(QPalette::Disabled, QPalette::Text, overlay0);
-    palette.setColor(QPalette::Disabled, QPalette::ToolTipText, overlay0);
-    palette.setColor(QPalette::Disabled, QPalette::BrightText, overlay0);
-    palette.setColor(QPalette::Disabled, QPalette::HighlightedText, overlay0);
-    palette.setColor(QPalette::Disabled, QPalette::ButtonText, overlay0);
-    palette.setColor(QPalette::Disabled, QPalette::Base, crust);
-    palette.setColor(QPalette::Disabled, QPalette::Button, mantle);
-    palette.setColor(QPalette::Disabled, QPalette::Highlight, surface1);
-    palette.setColor(QPalette::PlaceholderText, overlay1);
+    palette.setColor(QPalette::Window, theme.base);
+    palette.setColor(QPalette::WindowText, theme.text);
+    palette.setColor(QPalette::Base, theme.mantle);
+    palette.setColor(QPalette::AlternateBase, theme.surface0);
+    palette.setColor(QPalette::Text, theme.text);
+    palette.setColor(QPalette::ToolTipBase, theme.surface0);
+    palette.setColor(QPalette::ToolTipText, theme.text);
+    palette.setColor(QPalette::BrightText, theme.red);
+    palette.setColor(QPalette::Highlight, theme.blue);
+    palette.setColor(QPalette::HighlightedText, highlightedText);
+    palette.setColor(QPalette::Button, theme.surface0);
+    palette.setColor(QPalette::ButtonText, theme.text);
+    palette.setColor(QPalette::Link, theme.sapphire);
+    palette.setColor(QPalette::LinkVisited, theme.mauve);
+    palette.setColor(QPalette::Light, theme.surface1);
+    palette.setColor(QPalette::Midlight, theme.surface0);
+    palette.setColor(QPalette::Mid, theme.surface1);
+    palette.setColor(QPalette::Dark, theme.crust);
+    palette.setColor(QPalette::Shadow, theme.crust);
+    palette.setColor(QPalette::Disabled, QPalette::WindowText, theme.overlay0);
+    palette.setColor(QPalette::Disabled, QPalette::Text, theme.overlay0);
+    palette.setColor(QPalette::Disabled, QPalette::ToolTipText, theme.overlay0);
+    palette.setColor(QPalette::Disabled, QPalette::BrightText, theme.overlay0);
+    palette.setColor(QPalette::Disabled, QPalette::HighlightedText, theme.overlay0);
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText, theme.overlay0);
+    palette.setColor(QPalette::Disabled, QPalette::Base, theme.crust);
+    palette.setColor(QPalette::Disabled, QPalette::Button, theme.mantle);
+    palette.setColor(QPalette::Disabled, QPalette::Highlight, theme.surface1);
+    palette.setColor(QPalette::PlaceholderText, theme.overlay1);
 
     qApp->setPalette(palette);
 
-    const QString qss = uR"(/* ---- Global Reset ---- */
+    QString qss = uR"(/* ---- Global Reset ---- */
         QWidget {
             color: #cdd6f4;
         }
@@ -952,6 +1100,7 @@ void UIThemeManager::applyBuiltInDarkTheme() const
         }
     )"_s;
 
+    applyCatppuccinPalette(qss, theme);
     qApp->setStyleSheet(qss);
 }
 

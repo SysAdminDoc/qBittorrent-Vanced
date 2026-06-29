@@ -242,6 +242,7 @@ void OptionsDialog::loadBehaviorTabOptions()
 
     initializeStyleCombo();
     initializeColorSchemeOptions();
+    initializeBuiltInThemeFlavorCombo();
 
     m_ui->checkUseCustomTheme->setChecked(Preferences::instance()->useCustomUITheme());
     m_ui->customThemeFilePath->setSelectedPath(Preferences::instance()->customUIThemePath());
@@ -360,6 +361,8 @@ void OptionsDialog::loadBehaviorTabOptions()
     connect(m_ui->comboColorScheme, qComboBoxCurrentIndexChanged, this, &ThisType::enableApplyButton);
 #endif
 
+    connect(m_ui->comboBuiltInThemeFlavor, qComboBoxCurrentIndexChanged, this, &ThisType::enableApplyButton);
+
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MACOS))
     connect(m_ui->checkUseSystemIcon, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
 #endif
@@ -367,9 +370,14 @@ void OptionsDialog::loadBehaviorTabOptions()
     connect(m_ui->customThemeFilePath, &FileSystemPathEdit::selectedPathChanged, this, &ThisType::enableApplyButton);
 
     m_ui->buttonCustomizeUITheme->setEnabled(!m_ui->checkUseCustomTheme->isChecked());
+    m_ui->labelBuiltInThemeFlavor->setEnabled(!m_ui->checkUseCustomTheme->isChecked());
+    m_ui->comboBuiltInThemeFlavor->setEnabled(!m_ui->checkUseCustomTheme->isChecked());
     connect(m_ui->checkUseCustomTheme, &QGroupBox::toggled, this, [this]
     {
-        m_ui->buttonCustomizeUITheme->setEnabled(!m_ui->checkUseCustomTheme->isChecked());
+        const bool useBuiltInTheme = !m_ui->checkUseCustomTheme->isChecked();
+        m_ui->buttonCustomizeUITheme->setEnabled(useBuiltInTheme);
+        m_ui->labelBuiltInThemeFlavor->setEnabled(useBuiltInTheme);
+        m_ui->comboBuiltInThemeFlavor->setEnabled(useBuiltInTheme);
     });
     connect(m_ui->buttonCustomizeUITheme, &QPushButton::clicked, this, [this]
     {
@@ -460,6 +468,8 @@ void OptionsDialog::saveBehaviorTabOptions() const
 #ifdef QBT_HAS_COLORSCHEME_OPTION
     UIThemeManager::instance()->setColorScheme(m_ui->comboColorScheme->currentData().value<ColorScheme>());
 #endif
+
+    UIThemeManager::instance()->setBuiltInThemeFlavor(m_ui->comboBuiltInThemeFlavor->currentData().toString());
 
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MACOS))
     pref->useSystemIcons(m_ui->checkUseSystemIcon->isChecked());
@@ -1763,6 +1773,15 @@ void OptionsDialog::initializeColorSchemeOptions()
     m_ui->UISettingsBoxLayout->removeWidget(m_ui->comboColorScheme);
     m_ui->UISettingsBoxLayout->removeItem(m_ui->spacerColorScheme);
 #endif
+}
+
+void OptionsDialog::initializeBuiltInThemeFlavorCombo()
+{
+    for (const QString &flavor : UIThemeManager::builtInThemeFlavorIds())
+        m_ui->comboBuiltInThemeFlavor->addItem(UIThemeManager::builtInThemeFlavorDisplayName(flavor), flavor);
+
+    const int flavorIndex = m_ui->comboBuiltInThemeFlavor->findData(UIThemeManager::instance()->builtInThemeFlavor());
+    m_ui->comboBuiltInThemeFlavor->setCurrentIndex(std::max(0, flavorIndex));
 }
 
 #ifdef Q_OS_WIN

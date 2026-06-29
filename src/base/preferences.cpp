@@ -134,6 +134,19 @@ void Preferences::setCustomUIThemePath(const Path &path)
     setValue(u"Preferences/General/CustomUIThemePath"_s, path);
 }
 
+QString Preferences::builtInUIThemeFlavor() const
+{
+    return value(u"Preferences/General/BuiltInUIThemeFlavor"_s, u"mocha"_s);
+}
+
+void Preferences::setBuiltInUIThemeFlavor(const QString &flavor)
+{
+    if (flavor == builtInUIThemeFlavor())
+        return;
+
+    setValue(u"Preferences/General/BuiltInUIThemeFlavor"_s, flavor);
+}
+
 bool Preferences::removeTorrentContent() const
 {
     return value(u"Preferences/General/DeleteTorrentsFilesAsDefault"_s, false);

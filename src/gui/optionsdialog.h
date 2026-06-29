@@ -148,6 +148,7 @@ private:
     void initializeLanguageCombo();
     void initializeStyleCombo();
     void initializeColorSchemeOptions();
+    void initializeBuiltInThemeFlavorCombo();
     QString getLocale() const;
     bool isSplashScreenDisabled() const;
 #ifdef Q_OS_WIN

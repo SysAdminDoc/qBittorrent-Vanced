@@ -56,3 +56,47 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 ## Research-Driven Additions — 2026-06-29
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
+
+## Research-Driven Additions
+
+### P0
+- [ ] P0 — Remove or restore disabled WebUI module surfaces
+  Why: Stale RSS/Search tabs create broken WebUI paths and make the existing RSS tester idea premature.
+  Evidence: `CLAUDE.md`; `src/webui/www/private/index.html`; `src/webui/www/private/scripts/client.js`; absence of RSS/search controllers under `src/webui/api`.
+  Touches: `src/webui/www/private/index.html`, `src/webui/www/private/scripts/client.js`, `src/webui/www/private/views/rss.html`, `src/webui/www/private/views/searchplugins.html`, `test/webapi-smoke.ps1`, `README.md`
+  Acceptance: With a clean profile, the WebUI does not show RSS/Search/TorrentCreator controls unless a working backend is restored; no visible WebUI action calls missing `/api/v2/rss` or search endpoints; smoke covers the disabled-module state.
+  Complexity: M
+- [ ] P0 — Add current WebUI remote-access security negative smoke
+  Why: qBittorrent and Transmission both shipped recent remote-access security fixes, while Vanced has no local HTTP-level negative coverage for current guards.
+  Evidence: Transmission 4.1.3; qBittorrent 5.2.2; `src/webui/webapplication.cpp`; `test/webapi-smoke.ps1`
+  Touches: `test/webapi-smoke.ps1`, `test/testwebapplicationsecurity.cpp`, `src/webui/webapplication.cpp`
+  Acceptance: Local smoke proves cross-site POSTs fail with CSRF enabled, CORS does not expose auth/session material, cookies carry the expected SameSite policy, and X-Forwarded-Host is ignored unless reverse-proxy support is enabled.
+  Complexity: M
+
+### P1
+- [ ] P1 — Log category and tag mutations with old/new values
+  Why: Inline category editing and batch/automation paths can accidentally move many torrents without a recovery trail.
+  Evidence: qBittorrent issue #18525; `src/base/bittorrent/torrentimpl.cpp`; `src/base/bittorrent/sessionimpl.cpp`; `src/webui/api/synccontroller.cpp`
+  Touches: `src/base/bittorrent/sessionimpl.cpp`, `src/base/bittorrent/torrentimpl.cpp`, `src/webui/api/torrentscontroller.cpp`, `test/`
+  Acceptance: Category set/change/reset and tag add/remove events write one log entry per affected torrent with torrent name/hash, old value when available, and new value; desktop, WebAPI, batch, and auto-category paths share the same logging point.
+  Complexity: M
+
+### P2
+- [ ] P2 — Add WebUI content-tab copy-path action
+  Why: Alternate WebUIs now expose content-path copy actions, and Vanced already loads ClipboardJS for similar tracker copy behavior.
+  Evidence: qui v1.22.0; `src/webui/www/private/scripts/prop-files.js`; `src/webui/www/private/scripts/lib/clipboard.min.js`
+  Touches: `src/webui/www/private/index.html`, `src/webui/www/private/scripts/prop-files.js`, `src/webui/www/private/scripts/dynamicTable.js`, `test/webapi-smoke.ps1`
+  Acceptance: The WebUI content tab context menu copies selected file paths, handles multi-select/newline output, shows failure feedback when clipboard access fails, and does not alter file priority selection.
+  Complexity: S
+- [ ] P2 — Add user-supplied GeoIP/MMDB guard before ASN/country badges
+  Why: The existing peer ASN/country idea should not bundle GeoLite data without license, account, and update obligations.
+  Evidence: Existing ROADMAP ASN/country item; MaxMind GeoLite EULA/developer docs
+  Touches: `src/gui/properties/peerlistwidget.*`, `src/webui/www/private/scripts/prop-peers.js`, `src/base/preferences.*`, `README.md`
+  Acceptance: Peer geography is disabled by default, accepts only a user-configured `.mmdb`/ASN source with validation and clear error text, documents licensing/update requirements, and ships no GeoLite database in the repo or release artifacts.
+  Complexity: M
+- [ ] P2 — Backfill focused WebUI torrent-options parity
+  Why: Upstream WebUI users still request desktop-parity torrent options, but Vanced should target one bounded dialog instead of a broad WebUI rewrite.
+  Evidence: qBittorrent issue #9796; `src/webui/www/private/index.html`; `src/webui/api/torrentscontroller.cpp`
+  Touches: `src/webui/www/private/`, `src/webui/api/torrentscontroller.cpp`, `src/webui/api/torrentscontroller.h`, `test/webapi-smoke.ps1`
+  Acceptance: Selected torrents can open a WebUI options dialog for existing per-torrent settings already supported by Vanced's WebAPI/base model; unsupported 5.2.x-only fields stay hidden until the rebase/API-key work lands.
+  Complexity: L

@@ -60,12 +60,6 @@ Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inlin
 ## Research-Driven Additions
 
 ### P0
-- [ ] P0 — Remove or restore disabled WebUI module surfaces
-  Why: Stale RSS/Search tabs create broken WebUI paths and make the existing RSS tester idea premature.
-  Evidence: `CLAUDE.md`; `src/webui/www/private/index.html`; `src/webui/www/private/scripts/client.js`; absence of RSS/search controllers under `src/webui/api`.
-  Touches: `src/webui/www/private/index.html`, `src/webui/www/private/scripts/client.js`, `src/webui/www/private/views/rss.html`, `src/webui/www/private/views/searchplugins.html`, `test/webapi-smoke.ps1`, `README.md`
-  Acceptance: With a clean profile, the WebUI does not show RSS/Search/TorrentCreator controls unless a working backend is restored; no visible WebUI action calls missing `/api/v2/rss` or search endpoints; smoke covers the disabled-module state.
-  Complexity: M
 - [ ] P0 — Add current WebUI remote-access security negative smoke
   Why: qBittorrent and Transmission both shipped recent remote-access security fixes, while Vanced has no local HTTP-level negative coverage for current guards.
   Evidence: Transmission 4.1.3; qBittorrent 5.2.2; `src/webui/webapplication.cpp`; `test/webapi-smoke.ps1`

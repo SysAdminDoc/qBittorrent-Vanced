@@ -246,6 +246,38 @@ try {
     Write-Result "sync/maindata" ($null -ne $sync.server_state)
 } catch { Write-Result "sync/maindata" $false $_.Exception.Message }
 
+# --- Disabled modules (RSS/Search) ---
+try {
+    $indexResp = Invoke-WebRequest -Method GET -Uri "$BaseUrl/" -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+    $html = [string]$indexResp.Content
+    $noSearchTab = -not ($html -match 'id="searchTabLink"')
+    $noRssTab = -not ($html -match 'id="rssTabLink"')
+    $noSearchMenu = -not ($html -match 'id="showSearchEngineLink"')
+    $noRssMenu = -not ($html -match 'id="showRssReaderLink"')
+    Write-Result "disabled-modules/no search tab" $noSearchTab
+    Write-Result "disabled-modules/no rss tab" $noRssTab
+    Write-Result "disabled-modules/no search menu" $noSearchMenu
+    Write-Result "disabled-modules/no rss menu" $noRssMenu
+} catch { Write-Result "disabled-modules/html check" $false $_.Exception.Message }
+
+try {
+    $rssResp = Invoke-WebRequest -Method GET -Uri "$BaseUrl/api/v2/rss/items" -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+    Write-Result "disabled-modules/rss endpoint" $false "expected 404 or error"
+} catch {
+    $code = $_.Exception.Response.StatusCode.value__
+    $ok = ($code -eq 404) -or ($code -eq 409)
+    Write-Result "disabled-modules/rss endpoint ($code)" $ok
+}
+
+try {
+    $searchResp = Invoke-WebRequest -Method GET -Uri "$BaseUrl/api/v2/search/status" -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+    Write-Result "disabled-modules/search endpoint" $false "expected 404 or error"
+} catch {
+    $code = $_.Exception.Response.StatusCode.value__
+    $ok = ($code -eq 404) -or ($code -eq 409)
+    Write-Result "disabled-modules/search endpoint ($code)" $ok
+}
+
 # --- Cleanup ---
 Write-Host "`nCleaning up smoke test data..." -ForegroundColor DarkGray
 try {

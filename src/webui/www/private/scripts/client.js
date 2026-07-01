@@ -37,11 +37,7 @@ window.qBittorrent.Client ??= (() => {
             isStopped: isStopped,
             stop: stop,
             mainTitle: mainTitle,
-            showSearchEngine: showSearchEngine,
-            showRssReader: showRssReader,
             showLogViewer: showLogViewer,
-            isShowSearchEngine: isShowSearchEngine,
-            isShowRssReader: isShowRssReader,
             isShowLogViewer: isShowLogViewer
         };
     };
@@ -95,24 +91,10 @@ window.qBittorrent.Client ??= (() => {
         return title;
     };
 
-    let showingSearchEngine = false;
-    let showingRssReader = false;
     let showingLogViewer = false;
 
-    const showSearchEngine = (bool) => {
-        showingSearchEngine = bool;
-    };
-    const showRssReader = (bool) => {
-        showingRssReader = bool;
-    };
     const showLogViewer = (bool) => {
         showingLogViewer = bool;
-    };
-    const isShowSearchEngine = () => {
-        return showingSearchEngine;
-    };
-    const isShowRssReader = () => {
-        return showingRssReader;
     };
     const isShowLogViewer = () => {
         return showingLogViewer;
@@ -179,9 +161,7 @@ let toggleFilterDisplay = () => {};
 window.addEventListener("DOMContentLoaded", (event) => {
     window.qBittorrent.LocalPreferences.upgrade();
 
-    let isSearchPanelLoaded = false;
     let isLogPanelLoaded = false;
-    let isRssPanelLoaded = false;
 
     const saveColumnSizes = () => {
         const filters_width = $("Filters").getSize().x;
@@ -308,28 +288,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         });
     };
 
-    const buildSearchTab = () => {
-        new MochaUI.Column({
-            id: "searchTabColumn",
-            placement: "main",
-            width: null
-        });
-
-        // start off hidden
-        $("searchTabColumn").classList.add("invisible");
-    };
-
-    const buildRssTab = () => {
-        new MochaUI.Column({
-            id: "rssTabColumn",
-            placement: "main",
-            width: null
-        });
-
-        // start off hidden
-        $("rssTabColumn").classList.add("invisible");
-    };
-
     const buildLogTab = () => {
         new MochaUI.Column({
             id: "logTabColumn",
@@ -342,8 +300,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
     };
 
     buildTransfersTab();
-    buildSearchTab();
-    buildRssTab();
     buildLogTab();
     MochaUI.initializeTabs("mainWindowTabsList");
 
@@ -461,8 +417,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         $("speedInBrowserTitleBarLink").firstElementChild.style.opacity = "0";
 
     // After showing/hiding the toolbar + status bar
-    window.qBittorrent.Client.showSearchEngine(LocalPreferences.get("show_search_engine") !== "false");
-    window.qBittorrent.Client.showRssReader(LocalPreferences.get("show_rss_reader") !== "false");
     window.qBittorrent.Client.showLogViewer(LocalPreferences.get("show_log_viewer") === "true");
 
     // After Show Top Toolbar
@@ -1287,18 +1241,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         processServerState();
     });
 
-    $("showSearchEngineLink").addEventListener("click", (e) => {
-        window.qBittorrent.Client.showSearchEngine(!window.qBittorrent.Client.isShowSearchEngine());
-        LocalPreferences.set("show_search_engine", window.qBittorrent.Client.isShowSearchEngine().toString());
-        updateTabDisplay();
-    });
-
-    $("showRssReaderLink").addEventListener("click", (e) => {
-        window.qBittorrent.Client.showRssReader(!window.qBittorrent.Client.isShowRssReader());
-        LocalPreferences.set("show_rss_reader", window.qBittorrent.Client.isShowRssReader().toString());
-        updateTabDisplay();
-    });
-
     $("showLogViewerLink").addEventListener("click", (e) => {
         window.qBittorrent.Client.showLogViewer(!window.qBittorrent.Client.isShowLogViewer());
         LocalPreferences.set("show_log_viewer", window.qBittorrent.Client.isShowLogViewer().toString());
@@ -1306,34 +1248,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
     });
 
     const updateTabDisplay = () => {
-        if (window.qBittorrent.Client.isShowRssReader()) {
-            $("showRssReaderLink").firstElementChild.style.opacity = "1";
-            $("mainWindowTabs").classList.remove("invisible");
-            $("rssTabLink").classList.remove("invisible");
-            if (!MochaUI.Panels.instances.RssPanel)
-                addRssPanel();
-        }
-        else {
-            $("showRssReaderLink").firstElementChild.style.opacity = "0";
-            $("rssTabLink").classList.add("invisible");
-            if ($("rssTabLink").classList.contains("selected"))
-                $("transfersTabLink").click();
-        }
-
-        if (window.qBittorrent.Client.isShowSearchEngine()) {
-            $("showSearchEngineLink").firstElementChild.style.opacity = "1";
-            $("mainWindowTabs").classList.remove("invisible");
-            $("searchTabLink").classList.remove("invisible");
-            if (!MochaUI.Panels.instances.SearchPanel)
-                addSearchPanel();
-        }
-        else {
-            $("showSearchEngineLink").firstElementChild.style.opacity = "0";
-            $("searchTabLink").classList.add("invisible");
-            if ($("searchTabLink").classList.contains("selected"))
-                $("transfersTabLink").click();
-        }
-
         if (window.qBittorrent.Client.isShowLogViewer()) {
             $("showLogViewerLink").firstElementChild.style.opacity = "1";
             $("mainWindowTabs").classList.remove("invisible");
@@ -1348,8 +1262,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
                 $("transfersTabLink").click();
         }
 
-        // display no tabs
-        if (!window.qBittorrent.Client.isShowRssReader() && !window.qBittorrent.Client.isShowSearchEngine() && !window.qBittorrent.Client.isShowLogViewer())
+        if (!window.qBittorrent.Client.isShowLogViewer())
             $("mainWindowTabs").classList.add("invisible");
     };
 
@@ -1369,8 +1282,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         customSyncMainDataInterval = null;
         syncData(100);
 
-        hideSearchTab();
-        hideRssTab();
         hideLogTab();
 
         LocalPreferences.set("selected_window_tab", "transfers");
@@ -1381,78 +1292,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         $("filtersColumn_handle").classList.add("invisible");
         $("mainColumn").classList.add("invisible");
         $("torrentsFilterToolbar").classList.add("invisible");
-        MochaUI.Desktop.resizePanels();
-    };
-
-    const showSearchTab = (() => {
-        let searchTabInitialized = false;
-
-        return () => {
-            // we must wait until the panel is fully loaded before proceeding.
-            // this include's the panel's custom js, which is loaded via MochaUI.Panel's 'require' field.
-            // MochaUI loads these files asynchronously and thus all required libs may not be available immediately
-            if (!isSearchPanelLoaded) {
-                setTimeout(() => {
-                    showSearchTab();
-                }, 100);
-                return;
-            }
-
-            if (!searchTabInitialized) {
-                window.qBittorrent.Search.init();
-                searchTabInitialized = true;
-            }
-
-            $("searchTabColumn").classList.remove("invisible");
-            customSyncMainDataInterval = 30000;
-            hideTransfersTab();
-            hideRssTab();
-            hideLogTab();
-
-            LocalPreferences.set("selected_window_tab", "search");
-        };
-    })();
-
-    const hideSearchTab = () => {
-        $("searchTabColumn").classList.add("invisible");
-        MochaUI.Desktop.resizePanels();
-    };
-
-    const showRssTab = (() => {
-        let rssTabInitialized = false;
-
-        return () => {
-            // we must wait until the panel is fully loaded before proceeding.
-            // this include's the panel's custom js, which is loaded via MochaUI.Panel's 'require' field.
-            // MochaUI loads these files asynchronously and thus all required libs may not be available immediately
-            if (!isRssPanelLoaded) {
-                setTimeout(() => {
-                    showRssTab();
-                }, 100);
-                return;
-            }
-
-            if (!rssTabInitialized) {
-                window.qBittorrent.Rss.init();
-                rssTabInitialized = true;
-            }
-            else {
-                window.qBittorrent.Rss.load();
-            }
-
-            $("rssTabColumn").classList.remove("invisible");
-            customSyncMainDataInterval = 30000;
-            hideTransfersTab();
-            hideSearchTab();
-            hideLogTab();
-
-            LocalPreferences.set("selected_window_tab", "rss");
-        };
-    })();
-
-    const hideRssTab = () => {
-        $("rssTabColumn").classList.add("invisible");
-        window.qBittorrent.Rss && window.qBittorrent.Rss.unload();
         MochaUI.Desktop.resizePanels();
     };
 
@@ -1481,8 +1320,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
             $("logTabColumn").classList.remove("invisible");
             customSyncMainDataInterval = 30000;
             hideTransfersTab();
-            hideSearchTab();
-            hideRssTab();
 
             LocalPreferences.set("selected_window_tab", "log");
         };
@@ -1492,53 +1329,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
         $("logTabColumn").classList.add("invisible");
         MochaUI.Desktop.resizePanels();
         window.qBittorrent.Log && window.qBittorrent.Log.unload();
-    };
-
-    const addSearchPanel = () => {
-        new MochaUI.Panel({
-            id: "SearchPanel",
-            title: "Search",
-            header: false,
-            padding: {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0
-            },
-            loadMethod: "xhr",
-            contentURL: "views/search.html",
-            require: {
-                js: ["scripts/search.js"],
-                onload: () => {
-                    isSearchPanelLoaded = true;
-                },
-            },
-            content: "",
-            column: "searchTabColumn",
-            height: null
-        });
-    };
-
-    const addRssPanel = () => {
-        new MochaUI.Panel({
-            id: "RssPanel",
-            title: "Rss",
-            header: false,
-            padding: {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0
-            },
-            loadMethod: "xhr",
-            contentURL: "views/rss.html",
-            onContentLoaded: () => {
-                isRssPanelLoaded = true;
-            },
-            content: "",
-            column: "rssTabColumn",
-            height: null
-        });
     };
 
     const addLogPanel = () => {
@@ -1722,8 +1512,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
     document.getElementById("torrentsFilterToolbar").addEventListener("change", (e) => { torrentsTable.updateTable(); });
 
     $("transfersTabLink").addEventListener("click", () => { showTransfersTab(); });
-    $("searchTabLink").addEventListener("click", () => { showSearchTab(); });
-    $("rssTabLink").addEventListener("click", () => { showRssTab(); });
     $("logTabLink").addEventListener("click", () => { showLogTab(); });
     updateTabDisplay();
 
@@ -1877,14 +1665,6 @@ window.addEventListener("load", async () => {
     // switch to previously used tab
     const previouslyUsedTab = LocalPreferences.get("selected_window_tab", "transfers");
     switch (previouslyUsedTab) {
-        case "search":
-            if (window.qBittorrent.Client.isShowSearchEngine())
-                $("searchTabLink").click();
-            break;
-        case "rss":
-            if (window.qBittorrent.Client.isShowRssReader())
-                $("rssTabLink").click();
-            break;
         case "log":
             if (window.qBittorrent.Client.isShowLogViewer())
                 $("logTabLink").click();
@@ -1893,7 +1673,6 @@ window.addEventListener("load", async () => {
             $("transfersTabLink").click();
             break;
         default:
-            console.error(`Unexpected 'selected_window_tab' value: ${previouslyUsedTab}`);
             $("transfersTabLink").click();
             break;
     };

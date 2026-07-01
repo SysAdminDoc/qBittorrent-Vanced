@@ -558,7 +558,9 @@ window.qBittorrent.PropFiles ??= (() => {
             },
             FilePrioMaximum: (element, ref) => {
                 filesPriorityMenuClicked(FilePriority.Maximum);
-            }
+            },
+
+            CopyFilePath: (element, ref) => {}
         },
         offsets: {
             x: 0,
@@ -573,6 +575,23 @@ window.qBittorrent.PropFiles ??= (() => {
     });
 
     torrentFilesTable.setup("torrentFilesTableDiv", "torrentFilesTableFixedHeaderDiv", torrentFilesContextMenu, true);
+
+    const copyPathClipboard = new ClipboardJS("#CopyFilePath", {
+        text: () => {
+            const selectedIds = torrentFilesTable.selectedRowsIds();
+            const paths = [];
+            for (const rowId of selectedIds) {
+                const node = torrentFilesTable.getNode(rowId);
+                if (node && node.path)
+                    paths.push(node.path);
+            }
+            return paths.join("\n");
+        }
+    });
+    copyPathClipboard.on("error", () => {
+        alert("QBT_TR(Unable to copy to clipboard)QBT_TR[CONTEXT=PropertiesWidget]");
+    });
+
     // inject checkbox into table header
     const tableHeaders = document.querySelectorAll("#torrentFilesTableFixedHeaderDiv .dynamicTableHeader th");
     if (tableHeaders.length > 0) {

@@ -60,12 +60,6 @@ Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inlin
 ## Research-Driven Additions
 
 ### P2
-- [ ] P2 — Add WebUI content-tab copy-path action
-  Why: Alternate WebUIs now expose content-path copy actions, and Vanced already loads ClipboardJS for similar tracker copy behavior.
-  Evidence: qui v1.22.0; `src/webui/www/private/scripts/prop-files.js`; `src/webui/www/private/scripts/lib/clipboard.min.js`
-  Touches: `src/webui/www/private/index.html`, `src/webui/www/private/scripts/prop-files.js`, `src/webui/www/private/scripts/dynamicTable.js`, `test/webapi-smoke.ps1`
-  Acceptance: The WebUI content tab context menu copies selected file paths, handles multi-select/newline output, shows failure feedback when clipboard access fails, and does not alter file priority selection.
-  Complexity: S
 - [ ] P2 — Add user-supplied GeoIP/MMDB guard before ASN/country badges
   Why: The existing peer ASN/country idea should not bundle GeoLite data without license, account, and update obligations.
   Evidence: Existing ROADMAP ASN/country item; MaxMind GeoLite EULA/developer docs

@@ -272,7 +272,7 @@ window.qBittorrent.Misc ??= (() => {
             const fileNamePrefix = "attachment; filename=";
             const fileNameHeader = response.headers.get("content-disposition");
             let fileName = defaultFileName;
-            if (fileNameHeader.startsWith(fileNamePrefix)) {
+            if (fileNameHeader?.startsWith(fileNamePrefix)) {
                 fileName = fileNameHeader.substring(fileNamePrefix.length);
                 if (fileName.startsWith("\"") && fileName.endsWith("\""))
                     fileName = fileName.slice(1, -1);

@@ -123,7 +123,7 @@ window.qBittorrent.PiecesBar ??= (() => {
 
         const imageWidth = canvas.width;
 
-        if (imageWidth.length === 0)
+        if (imageWidth === 0)
             return;
 
         let minStatus = Infinity;

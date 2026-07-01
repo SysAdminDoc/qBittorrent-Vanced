@@ -247,7 +247,8 @@ window.qBittorrent.DynamicTable ??= (() => {
                             changeBorderSide = "left";
                     }
 
-                    const borderStyle = "solid #e60";
+                    const accentColor = getComputedStyle(document.documentElement).getPropertyValue("--color-accent-blue").trim() || "#e60";
+                    const borderStyle = `solid ${accentColor}`;
                     if (changeBorderSide === "left") {
                         borderChangeElement.style.borderLeft = borderStyle;
                         borderChangeElement.style.borderLeftWidth = "initial";

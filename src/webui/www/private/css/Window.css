@@ -297,7 +297,7 @@ div.mochaToolbarWrapper.bottom {
 }
 
 .mocha.transparent .mochaTitlebar h3 {
-    color: #ffffff;
+    color: var(--color-text-white, #ffffff);
     display: none;
 }
 
@@ -306,7 +306,7 @@ div.mochaToolbarWrapper.bottom {
 }
 
 .mocha.notification {
-    background: #cedff2;
+    background: var(--color-background-blue, #cedff2);
 }
 
 .mocha.notification .mochaTitlebar {
@@ -322,45 +322,6 @@ div.mochaToolbarWrapper.bottom {
     font-size: 12px;
     font-weight: bold;
     text-align: center;
-}
-
-/* Example Window Themes */
-
-#about_contentWrapper {
-    background: #e5e5e5 url("../images/logo2.gif") 3px 3px no-repeat;
-}
-
-#builder_contentWrapper {
-    background: #f5f5f7;
-}
-
-#json01 .mochaTitlebar {
-    background: #6dd2db;
-}
-
-#json02 .mochaTitlebar {
-    background: #6db6db;
-}
-
-#json03 .mochaTitlebar {
-    background: #6d92db;
-}
-
-.jsonExample .mochaTitlebar h3 {
-    color: #dddddd;
-}
-
-/* This does not work in IE6. */
-.isFocused.jsonExample .mochaTitlebar h3 {
-    color: #ffffff;
-}
-
-#fxmorpherExample .mochaContentWrapper {
-    background: #577a9e;
-}
-
-#clock {
-    background: #ffffff;
 }
 
 /* Workaround to make invisible buttons clickable */

@@ -9,6 +9,7 @@
 - Fixed User-Agent string leaking Vanced fork identity to HTTP trackers; now uses standard `qBittorrent/` prefix.
 - Added URL scheme validation to AppCast parser to reject non-HTTP/HTTPS release and download URLs from compromised feeds.
 - Fixed hardcoded colors in upload, rename-files, and preferences dialogs to use CSS theme variables.
+- Replaced hardcoded colors across WebUI with CSS theme variables: vanillaSelectBox disabled/hover states, dynamicTable column drag indicator, noscript error text, Window.css notification/titlebar, and removed dead Mocha framework example themes.
 - Removed dead RSS/Search CSS rules from style.css and fixed smoke test cleanup of CSRF test categories.
 - Added WebUI torrent-options dialog aggregating download/upload limits, sequential download, first/last piece priority, auto torrent management, and super seeding in one view.
 - Added user-supplied GeoIP/MMDB guard: peer country resolution is disabled by default, requires a user-configured `.mmdb` path with validation and clear error text, and no longer auto-downloads databases.

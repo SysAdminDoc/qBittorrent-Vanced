@@ -59,14 +59,6 @@ Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inlin
 
 ## Research-Driven Additions
 
-### P1
-- [ ] P1 — Log category and tag mutations with old/new values
-  Why: Inline category editing and batch/automation paths can accidentally move many torrents without a recovery trail.
-  Evidence: qBittorrent issue #18525; `src/base/bittorrent/torrentimpl.cpp`; `src/base/bittorrent/sessionimpl.cpp`; `src/webui/api/synccontroller.cpp`
-  Touches: `src/base/bittorrent/sessionimpl.cpp`, `src/base/bittorrent/torrentimpl.cpp`, `src/webui/api/torrentscontroller.cpp`, `test/`
-  Acceptance: Category set/change/reset and tag add/remove events write one log entry per affected torrent with torrent name/hash, old value when available, and new value; desktop, WebAPI, batch, and auto-category paths share the same logging point.
-  Complexity: M
-
 ### P2
 - [ ] P2 — Add WebUI content-tab copy-path action
   Why: Alternate WebUIs now expose content-path copy actions, and Vanced already loads ClipboardJS for similar tracker copy behavior.

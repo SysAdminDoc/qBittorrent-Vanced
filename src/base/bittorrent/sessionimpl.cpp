@@ -5321,16 +5321,24 @@ void SessionImpl::handleTorrentSavePathChanged(TorrentImpl *const torrent)
 
 void SessionImpl::handleTorrentCategoryChanged(TorrentImpl *const torrent, const QString &oldCategory)
 {
+    LogMsg(tr("Torrent category changed. Torrent: \"%1\" (%2). Old category: \"%3\". New category: \"%4\".")
+           .arg(torrent->name(), torrent->id().toString(),
+                oldCategory.isEmpty() ? tr("Uncategorized") : oldCategory,
+                torrent->category().isEmpty() ? tr("Uncategorized") : torrent->category()));
     emit torrentCategoryChanged(torrent, oldCategory);
 }
 
 void SessionImpl::handleTorrentTagAdded(TorrentImpl *const torrent, const Tag &tag)
 {
+    LogMsg(tr("Torrent tag added. Torrent: \"%1\" (%2). Tag: \"%3\".")
+           .arg(torrent->name(), torrent->id().toString(), tag.toString()));
     emit torrentTagAdded(torrent, tag);
 }
 
 void SessionImpl::handleTorrentTagRemoved(TorrentImpl *const torrent, const Tag &tag)
 {
+    LogMsg(tr("Torrent tag removed. Torrent: \"%1\" (%2). Tag: \"%3\".")
+           .arg(torrent->name(), torrent->id().toString(), tag.toString()));
     emit torrentTagRemoved(torrent, tag);
 }
 

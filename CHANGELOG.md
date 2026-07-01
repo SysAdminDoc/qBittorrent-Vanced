@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added centralized logging for category and tag mutations with torrent name, hash, old value, and new value across desktop, WebAPI, batch, and auto-category paths.
 - Added WebUI remote-access security negative smoke tests covering CSRF origin/referer rejection, SameSite=Strict cookie policy, CORS credential isolation, and X-Forwarded-Host bypass prevention.
 - Removed disabled RSS, Search, and TorrentCreator module surfaces from the WebUI; added negative smoke tests for disabled-module endpoints and UI controls.
 - Added AppCast-based program update checks with a non-modal in-app release toast and packaged AppCast checksums.

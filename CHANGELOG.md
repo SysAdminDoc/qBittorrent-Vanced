@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added WebUI torrent-options dialog aggregating download/upload limits, sequential download, first/last piece priority, auto torrent management, and super seeding in one view.
 - Added user-supplied GeoIP/MMDB guard: peer country resolution is disabled by default, requires a user-configured `.mmdb` path with validation and clear error text, and no longer auto-downloads databases.
 - Added WebUI content-tab copy-path context menu action using ClipboardJS with multi-select/newline output and failure feedback.
 - Added centralized logging for category and tag mutations with torrent name, hash, old value, and new value across desktop, WebAPI, batch, and auto-category paths.

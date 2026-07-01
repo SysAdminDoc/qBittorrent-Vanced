@@ -58,11 +58,3 @@ Note: existing research wording that says `.qbttheme` is stale; qBittorrent's cu
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.
 
 ## Research-Driven Additions
-
-### P2
-- [ ] P2 — Backfill focused WebUI torrent-options parity
-  Why: Upstream WebUI users still request desktop-parity torrent options, but Vanced should target one bounded dialog instead of a broad WebUI rewrite.
-  Evidence: qBittorrent issue #9796; `src/webui/www/private/index.html`; `src/webui/api/torrentscontroller.cpp`
-  Touches: `src/webui/www/private/`, `src/webui/api/torrentscontroller.cpp`, `src/webui/api/torrentscontroller.h`, `test/webapi-smoke.ps1`
-  Acceptance: Selected torrents can open a WebUI options dialog for existing per-torrent settings already supported by Vanced's WebAPI/base model; unsupported 5.2.x-only fields stay hidden until the rebase/API-key work lands.
-  Complexity: L

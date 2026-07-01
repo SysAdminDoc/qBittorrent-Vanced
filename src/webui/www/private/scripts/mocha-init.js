@@ -145,6 +145,7 @@ let copyNameFN = () => {};
 let copyInfohashFN = (policy) => {};
 let copyMagnetLinkFN = () => {};
 let copyIdFN = () => {};
+let torrentOptionsFN = () => {};
 let copyCommentFN = () => {};
 let setQueuePositionFN = () => {};
 let exportTorrentFN = () => {};
@@ -489,6 +490,30 @@ const initializeWindows = () => {
             paddingHorizontal: 0,
             width: 424,
             height: 100
+        });
+    };
+
+    torrentOptionsFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length <= 0)
+            return;
+
+        const contentURL = new URL("torrentoptions.html", window.location);
+        contentURL.search = new URLSearchParams({
+            hashes: hashes.join("|")
+        });
+        new MochaUI.Window({
+            id: "torrentOptionsPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Torrent Options)QBT_TR[CONTEXT=PropertiesWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: 400,
+            height: 300
         });
     };
 

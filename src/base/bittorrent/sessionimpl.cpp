@@ -5324,21 +5324,24 @@ void SessionImpl::handleTorrentCategoryChanged(TorrentImpl *const torrent, const
     LogMsg(tr("Torrent category changed. Torrent: \"%1\" (%2). Old category: \"%3\". New category: \"%4\".")
            .arg(torrent->name(), torrent->id().toString(),
                 oldCategory.isEmpty() ? tr("Uncategorized") : oldCategory,
-                torrent->category().isEmpty() ? tr("Uncategorized") : torrent->category()));
+                torrent->category().isEmpty() ? tr("Uncategorized") : torrent->category()),
+           Log::INFO);
     emit torrentCategoryChanged(torrent, oldCategory);
 }
 
 void SessionImpl::handleTorrentTagAdded(TorrentImpl *const torrent, const Tag &tag)
 {
     LogMsg(tr("Torrent tag added. Torrent: \"%1\" (%2). Tag: \"%3\".")
-           .arg(torrent->name(), torrent->id().toString(), tag.toString()));
+           .arg(torrent->name(), torrent->id().toString(), tag.toString()),
+           Log::INFO);
     emit torrentTagAdded(torrent, tag);
 }
 
 void SessionImpl::handleTorrentTagRemoved(TorrentImpl *const torrent, const Tag &tag)
 {
     LogMsg(tr("Torrent tag removed. Torrent: \"%1\" (%2). Tag: \"%3\".")
-           .arg(torrent->name(), torrent->id().toString(), tag.toString()));
+           .arg(torrent->name(), torrent->id().toString(), tag.toString()),
+           Log::INFO);
     emit torrentTagRemoved(torrent, tag);
 }
 

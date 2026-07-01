@@ -53,6 +53,43 @@ qBittorrent Vanced — Catppuccin Mocha theme, custom shimmer progress bars, str
 
 Note: existing research wording that says `.qbttheme` is stale; qBittorrent's current documented bundle extension and this repo's loader use `.qbtheme`.
 
+## Audit-Driven Items — 2026-07-01
+
+### P1
+- [ ] P1 — Add Enter/Escape keyboard handlers and initial focus to download.html and upload.html dialogs
+  Why: These are the two most-used dialogs but lack keyboard support that every other dialog has.
+  Where: `src/webui/www/private/download.html`, `src/webui/www/private/upload.html`
+
+- [ ] P1 — Add fetch error handling across all WebUI dialogs
+  Why: 8+ dialogs silently ignore network errors and HTTP error responses. Users get no feedback when operations fail.
+  Where: `download.html`, `upload.html`, `rename.html`, `rename_file.html`, `newcategory.html`, `newtag.html`, `shareratio.html`, `setlocation.html`
+
+### P2
+- [ ] P2 — Gate X-Forwarded-Host on trusted proxy IP in CSRF and Host validation
+  Why: When reverse proxy is enabled, any direct client can forge X-Forwarded-Host without IP verification.
+  Where: `src/webui/webapplication.cpp` lines 819-821, 864-865
+
+- [ ] P2 — Add GeoIP database reload mutex to prevent use-after-free in concurrent lookup
+  Why: `loadDatabase()` deletes `m_geoIPDatabase` on the main thread while libtorrent threads may call `lookup()`.
+  Where: `src/base/net/geoipmanager.cpp`, `src/base/net/geoipdatabase.h` (mutable m_countries)
+
+- [ ] P2 — Replace alert() with inline error display in rename_file.html
+  Why: `alert()` blocks the UI thread and cannot be styled to match the theme.
+  Where: `src/webui/www/private/rename_file.html`
+
+- [ ] P2 — Add error display element to rename.html dialog
+  Why: The rename dialog has no way to tell the user when renaming fails.
+  Where: `src/webui/www/private/rename.html`
+
+### P3
+- [ ] P3 — Remove dead RSS/Search view HTML files and search.js from Qt resource bundle
+  Why: The files are still compiled into the binary via webui.qrc even though the features are disabled.
+  Where: `src/webui/www/webui.qrc`, `src/webui/www/private/views/rss.html`, `views/search.html`, `views/searchplugins.html`, `views/rssDownloader.html`, `views/installsearchplugin.html`, `scripts/search.js`
+
+- [ ] P3 — Fix fragile double-encoding of save path in setLocation dialog
+  Why: mocha-init.js double-encodes the path and setlocation.html double-decodes; if either side changes, paths with special characters break.
+  Where: `src/webui/www/private/scripts/mocha-init.js` line 685, `src/webui/www/private/setlocation.html` line 36
+
 ## Research-Driven Additions — 2026-06-29
 
 Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inline removal, libtorrent 2.0.13 bump, scoped API tokens, Qt Test setup, SBOM) are not repeated here. The following are new items not covered by any existing roadmap or blocked entry.

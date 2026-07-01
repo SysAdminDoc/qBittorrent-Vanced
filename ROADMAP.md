@@ -59,14 +59,6 @@ Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inlin
 
 ## Research-Driven Additions
 
-### P0
-- [ ] P0 — Add current WebUI remote-access security negative smoke
-  Why: qBittorrent and Transmission both shipped recent remote-access security fixes, while Vanced has no local HTTP-level negative coverage for current guards.
-  Evidence: Transmission 4.1.3; qBittorrent 5.2.2; `src/webui/webapplication.cpp`; `test/webapi-smoke.ps1`
-  Touches: `test/webapi-smoke.ps1`, `test/testwebapplicationsecurity.cpp`, `src/webui/webapplication.cpp`
-  Acceptance: Local smoke proves cross-site POSTs fail with CSRF enabled, CORS does not expose auth/session material, cookies carry the expected SameSite policy, and X-Forwarded-Host is ignored unless reverse-proxy support is enabled.
-  Complexity: M
-
 ### P1
 - [ ] P1 — Log category and tag mutations with old/new values
   Why: Inline category editing and batch/automation paths can accidentally move many torrents without a recovery trail.

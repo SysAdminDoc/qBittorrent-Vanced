@@ -246,6 +246,77 @@ try {
     Write-Result "sync/maindata" ($null -ne $sync.server_state)
 } catch { Write-Result "sync/maindata" $false $_.Exception.Message }
 
+# --- Remote-access security ---
+
+# CSRF: POST with mismatched Origin header should be rejected
+try {
+    $csrfResp = Invoke-WebRequest -Method POST -Uri "$BaseUrl/api/v2/torrents/createCategory" `
+        -Body @{ category = "_csrf_test"; savePath = "" } `
+        -Headers @{ Origin = "http://evil.example.com" } `
+        -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+    Write-Result "security/csrf cross-origin POST rejected" $false "expected rejection, got $($csrfResp.StatusCode)"
+} catch {
+    $code = $_.Exception.Response.StatusCode.value__
+    $ok = ($code -eq 401) -or ($code -eq 403)
+    Write-Result "security/csrf cross-origin POST rejected ($code)" $ok
+}
+
+# CSRF: POST with mismatched Referer header should also be rejected
+try {
+    $csrfRefResp = Invoke-WebRequest -Method POST -Uri "$BaseUrl/api/v2/torrents/createCategory" `
+        -Body @{ category = "_csrf_ref_test"; savePath = "" } `
+        -Headers @{ Referer = "http://evil.example.com/page" } `
+        -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+    Write-Result "security/csrf cross-origin Referer rejected" $false "expected rejection"
+} catch {
+    $code = $_.Exception.Response.StatusCode.value__
+    $ok = ($code -eq 401) -or ($code -eq 403)
+    Write-Result "security/csrf cross-origin Referer rejected ($code)" $ok
+}
+
+# SameSite cookie: login Set-Cookie should contain SameSite=Strict and HttpOnly
+try {
+    $cookieLoginResp = Invoke-WebRequest -Method POST -Uri "$BaseUrl/api/v2/auth/login" `
+        -Body @{ username = $Username; password = $Password } `
+        -UseBasicParsing -TimeoutSec $TimeoutSec
+    $setCookieHeader = $cookieLoginResp.Headers["Set-Cookie"]
+    $cookieStr = if ($setCookieHeader -is [array]) { $setCookieHeader -join "; " } else { "$setCookieHeader" }
+    $hasSameSiteStrict = $cookieStr -match "(?i)SameSite=Strict"
+    $hasHttpOnly = $cookieStr -match "(?i)HttpOnly"
+    Write-Result "security/cookie SameSite=Strict" $hasSameSiteStrict
+    Write-Result "security/cookie HttpOnly" $hasHttpOnly
+} catch { Write-Result "security/cookie attributes" $false $_.Exception.Message }
+
+# CORS: preflight from foreign origin should not expose credentials
+try {
+    $corsResp = Invoke-WebRequest -Method OPTIONS -Uri "$BaseUrl/api/v2/auth/login" `
+        -Headers @{
+            Origin = "http://evil.example.com"
+            "Access-Control-Request-Method" = "POST"
+        } `
+        -UseBasicParsing -TimeoutSec $TimeoutSec
+    $acac = $corsResp.Headers["Access-Control-Allow-Credentials"]
+    $noCredentials = ($null -eq $acac) -or ("$acac" -ne "true")
+    Write-Result "security/cors no allow-credentials" $noCredentials
+} catch {
+    Write-Result "security/cors preflight rejected" $true
+}
+
+# X-Forwarded-Host: should be ignored without reverse-proxy mode
+try {
+    $xffResp = Invoke-WebRequest -Method POST -Uri "$BaseUrl/api/v2/torrents/createCategory" `
+        -Body @{ category = "_xff_test"; savePath = "" } `
+        -Headers @{ "X-Forwarded-Host" = "evil.example.com" } `
+        -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec
+    $xffOk = $xffResp.StatusCode -eq 200
+    Write-Result "security/x-forwarded-host ignored (no reverse proxy)" $xffOk
+    # clean up test category
+    try { Invoke-Api POST "torrents/removeCategories" @{ categories = "_xff_test" } | Out-Null } catch {}
+} catch {
+    $code = $_.Exception.Response.StatusCode.value__
+    Write-Result "security/x-forwarded-host ignored (no reverse proxy)" $false "got $code, expected 200 (header should be ignored)"
+}
+
 # --- Disabled modules (RSS/Search) ---
 try {
     $indexResp = Invoke-WebRequest -Method GET -Uri "$BaseUrl/" -WebSession $script:session -UseBasicParsing -TimeoutSec $TimeoutSec

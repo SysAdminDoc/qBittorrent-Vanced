@@ -20,7 +20,7 @@
         .optionsForm .checkboxField label { display: inline; margin-bottom: 0; font-weight: normal; }
         .optionsForm .buttons { margin-top: 14px; text-align: right; }
         .optionsForm .buttons input { margin-left: 6px; }
-        .optionsForm .error { color: #f38ba8; font-size: 0.85em; display: none; margin-top: 4px; }
+        .optionsForm .error { color: var(--color-red, #f38ba8); font-size: 0.85em; display: none; margin-top: 4px; }
     </style>
 </head>
 
@@ -28,12 +28,12 @@
     <div class="optionsForm">
         <div class="field">
             <label for="dlLimitInput">QBT_TR(Download limit:)QBT_TR[CONTEXT=PropertiesWidget]</label>
-            <input type="number" id="dlLimitInput" min="-1" step="1" placeholder="∞">
+            <input type="number" id="dlLimitInput" min="0" step="1" placeholder="∞">
             <span class="unit">QBT_TR(KiB/s)QBT_TR[CONTEXT=SpeedLimitDialog]</span>
         </div>
         <div class="field">
             <label for="upLimitInput">QBT_TR(Upload limit:)QBT_TR[CONTEXT=PropertiesWidget]</label>
-            <input type="number" id="upLimitInput" min="-1" step="1" placeholder="∞">
+            <input type="number" id="upLimitInput" min="0" step="1" placeholder="∞">
             <span class="unit">QBT_TR(KiB/s)QBT_TR[CONTEXT=SpeedLimitDialog]</span>
         </div>
         <div class="field checkboxField">
@@ -62,8 +62,13 @@
     <script>
         "use strict";
 
-        const params = new URLSearchParams(window.location.search);
-        const hashes = params.get("hashes").split("|");
+        const hashParam = new URLSearchParams(window.location.search).get("hashes");
+        if (!hashParam) {
+            $("applyButton").disabled = true;
+            $("errorMsg").textContent = "No torrents specified.";
+            $("errorMsg").style.display = "block";
+        }
+        const hashes = hashParam ? hashParam.split("|").filter(Boolean) : [];
 
         const showError = (msg) => {
             const el = $("errorMsg");
@@ -71,12 +76,27 @@
             el.style.display = "block";
         };
 
+        const initialSeqDl = new Map();
+        const initialFlPiece = new Map();
+        let loaded = false;
+
         const loadOptions = async () => {
+            if (hashes.length === 0)
+                return;
+
             try {
                 const resp = await fetch("api/v2/torrents/info?" + new URLSearchParams({ hashes: hashes.join("|") }));
-                if (!resp.ok) return;
+                if (!resp.ok) {
+                    showError("Failed to load torrent options.");
+                    $("applyButton").disabled = true;
+                    return;
+                }
                 const torrents = await resp.json();
-                if (torrents.length === 0) return;
+                if (torrents.length === 0) {
+                    showError("No matching torrents found.");
+                    $("applyButton").disabled = true;
+                    return;
+                }
 
                 const first = torrents[0];
                 const allSame = (key) => torrents.every((t) => t[key] === first[key]);
@@ -92,10 +112,16 @@
                     $("upLimitInput").value = (limit > 0) ? Math.floor(limit / 1024) : "";
                 }
 
+                for (const t of torrents)
+                    initialSeqDl.set(t.hash, t.seq_dl);
+
                 if (allSame("seq_dl"))
                     $("seqDlCheck").checked = first.seq_dl;
                 else
                     $("seqDlCheck").indeterminate = true;
+
+                for (const t of torrents)
+                    initialFlPiece.set(t.hash, t.f_l_piece_prio);
 
                 if (allSame("f_l_piece_prio"))
                     $("flPieceCheck").checked = first.f_l_piece_prio;
@@ -114,46 +140,71 @@
                     else
                         $("superSeedCheck").indeterminate = true;
                 }
+
+                loaded = true;
             }
             catch (e) {
                 showError(e.message);
+                $("applyButton").disabled = true;
             }
         };
 
         const applyOptions = async () => {
+            if (!loaded)
+                return;
+
+            $("applyButton").disabled = true;
             const hashStr = hashes.join("|");
             const requests = [];
 
             const dlVal = $("dlLimitInput").value;
             if (dlVal !== "") {
-                const limit = Number(dlVal) * 1024;
+                const parsed = Number(dlVal);
+                if (!Number.isFinite(parsed) || parsed < 0) {
+                    showError("Invalid download limit value.");
+                    $("applyButton").disabled = false;
+                    return;
+                }
                 requests.push(fetch("api/v2/torrents/setDownloadLimit", {
                     method: "POST",
-                    body: new URLSearchParams({ hashes: hashStr, limit: Math.max(0, limit) })
+                    body: new URLSearchParams({ hashes: hashStr, limit: Math.round(parsed * 1024) })
                 }));
             }
 
             const upVal = $("upLimitInput").value;
             if (upVal !== "") {
-                const limit = Number(upVal) * 1024;
+                const parsed = Number(upVal);
+                if (!Number.isFinite(parsed) || parsed < 0) {
+                    showError("Invalid upload limit value.");
+                    $("applyButton").disabled = false;
+                    return;
+                }
                 requests.push(fetch("api/v2/torrents/setUploadLimit", {
                     method: "POST",
-                    body: new URLSearchParams({ hashes: hashStr, limit: Math.max(0, limit) })
+                    body: new URLSearchParams({ hashes: hashStr, limit: Math.round(parsed * 1024) })
                 }));
             }
 
             if (!$("seqDlCheck").indeterminate) {
-                requests.push(fetch("api/v2/torrents/toggleSequentialDownload", {
-                    method: "POST",
-                    body: new URLSearchParams({ hashes: hashStr })
-                }));
+                const desired = $("seqDlCheck").checked;
+                const needToggle = hashes.filter((h) => initialSeqDl.get(h) !== desired);
+                if (needToggle.length > 0) {
+                    requests.push(fetch("api/v2/torrents/toggleSequentialDownload", {
+                        method: "POST",
+                        body: new URLSearchParams({ hashes: needToggle.join("|") })
+                    }));
+                }
             }
 
             if (!$("flPieceCheck").indeterminate) {
-                requests.push(fetch("api/v2/torrents/toggleFirstLastPiecePrio", {
-                    method: "POST",
-                    body: new URLSearchParams({ hashes: hashStr })
-                }));
+                const desired = $("flPieceCheck").checked;
+                const needToggle = hashes.filter((h) => initialFlPiece.get(h) !== desired);
+                if (needToggle.length > 0) {
+                    requests.push(fetch("api/v2/torrents/toggleFirstLastPiecePrio", {
+                        method: "POST",
+                        body: new URLSearchParams({ hashes: needToggle.join("|") })
+                    }));
+                }
             }
 
             if (!$("autoTmmCheck").indeterminate) {
@@ -171,11 +222,18 @@
             }
 
             try {
-                await Promise.all(requests);
+                const responses = await Promise.all(requests);
+                const failed = responses.filter((r) => !r.ok);
+                if (failed.length > 0) {
+                    showError(failed.length + " operation(s) failed.");
+                    $("applyButton").disabled = false;
+                    return;
+                }
                 window.parent.qBittorrent.Client.closeFrameWindow(window);
             }
             catch (e) {
                 showError(e.message);
+                $("applyButton").disabled = false;
             }
         };
 
@@ -195,7 +253,10 @@
             window.parent.qBittorrent.Client.closeFrameWindow(window);
         });
 
-        loadOptions();
+        loadOptions().then(() => {
+            if (loaded)
+                $("dlLimitInput").focus();
+        });
     </script>
 </body>
 

@@ -71,12 +71,6 @@
 
         color-scheme: dark;
 
-        #rssButtonBar img,
-        #startSearchButton img,
-        #manageSearchPlugins img {
-            filter: brightness(0) saturate(100%) invert(100%) sepia(0%)
-                saturate(1%) hue-rotate(156deg) brightness(106%) contrast(101%);
-        }
     }
 }
 
@@ -114,13 +108,6 @@
         }
 
         color-scheme: dark;
-
-        #rssButtonBar img,
-        #startSearchButton img,
-        #manageSearchPlugins img {
-            filter: brightness(0) saturate(100%) invert(100%) sepia(0%)
-                saturate(1%) hue-rotate(156deg) brightness(106%) contrast(101%);
-        }
     }
 }
 
@@ -161,8 +148,7 @@ ol {
     .dynamicTableDiv,
     .mochaContentWrapper,
     .panel,
-    .scrollableMenu,
-    #rssDetailsView {
+    .scrollableMenu {
         scrollbar-width: thin;
     }
 }
@@ -1104,36 +1090,6 @@ td.statusBarSeparator {
         margin-bottom: 1px;
         padding: 2px;
     }
-}
-
-/* Search tab */
-
-#SearchPanel,
-#SearchPanel_wrapper,
-#SearchPanel_pad {
-    height: inherit;
-}
-
-#searchResults {
-    height: 100%;
-    padding: 0 20px;
-}
-
-#searchResultsTableContainer {
-    height: calc(100% - 177px);
-    overflow: auto;
-}
-
-#searchResultsTableDiv {
-    height: calc(100% - 26px) !important;
-}
-
-#searchResults .dynamicTable {
-    width: 100%;
-}
-
-#searchResults .numSearchResults {
-    font-style: italic;
 }
 
 .red {

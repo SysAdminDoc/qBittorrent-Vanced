@@ -357,6 +357,7 @@ try {
     }
     Invoke-Api POST "torrents/removeCategories" @{ categories = $testCategory } | Out-Null
     Invoke-Api POST "torrents/deleteTags" @{ tags = $testTag } | Out-Null
+    Invoke-Api POST "torrents/removeCategories" @{ categories = "_csrf_test`n_csrf_ref_test" } | Out-Null
 } catch {}
 
 try {

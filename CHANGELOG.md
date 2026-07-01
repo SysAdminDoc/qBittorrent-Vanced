@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixed critical toggle-endpoint bugs in WebUI torrent-options dialog: sequential download and first/last piece priority now track per-torrent initial state and only toggle hashes that need changing, preventing silent state inversion on Apply.
+- Fixed torrent-options dialog crash when URL hashes parameter is missing, added input validation, HTTP error detection, Apply button guard during save, and focus management.
+- Removed dead RSS/Search CSS rules from style.css and fixed smoke test cleanup of CSRF test categories.
 - Added WebUI torrent-options dialog aggregating download/upload limits, sequential download, first/last piece priority, auto torrent management, and super seeding in one view.
 - Added user-supplied GeoIP/MMDB guard: peer country resolution is disabled by default, requires a user-configured `.mmdb` path with validation and clear error text, and no longer auto-downloads databases.
 - Added WebUI content-tab copy-path context menu action using ClipboardJS with multi-select/newline output and failure feedback.

@@ -60,12 +60,6 @@ Note: items in Roadmap_Blocked.md (rebase, .qbtheme extraction, CSP unsafe-inlin
 ## Research-Driven Additions
 
 ### P2
-- [ ] P2 — Add user-supplied GeoIP/MMDB guard before ASN/country badges
-  Why: The existing peer ASN/country idea should not bundle GeoLite data without license, account, and update obligations.
-  Evidence: Existing ROADMAP ASN/country item; MaxMind GeoLite EULA/developer docs
-  Touches: `src/gui/properties/peerlistwidget.*`, `src/webui/www/private/scripts/prop-peers.js`, `src/base/preferences.*`, `README.md`
-  Acceptance: Peer geography is disabled by default, accepts only a user-configured `.mmdb`/ASN source with validation and clear error text, documents licensing/update requirements, and ships no GeoLite database in the repo or release artifacts.
-  Complexity: M
 - [ ] P2 — Backfill focused WebUI torrent-options parity
   Why: Upstream WebUI users still request desktop-parity torrent options, but Vanced should target one bounded dialog instead of a broad WebUI rewrite.
   Evidence: qBittorrent issue #9796; `src/webui/www/private/index.html`; `src/webui/api/torrentscontroller.cpp`

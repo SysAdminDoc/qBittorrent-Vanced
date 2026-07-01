@@ -53,6 +53,14 @@ Based on qBittorrent Enhanced Edition v5.1.3.10 (which itself is based on [qBitt
 - Upload speed limited to 20 KiB/s by default (instead of unlimited)
 - Torrents stop on completion by default
 
+### Peer Geography
+
+- Peer country resolution is **disabled by default** and requires a user-supplied `.mmdb` database
+- Set the path to your MMDB file in **Preferences > Connection > GeoIP Database Path**
+- Vanced does not bundle or auto-download any GeoIP database
+- Free country databases are available from [DB-IP](https://db-ip.com/db/lite.php) (CC BY 4.0 license, requires attribution) or [MaxMind GeoLite2](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data) (requires free account, EULA, and periodic updates)
+- You are responsible for complying with the database provider's license terms and keeping the file updated
+
 ### Release Checks
 
 - Optional program update checks fetch the GitHub Releases AppCast and show a non-modal in-app toast when a newer Vanced release is available

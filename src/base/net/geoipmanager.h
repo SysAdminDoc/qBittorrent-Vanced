@@ -31,6 +31,8 @@
 
 #include <QObject>
 
+#include "base/path.h"
+
 class QHostAddress;
 class QString;
 
@@ -38,8 +40,6 @@ class GeoIPDatabase;
 
 namespace Net
 {
-    struct DownloadResult;
-
     class GeoIPManager final : public QObject
     {
         Q_OBJECT
@@ -56,18 +56,16 @@ namespace Net
 
     private slots:
         void configure();
-        void downloadFinished(const DownloadResult &result);
 
     private:
         GeoIPManager();
         ~GeoIPManager() override;
 
         void loadDatabase();
-        void manageDatabaseUpdate();
-        void downloadDatabaseFile();
 
         bool m_enabled = false;
         GeoIPDatabase *m_geoIPDatabase = nullptr;
+        Path m_lastConfiguredPath;
 
         static GeoIPManager *m_instance;
     };

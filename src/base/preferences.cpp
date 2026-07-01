@@ -1345,7 +1345,7 @@ void Preferences::recheckTorrentsOnCompletion(const bool recheck)
 
 bool Preferences::resolvePeerCountries() const
 {
-    return value(u"Preferences/Connection/ResolvePeerCountries"_s, true);
+    return value(u"Preferences/Connection/ResolvePeerCountries"_s, false);
 }
 
 void Preferences::resolvePeerCountries(const bool resolve)
@@ -1354,6 +1354,19 @@ void Preferences::resolvePeerCountries(const bool resolve)
         return;
 
     setValue(u"Preferences/Connection/ResolvePeerCountries"_s, resolve);
+}
+
+Path Preferences::geoIPDatabasePath() const
+{
+    return value<Path>(u"Preferences/Connection/GeoIPDatabasePath"_s);
+}
+
+void Preferences::setGeoIPDatabasePath(const Path &path)
+{
+    if (path == geoIPDatabasePath())
+        return;
+
+    setValue(u"Preferences/Connection/GeoIPDatabasePath"_s, path);
 }
 
 bool Preferences::resolvePeerHostNames() const

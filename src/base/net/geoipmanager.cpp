@@ -29,23 +29,12 @@
 
 #include "geoipmanager.h"
 
-#include <QDateTime>
 #include <QHostAddress>
-#include <QLocale>
 
 #include "base/global.h"
 #include "base/logger.h"
 #include "base/preferences.h"
-#include "base/profile.h"
-#include "base/utils/fs.h"
-#include "base/utils/gzip.h"
-#include "base/utils/io.h"
-#include "downloadmanager.h"
 #include "geoipdatabase.h"
-
-const QString DATABASE_URL = u"https://download.db-ip.com/free/dbip-country-lite-%1.mmdb.gz"_s;
-const QString GEODB_FOLDER = u"GeoDB"_s;
-const QString GEODB_FILENAME = u"dbip-country-lite.mmdb"_s;
 
 using namespace Net;
 
@@ -86,52 +75,36 @@ void GeoIPManager::loadDatabase()
     delete m_geoIPDatabase;
     m_geoIPDatabase = nullptr;
 
-    const Path filepath = specialFolderLocation(SpecialFolder::Data)
-            / Path(GEODB_FOLDER) / Path(GEODB_FILENAME);
+    const Path userPath = Preferences::instance()->geoIPDatabasePath();
+    if (userPath.isEmpty())
+    {
+        LogMsg(tr("Peer country resolution is enabled but no GeoIP database path is configured. "
+                  "Set a .mmdb file path in Preferences > Connection > GeoIP Database Path. "
+                  "You can obtain a free database from https://db-ip.com/db/lite.php (requires account)."),
+               Log::WARNING);
+        return;
+    }
+
+    if (!userPath.exists())
+    {
+        LogMsg(tr("GeoIP database file not found: \"%1\". Peer country resolution is disabled.")
+               .arg(userPath.toString()), Log::WARNING);
+        return;
+    }
 
     QString error;
-    m_geoIPDatabase = GeoIPDatabase::load(filepath, error);
+    m_geoIPDatabase = GeoIPDatabase::load(userPath, error);
     if (m_geoIPDatabase)
     {
         LogMsg(tr("IP geolocation database loaded. Type: %1. Build time: %2.")
-                                       .arg(m_geoIPDatabase->type(), m_geoIPDatabase->buildEpoch().toString()),
-                                       Log::INFO);
+               .arg(m_geoIPDatabase->type(), m_geoIPDatabase->buildEpoch().toString()),
+               Log::INFO);
     }
     else
     {
-        LogMsg(tr("Couldn't load IP geolocation database. Reason: %1").arg(error), Log::WARNING);
+        LogMsg(tr("Couldn't load IP geolocation database \"%1\". Reason: %2")
+               .arg(userPath.toString(), error), Log::WARNING);
     }
-
-    manageDatabaseUpdate();
-}
-
-void GeoIPManager::manageDatabaseUpdate()
-{
-    const auto expired = [](const QDateTime &testDateTime)
-    {
-        const QDate testDate = testDateTime.date();
-        const QDate curDate = QDateTime::currentDateTimeUtc().date();
-
-        if ((testDate.year() < curDate.year()) && (curDate.day() > 1))
-            return true;
-
-        if ((testDate.month() < curDate.month()) && (curDate.day() > 1))
-            return true;
-
-        return false;
-    };
-
-    if (!m_geoIPDatabase || expired(m_geoIPDatabase->buildEpoch()))
-        downloadDatabaseFile();
-}
-
-void GeoIPManager::downloadDatabaseFile()
-{
-    const QDateTime curDatetime = QDateTime::currentDateTimeUtc();
-    const QString curUrl = DATABASE_URL.arg(QLocale::c().toString(curDatetime, u"yyyy-MM"));
-    DownloadManager::instance()->download(
-            {curUrl}, Preferences::instance()->useProxyForGeneralPurposes()
-            , this, &GeoIPManager::downloadFinished);
 }
 
 QString GeoIPManager::lookup(const QHostAddress &hostAddr) const
@@ -409,71 +382,25 @@ QString GeoIPManager::CountryName(const QString &countryISOCode)
 void GeoIPManager::configure()
 {
     const bool enabled = Preferences::instance()->resolvePeerCountries();
-    if (m_enabled != enabled)
+    const Path userPath = Preferences::instance()->geoIPDatabasePath();
+
+    if (!enabled)
     {
-        m_enabled = enabled;
-        if (m_enabled && !m_geoIPDatabase)
+        if (m_enabled)
         {
-            loadDatabase();
-        }
-        else if (!m_enabled)
-        {
+            m_enabled = false;
             delete m_geoIPDatabase;
             m_geoIPDatabase = nullptr;
         }
-    }
-}
-
-void GeoIPManager::downloadFinished(const DownloadResult &result)
-{
-    if (result.status != DownloadStatus::Success)
-    {
-        LogMsg(tr("Couldn't download IP geolocation database file. Reason: %1").arg(result.errorString), Log::WARNING);
         return;
     }
 
-    bool ok = false;
-    const QByteArray data = Utils::Gzip::decompress(result.data, &ok);
-    if (!ok)
-    {
-        LogMsg(tr("Could not decompress IP geolocation database file."), Log::WARNING);
-        return;
-    }
+    const bool pathChanged = (userPath != m_lastConfiguredPath);
+    m_lastConfiguredPath = userPath;
 
-    QString error;
-    GeoIPDatabase *geoIPDatabase = GeoIPDatabase::load(data, error);
-    if (geoIPDatabase)
+    if (!m_enabled || pathChanged)
     {
-        if (!m_geoIPDatabase || (geoIPDatabase->buildEpoch() > m_geoIPDatabase->buildEpoch()))
-        {
-            delete m_geoIPDatabase;
-            m_geoIPDatabase = geoIPDatabase;
-            LogMsg(tr("IP geolocation database loaded. Type: %1. Build time: %2.")
-                .arg(m_geoIPDatabase->type(), m_geoIPDatabase->buildEpoch().toString())
-                   , Log::INFO);
-            const Path targetPath = specialFolderLocation(SpecialFolder::Data) / Path(GEODB_FOLDER);
-            if (!targetPath.exists())
-                Utils::Fs::mkpath(targetPath);
-
-            const auto path = targetPath / Path(GEODB_FILENAME);
-            const nonstd::expected<void, QString> saveResult = Utils::IO::saveToFile(path, data);
-            if (saveResult)
-            {
-                LogMsg(tr("Successfully updated IP geolocation database."), Log::INFO);
-            }
-            else
-            {
-                LogMsg(tr("Couldn't save downloaded IP geolocation database file. Reason: %1")
-                    .arg(saveResult.error()), Log::WARNING);
-            }
-        }
-        else
-        {
-            delete geoIPDatabase;
-        }
-    }
-    else
-    {
-        LogMsg(tr("Couldn't load IP geolocation database. Reason: %1").arg(error), Log::WARNING);
+        m_enabled = true;
+        loadDatabase();
     }
 }

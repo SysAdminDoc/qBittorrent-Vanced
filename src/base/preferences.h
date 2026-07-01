@@ -297,6 +297,8 @@ public:
     void recheckTorrentsOnCompletion(bool recheck);
     bool resolvePeerCountries() const;
     void resolvePeerCountries(bool resolve);
+    Path geoIPDatabasePath() const;
+    void setGeoIPDatabasePath(const Path &path);
     bool resolvePeerHostNames() const;
     void resolvePeerHostNames(bool resolve);
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MACOS))

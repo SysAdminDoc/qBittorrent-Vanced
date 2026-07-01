@@ -28,6 +28,7 @@
 
 #include "appcastparser.h"
 
+#include <QUrl>
 #include <QXmlStreamReader>
 
 namespace
@@ -44,9 +45,20 @@ namespace
     }
 }
 
+namespace
+{
+    bool hasSecureScheme(const QString &url)
+    {
+        const QUrl parsed {url};
+        const QString scheme = parsed.scheme().toLower();
+        return (scheme == u"https") || (scheme == u"http");
+    }
+}
+
 bool AppCast::Release::isValid() const
 {
-    return !version.isEmpty() && !releaseUrl.isEmpty();
+    return !version.isEmpty() && !releaseUrl.isEmpty() && hasSecureScheme(releaseUrl)
+            && (downloadUrl.isEmpty() || hasSecureScheme(downloadUrl));
 }
 
 std::optional<AppCast::Release> AppCast::parseLatestRelease(const QByteArray &data)
@@ -90,7 +102,7 @@ std::optional<AppCast::Release> AppCast::parseLatestRelease(const QByteArray &da
 
                 bool ok = false;
                 const qint64 length = attributeValue(attributes, u"length").toLongLong(&ok);
-                if (ok)
+                if (ok && (length >= 0))
                     release.downloadLength = length;
             }
         }

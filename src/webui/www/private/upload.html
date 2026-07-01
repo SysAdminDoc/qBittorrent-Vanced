@@ -16,7 +16,7 @@
 <body>
     <iframe id="upload_frame" name="upload_frame" class="invisible" title="" src="about:blank"></iframe>
     <form action="api/v2/torrents/add" enctype="multipart/form-data" method="post" id="uploadForm" class="addTorrentForm" style="text-align: center;" target="upload_frame" autocorrect="off" autocapitalize="none">
-        <div class="torrentFilePicker" style="margin-top: 25px; display: inline-block; border: 1px solid lightgrey; border-radius: 4px;">
+        <div class="torrentFilePicker" style="margin-top: 25px; display: inline-block; border: 1px solid var(--color-border-default, lightgrey); border-radius: 4px;">
             <input type="file" id="fileselect" accept=".torrent, application/x-bittorrent" name="fileselect[]" multiple aria-label="QBT_TR(Select .torrent files)QBT_TR[CONTEXT=AddNewTorrentDialog]">
         </div>
         <fieldset class="settings addTorrentOptions" style="border: 0; text-align: left; margin-top: 12px;">

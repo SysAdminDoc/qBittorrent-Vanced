@@ -57,12 +57,12 @@
                     return;
 
                 $("categoryName").disabled = true;
-                $("categoryName").value = window.qBittorrent.Misc.escapeHtml(uriCategoryName);
-                $("savePath").value = window.qBittorrent.Misc.escapeHtml(uriSavePath);
+                $("categoryName").value = uriCategoryName;
+                $("savePath").value = uriSavePath;
                 $("savePath").focus();
             }
             else if (uriAction === "createSubcategory") {
-                $("categoryName").value = window.qBittorrent.Misc.escapeHtml(uriCategoryName);
+                $("categoryName").value = uriCategoryName;
                 $("categoryName").focus();
             }
             else {

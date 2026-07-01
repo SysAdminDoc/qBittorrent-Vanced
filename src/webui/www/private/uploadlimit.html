@@ -46,7 +46,8 @@
             }
         });
 
-        const hashes = new URLSearchParams(window.location.search).get("hashes").split("|");
+        const hashParam = new URLSearchParams(window.location.search).get("hashes");
+        const hashes = hashParam ? hashParam.split("|").filter(Boolean) : [];
         const setUpLimit = () => {
             const limit = Number($("uplimitUpdatevalue").value) * 1024;
             if (hashes[0] === "global") {

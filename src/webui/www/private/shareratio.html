@@ -30,7 +30,8 @@
             });
 
             const searchParams = new URLSearchParams(window.location.search);
-            const origValues = searchParams.get("orig").split("|");
+            const origParam = searchParams.get("orig");
+            const origValues = origParam ? origParam.split("|") : [""];
 
             const values = {
                 ratioLimit: Number(origValues[0]),

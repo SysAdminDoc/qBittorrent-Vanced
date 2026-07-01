@@ -4,6 +4,11 @@
 
 - Fixed critical toggle-endpoint bugs in WebUI torrent-options dialog: sequential download and first/last piece priority now track per-torrent initial state and only toggle hashes that need changing, preventing silent state inversion on Apply.
 - Fixed torrent-options dialog crash when URL hashes parameter is missing, added input validation, HTTP error detection, Apply button guard during save, and focus management.
+- Fixed category name corruption in WebUI edit dialog caused by escapeHtml on `.value` assignment (names with `&`, `<`, `>` were double-escaped).
+- Fixed null-crash in download/upload limit and share ratio dialogs when URL parameters are missing.
+- Fixed User-Agent string leaking Vanced fork identity to HTTP trackers; now uses standard `qBittorrent/` prefix.
+- Added URL scheme validation to AppCast parser to reject non-HTTP/HTTPS release and download URLs from compromised feeds.
+- Fixed hardcoded colors in upload, rename-files, and preferences dialogs to use CSS theme variables.
 - Removed dead RSS/Search CSS rules from style.css and fixed smoke test cleanup of CSRF test categories.
 - Added WebUI torrent-options dialog aggregating download/upload limits, sequential download, first/last piece priority, auto torrent management, and super seeding in one view.
 - Added user-supplied GeoIP/MMDB guard: peer country resolution is disabled by default, requires a user-configured `.mmdb` path with validation and clear error text, and no longer auto-downloads databases.
